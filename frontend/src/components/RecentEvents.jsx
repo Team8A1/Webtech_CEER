@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 function RecentEvents() {
-  const [activeIndex, setActiveIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState(0)
+  const [dragCurrent, setDragCurrent] = useState(0)
+  const carouselRef = useRef(null)
 
-  const recentEvents = [
+  const campusEvents = [
     {
       title: 'Tech Summit 2025',
       date: 'December 15, 2025',
@@ -42,130 +46,176 @@ function RecentEvents() {
     }
   ]
 
-  const handlePrevious = () => {
-    setActiveIndex((prev) => (prev === 0 ? recentEvents.length - 1 : prev - 1))
+  // Get card index helper
+  const getIndex = (offset) => (currentIndex + offset + campusEvents.length) % campusEvents.length
+
+  // Get prev, current, next cards
+  const prevEvent = campusEvents[getIndex(-1)]
+  const currentEvent = campusEvents[currentIndex]
+  const nextEvent = campusEvents[getIndex(1)]
+
+  // Mouse/Touch drag handlers
+  const handleMouseDown = (e) => {
+    setIsDragging(true)
+    setDragStart(e.clientX)
+    setDragCurrent(e.clientX)
   }
 
-  const handleNext = () => {
-    setActiveIndex((prev) => (prev === recentEvents.length - 1 ? 0 : prev + 1))
+  const handleTouchStart = (e) => {
+    setIsDragging(true)
+    setDragStart(e.touches[0].clientX)
+    setDragCurrent(e.touches[0].clientX)
   }
 
-  const getVisibleCards = () => {
-    const prevIndex = activeIndex === 0 ? recentEvents.length - 1 : activeIndex - 1
-    const nextIndex = activeIndex === recentEvents.length - 1 ? 0 : activeIndex + 1
-    return [
-      { event: recentEvents[prevIndex], position: 'left', index: prevIndex },
-      { event: recentEvents[activeIndex], position: 'center', index: activeIndex },
-      { event: recentEvents[nextIndex], position: 'right', index: nextIndex }
-    ]
+  const handleMouseMove = (e) => {
+    if (!isDragging) return
+    setDragCurrent(e.clientX)
+  }
+
+  const handleTouchMove = (e) => {
+    if (!isDragging) return
+    setDragCurrent(e.touches[0].clientX)
+  }
+
+  const handleMouseUp = () => {
+    if (!isDragging) return
+    setIsDragging(false)
+    handleDragEnd()
+  }
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return
+    setIsDragging(false)
+    handleDragEnd()
+  }
+
+  const handleDragEnd = () => {
+    const dragDistance = dragStart - dragCurrent
+    const swipeThreshold = 50
+
+    if (dragDistance > swipeThreshold) {
+      // Dragged left - show next card
+      setCurrentIndex((prev) => (prev + 1) % campusEvents.length)
+    } else if (dragDistance < -swipeThreshold) {
+      // Dragged right - show previous card
+      setCurrentIndex((prev) => (prev - 1 + campusEvents.length) % campusEvents.length)
+    }
   }
 
   return (
-    <section className="py-0 bg-white from-slate-50 via-white to-slate-100 relative overflow-hidden">
+    <section className="py-16 md:py-24 bg-gradient-to-b from-white to-slate-50 relative overflow-hidden">
       {/* Decorative Elements */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-100/30 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
-      
+      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-100/30 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
+
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="text-center mb-0">
-          <div className="inline-block mb-0">
-            
-          </div>
-          <h2 className="text-5xl md:text-6xl mt-2 font-bold text-maroon-700 mb-4">
-            Recent Events
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h2 className="text-5xl md:text-6xl font-bold text-maroon-700 mb-4">
+            Campus Highlights
           </h2>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            Explore the vibrant moments and memorable experiences from our campus
+          <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto">
+            Discover standout events and activities shaping our campus journey.
           </p>
         </div>
 
-        <div className="relative flex items-center justify-center min-h-[550px]">
-          {/* Left Arrow */}
-          <button
-            onClick={handlePrevious}
-            className="absolute left-0 md:left-4 z-20 w-14 h-14 flex items-center justify-center bg-white/80 backdrop-blur-sm text-slate-800 hover:bg-white hover:text-maroon-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
-            aria-label="Previous event"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+        {/* Carousel Container */}
+        <div
+          ref={carouselRef}
+          className="relative flex items-center justify-center min-h-[550px] cursor-grab active:cursor-grabbing"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Carousel Content */}
+          <div className="w-full flex items-center justify-center gap-4 md:gap-8 select-none">
+            {/* Left Card */}
+            <div className="hidden md:block transition-all duration-500 ease-out transform scale-85 opacity-40">
+              <div className="relative w-64 h-80 rounded-[2rem] overflow-hidden border border-slate-200/50 shadow-lg bg-white pointer-events-none">
+                <img
+                  src={prevEvent.image}
+                  alt={prevEvent.title}
+                  className="w-full h-full object-cover"
+                  draggable="false"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
+              </div>
+            </div>
 
-          {/* Cards Container */}
-          <div className="flex items-center justify-center gap-6 md:gap-10 w-full max-w-6xl">
-            {getVisibleCards().map(({ event, position, index }) => (
-              <div
-                key={index}
-                className={`transition-all duration-700 ease-out ${
-                  position === 'center'
-                    ? 'w-80 md:w-[350px] h-[420px] md:h-[480px] scale-100 opacity-100 z-10'
-                    : 'w-52 md:w-60 h-[340px] md:h-[380px] scale-90 opacity-50'
-                }`}
-              >
-                <div className="relative w-full h-full rounded-[2rem] overflow-hidden border border-slate-200/50 shadow-2xl hover:shadow-3xl transition-shadow duration-300 bg-white">
-                  <img
-                    src={event.image}
-                    alt={event.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
-                  
-                  {position === 'center' && (
-                    <>
-                      {/* Animated Border Glow */}
-                      <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
-                      
-                      <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="px-4 py-1.5 bg-maroon-700/90 backdrop-blur-md rounded-full text-xs font-bold tracking-wide uppercase shadow-lg">
-                            {event.category}
-                          </span>
-                          <div className="flex-1 h-px bg-gradient-to-r from-white/50 to-transparent" />
-                        </div>
-                        <h3 className="text-2xl md:text-3xl font-bold mb-2 drop-shadow-lg">
-                          {event.title}
-                        </h3>
-                        <div className="flex items-center gap-2 text-sm text-slate-200">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          {event.date}
-                        </div>
-                      </div>
-                    </>
-                  )}
+            {/* Center Card (Active) */}
+            <div className="transition-all duration-500 ease-out transform scale-100 opacity-100">
+              <div className="relative w-80 md:w-96 h-96 md:h-[480px] rounded-[2rem] overflow-hidden border border-slate-200/50 shadow-2xl bg-white group pointer-events-none">
+                <img
+                  src={currentEvent.image}
+                  alt={currentEvent.title}
+                  className="w-full h-full object-cover"
+                  draggable="false"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/40 to-transparent" />
+
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-white">
+                  {/* Category Badge */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="px-4 py-1.5 bg-maroon-700/90 backdrop-blur-md rounded-full text-xs font-bold tracking-wide uppercase shadow-lg">
+                      {currentEvent.category}
+                    </span>
+                    <div className="flex-1 h-px bg-gradient-to-r from-white/50 to-transparent" />
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-2xl md:text-3xl font-bold mb-3 drop-shadow-lg leading-tight">
+                    {currentEvent.title}
+                  </h3>
+
+                  {/* Date */}
+                  <div className="flex items-center gap-2 text-sm text-slate-200">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {currentEvent.date}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* Right Arrow */}
-          <button
-            onClick={handleNext}
-            className="absolute right-0 md:right-4 z-20 w-14 h-14 flex items-center justify-center bg-white/80 backdrop-blur-sm text-slate-800 hover:bg-white hover:text-maroon-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
-            aria-label="Next event"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+            {/* Right Card */}
+            <div className="hidden md:block transition-all duration-500 ease-out transform scale-85 opacity-40">
+              <div className="relative w-64 h-80 rounded-[2rem] overflow-hidden border border-slate-200/50 shadow-lg bg-white pointer-events-none">
+                <img
+                  src={nextEvent.image}
+                  alt={nextEvent.title}
+                  className="w-full h-full object-cover"
+                  draggable="false"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Modern Dots Indicator */}
-        <div className="flex justify-center items-center gap-3 mt-16">
-          {recentEvents.map((_, index) => (
+        {/* Indicators */}
+        <div className="flex justify-center items-center gap-3 mt-12">
+          {campusEvents.map((_, index) => (
             <button
               key={index}
-              onClick={() => setActiveIndex(index)}
-              className={`transition-all duration-500 rounded-full ${
-                index === activeIndex
+              onClick={() => setCurrentIndex(index)}
+              className={`transition-all duration-500 rounded-full hover:scale-125 ${
+                index === currentIndex
                   ? 'w-12 h-3 bg-maroon-700 shadow-lg'
-                  : 'w-3 h-3 bg-slate-300 hover:bg-slate-400 hover:scale-125'
+                  : 'w-3 h-3 bg-slate-300 hover:bg-slate-400'
               }`}
               aria-label={`Go to event ${index + 1}`}
             />
           ))}
         </div>
+
+        {/* Drag instruction text */}
+        <p className="text-center text-slate-500 text-sm mt-6">Drag to navigate • Click dots to jump</p>
       </div>
     </section>
   )
