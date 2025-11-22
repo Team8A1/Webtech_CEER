@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@theme {
+  --color-maroon-400: #e57373;
+  --color-maroon-700: #8b1538;
+  --color-maroon-800: #6d0f2a;
+  --color-maroon-900: #4a0a1c;
+}
+html {
+  scroll-behavior: smooth;
+}
