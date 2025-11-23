@@ -57,6 +57,15 @@ function RoleSelection() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-between p-20 relative">
+      {/* Back to Home button (top-right) */}
+      <div className="absolute top-6 right-6 z-20">
+        <button
+          onClick={() => navigate('/')}
+          className="px-4 py-2 bg-white text-slate-900 rounded-md shadow-sm hover:bg-slate-100 transition-colors"
+        >
+          Back to Home
+        </button>
+      </div>
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img 

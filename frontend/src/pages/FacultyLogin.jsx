@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function FacultyLogin() {
   const [isVisible, setIsVisible] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     setIsVisible(true)
@@ -9,7 +11,7 @@ function FacultyLogin() {
 
   const handleLogin = (e) => {
     e.preventDefault()
-    console.log('Faculty login submitted')
+    navigate('/faculty')
   }
 
   return (

@@ -11,7 +11,7 @@ function StudentLogin() {
 
   const handleLogin = (e) => {
     e.preventDefault()
-    navigate('/student/landing')
+    navigate('/student/dashboard')
   }
 
   return (
