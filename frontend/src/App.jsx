@@ -13,7 +13,6 @@ import StudentEnergyPage from './pages/StudentEnergyPage'
 import FacultyLanding from './pages/FacultyLanding'
 import FacultyTeamApproval from './pages/FacultyTeamApproval'
 import FacultyTeamCreate from './pages/FacultyTeamCreate'
-import GuideApproval from './pages/GuideApproval'
 import FacultyApprove from './pages/FacultyApprove'
 import LabApprove from './pages/LabApprove'
 import AdminDashboard from './pages/AdminDashboard'
@@ -28,7 +27,7 @@ function App() {
         <Route path="/login/admin" element={<AdminLogin />} />
         <Route path="/login/faculty" element={<FacultyLogin />} />
         <Route path="/login/lab" element={<LabLogin />} />
-        <Route path="/faculty/approve" element={<GuideApproval />} />
+        <Route path="/faculty/approve" element={<FacultyApprove />} />
         <Route path="/lab/approve" element={<LabApprove />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/student/landing" element={<StudentLanding />} />
