@@ -16,6 +16,7 @@ import FacultyTeamCreate from './pages/FacultyTeamCreate'
 import FacultyApprove from './pages/FacultyApprove'
 import LabApprove from './pages/LabApprove'
 import AdminDashboard from './pages/AdminDashboard'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
   return (
@@ -31,10 +32,10 @@ function App() {
         <Route path="/lab/approve" element={<LabApprove />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/student/landing" element={<StudentLanding />} />
-        <Route path="/student/dashboard" element={<StudentHome />} />
-        <Route path="/student/bom" element={<StudentBOMPage />} />
-        <Route path="/student/carbon" element={<StudentCarbonPage />} />
-        <Route path="/student/energy" element={<StudentEnergyPage />} />
+        <Route path="/student/dashboard" element={<ProtectedRoute><StudentHome /></ProtectedRoute>} />
+        <Route path="/student/bom" element={<ProtectedRoute><StudentBOMPage /></ProtectedRoute>} />
+        <Route path="/student/carbon" element={<ProtectedRoute><StudentCarbonPage /></ProtectedRoute>} />
+        <Route path="/student/energy" element={<ProtectedRoute><StudentEnergyPage /></ProtectedRoute>} />
         <Route path="/faculty" element={<FacultyLanding />} />
         <Route path="/faculty/teams" element={<FacultyTeamApproval />} />
         <Route path="/faculty/team-create" element={<FacultyTeamCreate />} />

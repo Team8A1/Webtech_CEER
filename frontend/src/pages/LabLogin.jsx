@@ -1,17 +1,84 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { GoogleLogin } from '@react-oauth/google'
 
 function LabLogin() {
   const [isVisible, setIsVisible] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
     setIsVisible(true)
   }, [])
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
-    navigate('/lab/approve')
+    setError('')
+    setLoading(true)
+
+    try {
+      const response = await fetch('http://localhost:5000/api/lab/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        localStorage.setItem('token', data.data.token)
+        localStorage.setItem('user', JSON.stringify(data.data.user))
+        navigate('/lab/approve')
+      } else {
+        setError(data.message)
+      }
+    } catch (err) {
+      setError('Login failed. Please try again.')
+      console.error('Login error:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('')
+    setLoading(true)
+
+    try {
+      const response = await fetch('http://localhost:5000/api/lab/auth/google', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          idToken: credentialResponse.credential
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        localStorage.setItem('token', data.data.token)
+        localStorage.setItem('user', JSON.stringify(data.data.user))
+        navigate('/lab/approve')
+      } else {
+        setError(data.message)
+      }
+    } catch (err) {
+      setError('Google login failed. Please try again.')
+      console.error('Google login error:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleError = () => {
+    setError('Google Sign-In failed. Please try again.')
   }
 
   return (
@@ -47,20 +114,30 @@ function LabLogin() {
             </p>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
               <label 
-                htmlFor="username" 
+                htmlFor="email" 
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Username
+                Email
               </label>
               <input
-                type="text"
-                id="username"
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200"
-                placeholder="Jonathan_Reichert07"
+                placeholder="lab@kletech.ac.in"
+                required
               />
             </div>
 
@@ -74,8 +151,11 @@ function LabLogin() {
               <input
                 type="password"
                 id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200"
                 placeholder="••••••••••"
+                required
               />
             </div>
 
@@ -90,11 +170,35 @@ function LabLogin() {
 
             <button
               type="submit"
-              className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3.5 transition-all duration-200 hover:shadow-lg active:scale-[0.98]"
+              disabled={loading}
+              className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3.5 transition-all duration-200 hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          {/* Google Sign-In Button */}
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              theme="outline"
+              size="large"
+              text="continue_with"
+              shape="rectangular"
+              width="384"
+            />
+          </div>
 
           {/* Footer */}
           <div className="text-center mt-6">

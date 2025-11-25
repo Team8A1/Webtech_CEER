@@ -1,0 +1,72 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const connectDB = require('./config/database');
+
+// Import routes
+const studentAuthRoutes = require('./routes/studentAuthRoutes');
+const studentRegisterRoutes = require('./routes/studentRegisterRoutes');
+const facultyAuthRoutes = require('./routes/facultyAuthRoutes');
+const labInchargeAuthRoutes = require('./routes/labInchargeAuthRoutes');
+const facultyRegisterRoutes = require('./routes/facultyRegisterRoutes');
+const labInchargeRegisterRoutes = require('./routes/labInchargeRegisterRoutes');
+
+// Initialize express app
+const app = express();
+
+// Connect to MongoDB
+connectDB();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api/student/auth', studentAuthRoutes);
+app.use('/api/student', studentRegisterRoutes);
+app.use('/api/faculty/auth', facultyAuthRoutes);
+app.use('/api/faculty', facultyRegisterRoutes);
+app.use('/api/lab/auth', labInchargeAuthRoutes);
+app.use('/api/lab', labInchargeRegisterRoutes);
+
+// Serve test HTML file
+app.get('/test', (req, res) => {
+  res.sendFile(__dirname + '/test-google-auth.html');
+});
+
+// Health check route
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  console.log(`404 Not Found: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({
+    success: false,
+    message: 'Route not found',
+  });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Global error handler:', err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+  });
+});
+
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+module.exports = app;

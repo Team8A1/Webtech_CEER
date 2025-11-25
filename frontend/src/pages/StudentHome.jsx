@@ -2,6 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 function StudentHome() {
   const navigate = useNavigate()
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    navigate('/login/student')
+  }
+
   // carbon image used only for the Carbon card
   const carbonCardImage = new URL('../../images/carbon footprint.jpg', import.meta.url).href
   // embodied energy image used only for the Embodied Energy card
@@ -50,10 +57,15 @@ function StudentHome() {
   const [teams, setTeams] = useState([])
 
   useEffect(() => {
-    // Refresh teams on component mount to show newly created teams
+    const token = localStorage.getItem('token')
+    if (!token) {
+      navigate('/login/student')
+      return
+    }
+    
     const stored = JSON.parse(localStorage.getItem('teams') || '[]')
     setTeams(stored)
-  }, [])
+  }, [navigate])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
@@ -67,16 +79,13 @@ function StudentHome() {
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate('/login/student')}
-              className="px-4 py-2 bg-white text-slate-900 rounded-lg font-semibold hover:bg-slate-100 transition-colors"
+              onClick={handleLogout}
+              className="px-5 py-2.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors shadow-lg hover:shadow-xl flex items-center gap-2"
             >
-              Back to Login
-            </button>
-            <button
-              onClick={() => navigate('/login')}
-              className="px-4 py-2 border border-white text-white rounded-lg font-medium hover:bg-white/10 transition-colors"
-            >
-              Back to Roles
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Logout
             </button>
           </div>
         </div>

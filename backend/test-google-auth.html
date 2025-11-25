@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Auth Token Tester</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <h1>Google Authentication Token Tester</h1>
+    <p>Click the button below to sign in with Google and get your ID token for Postman testing.</p>
+    
+    <div id="g_id_onload"
+         data-client_id="319039677290-1b2602pvalir1l5a2ehqfg5m4l519n4o.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse">
+    </div>
+    <div class="g_id_signin" data-type="standard"></div>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; background: #f0f0f0; display: none;">
+        <h3>Your Google ID Token:</h3>
+        <textarea id="token" readonly style="width: 100%; height: 150px; font-family: monospace; font-size: 11px;"></textarea>
+        <button onclick="copyToken()">Copy Token</button>
+        <button onclick="testAPI()">Test API Directly</button>
+        <div id="apiResult" style="margin-top: 10px; padding: 10px; background: white;"></div>
+    </div>
+
+    <script>
+        let currentToken = '';
+
+        function handleCredentialResponse(response) {
+            currentToken = response.credential;
+            document.getElementById('token').value = response.credential;
+            document.getElementById('result').style.display = 'block';
+            console.log('ID Token:', response.credential);
+        }
+
+        function copyToken() {
+            const tokenElement = document.getElementById('token');
+            tokenElement.select();
+            document.execCommand('copy');
+            alert('Token copied to clipboard! Paste it in Postman.');
+        }
+
+        async function testAPI() {
+            const apiResult = document.getElementById('apiResult');
+            apiResult.innerHTML = '<p>Testing API...</p>';
+
+            try {
+                const response = await fetch('http://localhost:5000/api/student/auth/google', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        idToken: currentToken
+                    })
+                });
+
+                const data = await response.json();
+                apiResult.innerHTML = `
+                    <h4>Response (Status: ${response.status}):</h4>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                apiResult.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
