@@ -21,20 +21,27 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+  next();
+});
 
 // Routes
 app.use('/api/student/auth', studentAuthRoutes);
 app.use('/api/student', studentRegisterRoutes);
 app.use('/api/faculty/auth', facultyAuthRoutes);
+app.use('/api/faculty', facultyRegisterRoutes);
 app.use('/api/faculty', facultyRoutes);
 app.use('/api/lab/auth', labInchargeAuthRoutes);
+app.use('/api/lab', labInchargeRegisterRoutes);
 app.use('/api/lab', labRoutes);
 
 // Serve test HTML file

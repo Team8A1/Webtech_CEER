@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google'
 import { useAuth } from '../hooks/useAuth';
+import BackToLoginButton from '../components/BackToLoginButton';
 import api from '../utils/api';
 
 function LabLogin() {
@@ -23,8 +24,8 @@ function LabLogin() {
     setLoading(true)
 
     try {
-      const response = await api.post('/lab/login', { email, password });
-      login(response.data.token, response.data.user);
+      const response = await api.post('/lab/auth/login', { email, password });
+      login(response.data.data.token, response.data.data.user);
       navigate('/lab/approve');
     } catch (error) {
       setError('Login failed. Please try again.')
@@ -39,10 +40,10 @@ function LabLogin() {
     setLoading(true)
 
     try {
-      const response = await api.post('/lab/google-login', {
-        credential: credentialResponse.credential
+      const response = await api.post('/lab/auth/google', {
+        idToken: credentialResponse.credential
       });
-      login(response.data.token, response.data.user);
+      login(response.data.data.token, response.data.data.user);
       navigate('/lab/approve');
     } catch (error) {
       setError('Google login failed. Please try again.')
@@ -58,15 +59,16 @@ function LabLogin() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-between p-20 relative">
+      <BackToLoginButton />
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src="/images/college.png" 
-          alt="Campus Background" 
+        <img
+          src="/images/college.png"
+          alt="Campus Background"
           className="w-full h-full object-cover opacity-20"
         />
       </div>
-      
+
       {/* Left Side - Login Form */}
       <div className="w-full max-w-sm relative z-10">
         <div className="bg-white p-6 shadow-lg">
@@ -99,8 +101,8 @@ function LabLogin() {
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label 
-                htmlFor="email" 
+              <label
+                htmlFor="email"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Email
@@ -117,8 +119,8 @@ function LabLogin() {
             </div>
 
             <div>
-              <label 
-                htmlFor="password" 
+              <label
+                htmlFor="password"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Password
@@ -135,8 +137,8 @@ function LabLogin() {
             </div>
 
             <div className="text-right">
-              <a 
-                href="#" 
+              <a
+                href="#"
                 className="text-sm font-medium text-gray-900 hover:text-gray-700 underline underline-offset-2 transition-colors duration-200"
               >
                 Forgot password?
@@ -178,8 +180,8 @@ function LabLogin() {
           {/* Footer */}
           <div className="text-center mt-6">
             <span className="text-sm text-gray-600">Are you new? </span>
-            <a 
-              href="#" 
+            <a
+              href="#"
               className="text-sm font-medium text-gray-900 hover:text-gray-700 underline underline-offset-2 transition-colors duration-200"
             >
               Create an Account

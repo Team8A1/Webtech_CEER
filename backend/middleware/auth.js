@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const auth = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies?.token;
-    
+
     if (!token) {
       return res.status(401).json({ error: 'Authentication required' });
     }
@@ -24,7 +24,7 @@ const facultyOnly = (req, res, next) => {
 };
 
 const labInchargeOnly = (req, res, next) => {
-  if (req.user.role !== 'labincharge') {
+  if (req.user.role !== 'labIncharge') {
     return res.status(403).json({ error: 'Access denied. Lab-Incharge only.' });
   }
   next();

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google'
+import BackToLoginButton from '../components/BackToLoginButton'
 
 function StudentLogin() {
   const [isVisible, setIsVisible] = useState(false)
@@ -86,15 +87,16 @@ function StudentLogin() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-between p-20 relative">
+      <BackToLoginButton />
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src="/images/college.png" 
-          alt="Campus Background" 
+        <img
+          src="/images/college.png"
+          alt="Campus Background"
           className="w-full h-full object-cover opacity-20"
         />
       </div>
-      
+
       {/* Left Side - Login Form */}
       <div className="w-full max-w-sm relative z-10">
         <div className="bg-white p-6 shadow-lg">
@@ -127,8 +129,8 @@ function StudentLogin() {
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label 
-                htmlFor="email" 
+              <label
+                htmlFor="email"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Email
@@ -145,8 +147,8 @@ function StudentLogin() {
             </div>
 
             <div>
-              <label 
-                htmlFor="password" 
+              <label
+                htmlFor="password"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Password
@@ -163,8 +165,8 @@ function StudentLogin() {
             </div>
 
             <div className="text-right">
-              <a 
-                href="#" 
+              <a
+                href="#"
                 className="text-sm font-medium text-gray-900 hover:text-gray-700 underline underline-offset-2 transition-colors duration-200"
               >
                 Forgot password?
@@ -207,8 +209,8 @@ function StudentLogin() {
           {/* Footer */}
           <div className="text-center mt-6">
             <span className="text-sm text-gray-600">Are you new? </span>
-            <a 
-              href="#" 
+            <a
+              href="#"
               className="text-sm font-medium text-gray-900 hover:text-gray-700 underline underline-offset-2 transition-colors duration-200"
             >
               Create an Account

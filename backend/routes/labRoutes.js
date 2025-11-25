@@ -1,11 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const { auth, labInchargeOnly } = require('../middleware/auth');
-const { labLogin, labGoogleLogin, labLogout } = require('../controllers/labAuthController');
-
-router.post('/login', labLogin);
-router.post('/google-login', labGoogleLogin);
-router.post('/logout', auth, labInchargeOnly, labLogout);
 
 router.get('/dashboard', auth, labInchargeOnly, (req, res) => {
   res.json({ message: 'Lab Dashboard', user: req.user });

@@ -56,7 +56,7 @@ const loginWithPassword = async (req, res) => {
 
     await LabIncharge.findByIdAndUpdate(labIncharge._id, { lastLogin: new Date() });
 
-    const token = generateToken({ id: labIncharge._id, email: labIncharge.email, role: 'lab' });
+    const token = generateToken({ id: labIncharge._id, email: labIncharge.email, role: 'labIncharge' });
 
     return res.status(200).json({
       success: true,
@@ -67,7 +67,7 @@ const loginWithPassword = async (req, res) => {
           id: labIncharge._id,
           email: labIncharge.email,
           name: labIncharge.name,
-          role: 'lab',
+          role: 'labIncharge',
           profilePicture: labIncharge.profilePicture,
           labName: labIncharge.labName,
           lastLogin: new Date(),
@@ -157,7 +157,7 @@ const googleAuth = async (req, res) => {
 
     labIncharge = await LabIncharge.findByIdAndUpdate(labIncharge._id, updateFields, { new: true }).select('-__v');
 
-    const token = generateToken({ id: labIncharge._id, email: labIncharge.email, role: 'lab' });
+    const token = generateToken({ id: labIncharge._id, email: labIncharge.email, role: 'labIncharge' });
 
     return res.status(200).json({
       success: true,
@@ -168,7 +168,7 @@ const googleAuth = async (req, res) => {
           id: labIncharge._id,
           email: labIncharge.email,
           name: labIncharge.name,
-          role: 'lab',
+          role: 'labIncharge',
           profilePicture: labIncharge.profilePicture,
           labName: labIncharge.labName,
           lastLogin: labIncharge.lastLogin,

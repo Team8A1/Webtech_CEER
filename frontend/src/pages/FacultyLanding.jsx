@@ -4,6 +4,20 @@ import { useAuth } from '../hooks/useAuth';
 
 function FacultyLanding() {
   const navigate = useNavigate()
+  const { logout } = useAuth();
+
+  // Mock stats for now - replace with API call later
+  const [teamStats, setTeamStats] = useState({
+    total: 12,
+    inProgress: 5,
+    completed: 4,
+    pending: 3
+  });
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login/faculty');
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -52,8 +66,8 @@ function FacultyLanding() {
                   <span className="text-sm font-bold text-blue-600">{teamStats.total}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all" 
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all"
                     style={{ width: `${Math.min((teamStats.total / 10) * 100, 100)}%` }}
                   ></div>
                 </div>
@@ -66,7 +80,7 @@ function FacultyLanding() {
                   <span className="text-sm font-bold text-orange-600">{teamStats.inProgress}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-orange-500 h-2 rounded-full transition-all"
                     style={{ width: `${teamStats.total ? (teamStats.inProgress / teamStats.total) * 100 : 0}%` }}
                   ></div>
@@ -80,7 +94,7 @@ function FacultyLanding() {
                   <span className="text-sm font-bold text-green-600">{teamStats.completed}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-green-600 h-2 rounded-full transition-all"
                     style={{ width: `${teamStats.total ? (teamStats.completed / teamStats.total) * 100 : 0}%` }}
                   ></div>
@@ -94,7 +108,7 @@ function FacultyLanding() {
                   <span className="text-sm font-bold text-red-600">{teamStats.pending}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-red-500 h-2 rounded-full transition-all"
                     style={{ width: `${Math.min((teamStats.pending / 10) * 100, 100)}%` }}
                   ></div>

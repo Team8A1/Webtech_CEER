@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import ProtectedRoute from './components/ProtectedRoute'
 import RoleSelection from './pages/RoleSelection'
 import StudentLogin from './pages/StudentLogin'
 import AdminLogin from './pages/AdminLogin'
@@ -30,17 +31,61 @@ function App() {
         <Route path="/login/admin" element={<AdminLogin />} />
         <Route path="/login/faculty" element={<FacultyLogin />} />
         <Route path="/login/lab" element={<LabLogin />} />
-        <Route path="/faculty/approve" element={<FacultyApprove />} />
-        <Route path="/lab/approve" element={<LabApprove />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/student/landing" element={<StudentLanding />} />
-        <Route path="/student/dashboard" element={<StudentHome />} />
-        <Route path="/student/bom" element={<StudentBOMPage />} />
-        <Route path="/student/carbon" element={<StudentCarbonPage />} />
-        <Route path="/student/energy" element={<StudentEnergyPage />} />
-        <Route path="/faculty" element={<FacultyLanding />} />
-        <Route path="/faculty/teams" element={<FacultyTeamApproval />} />
-        <Route path="/faculty/team-create" element={<FacultyTeamCreate />} />
+        <Route path="/faculty/approve" element={
+          <ProtectedRoute allowedRoles={['faculty']}>
+            <FacultyApprove />
+          </ProtectedRoute>
+        } />
+        <Route path="/lab/approve" element={
+          <ProtectedRoute allowedRoles={['labIncharge']}>
+            <LabApprove />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/dashboard" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/student/landing" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <StudentLanding />
+          </ProtectedRoute>
+        } />
+        <Route path="/student/dashboard" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <StudentHome />
+          </ProtectedRoute>
+        } />
+        <Route path="/student/bom" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <StudentBOMPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/student/carbon" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <StudentCarbonPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/student/energy" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <StudentEnergyPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/faculty" element={
+          <ProtectedRoute allowedRoles={['faculty']}>
+            <FacultyLanding />
+          </ProtectedRoute>
+        } />
+        <Route path="/faculty/teams" element={
+          <ProtectedRoute allowedRoles={['faculty']}>
+            <FacultyTeamApproval />
+          </ProtectedRoute>
+        } />
+        <Route path="/faculty/team-create" element={
+          <ProtectedRoute allowedRoles={['faculty']}>
+            <FacultyTeamCreate />
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   )
