@@ -41,6 +41,10 @@ const facultySchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isApproved: {
+      type: Boolean,
+      default: true, // Changed from false to true - auto-approve all faculty
+    },
     lastLogin: {
       type: Date,
     },
@@ -62,7 +66,6 @@ facultySchema.pre('save', async function () {
     throw error; // Mongoose will handle this properly
   }
 });
-
 
 facultySchema.methods.comparePassword = async function (candidatePassword) {
   if (!this.password) {

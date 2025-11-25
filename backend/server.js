@@ -10,6 +10,8 @@ const facultyAuthRoutes = require('./routes/facultyAuthRoutes');
 const labInchargeAuthRoutes = require('./routes/labInchargeAuthRoutes');
 const facultyRegisterRoutes = require('./routes/facultyRegisterRoutes');
 const labInchargeRegisterRoutes = require('./routes/labInchargeRegisterRoutes');
+const facultyRoutes = require('./routes/facultyRoutes');
+const labRoutes = require('./routes/labRoutes');
 
 // Initialize express app
 const app = express();
@@ -18,7 +20,12 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -26,9 +33,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/student/auth', studentAuthRoutes);
 app.use('/api/student', studentRegisterRoutes);
 app.use('/api/faculty/auth', facultyAuthRoutes);
-app.use('/api/faculty', facultyRegisterRoutes);
+app.use('/api/faculty', facultyRoutes);
 app.use('/api/lab/auth', labInchargeAuthRoutes);
-app.use('/api/lab', labInchargeRegisterRoutes);
+app.use('/api/lab', labRoutes);
 
 // Serve test HTML file
 app.get('/test', (req, res) => {

@@ -1,13 +1,18 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth';
 
 function FacultyLanding() {
   const navigate = useNavigate()
+  const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    navigate('/login/faculty')
+  const handleLogout = async () => {
+    try {
+      await api.post('/faculty/logout');
+      logout('faculty');
+    } catch (error) {
+      logout('faculty');
+    }
   }
 
   return (

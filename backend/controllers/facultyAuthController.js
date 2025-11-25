@@ -1,208 +1,166 @@
+const Faculty = require('../models/Faculty');
+const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-const loginWithPassword = async (req, res) => {
+const facultyLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email and password are required',
-      });
+      return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    const allowedDomain = process.env.ALLOWED_EMAIL_DOMAIN || '@kletech.ac.in';
-    if (!email.endsWith(allowedDomain)) {
-      return res.status(403).json({
-        success: false,
-        message: `Access denied. Only ${allowedDomain} email addresses are allowed.`,
-      });
-    }
-
-    const faculty = await Faculty.findOne({ email: email.toLowerCase() }).select('+password');
-
+    // Find faculty by email
+    const faculty = await Faculty.findOne({ email });
     if (!faculty) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password',
-      });
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    if (!faculty.password) {
-      return res.status(401).json({
-        success: false,
-        message: 'Please use Google Sign-In for this account',
-      });
+    // Check if password matches
+    const isMatch = await faculty.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const isPasswordValid = await faculty.comparePassword(password);
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password',
-      });
+    // Check if faculty is approved
+    if (!faculty.isApproved) {
+      return res.status(403).json({ message: 'Your account is pending approval' });
     }
 
-    if (!faculty.isActive) {
-      return res.status(403).json({
-        success: false,
-        message: 'Your account has been deactivated. Please contact administrator.',
-      });
-    }
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: faculty._id, email: faculty.email, role: 'faculty' },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
-    await Faculty.findByIdAndUpdate(faculty._id, { lastLogin: new Date() });
-
-    const token = generateToken({ id: faculty._id, email: faculty.email, role: 'faculty' });
-
-    return res.status(200).json({
-      success: true,
-      message: 'Authentication successful',
-      data: {
-        token: token,
-        user: {
-          id: faculty._id,
-          email: faculty.email,
-          name: faculty.name,
-          role: 'faculty',
-          profilePicture: faculty.profilePicture,
-          department: faculty.department,
-          designation: faculty.designation,
-          lastLogin: new Date(),
-        },
-      },
+    res.json({
+      token,
+      user: {
+        id: faculty._id,
+        name: faculty.name,
+        email: faculty.email,
+        department: faculty.department,
+        role: 'faculty'
+      }
     });
   } catch (error) {
-    console.error('Faculty Login Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error during authentication',
-      error: error.message,
-    });
+    console.error('Faculty login error:', error);
+    res.status(500).json({ message: 'Server error during login' });
   }
 };
 
-const googleAuth = async (req, res) => {
+const facultyGoogleLogin = async (req, res) => {
   try {
-    const { idToken } = req.body;
+    const { credential } = req.body;
 
-    if (!idToken) {
-      return res.status(400).json({
-        success: false,
-        message: 'Google ID token is required',
-      });
+    console.log('Google login attempt:', { hasCredential: !!credential });
+
+    if (!credential) {
+      return res.status(400).json({ message: 'Google credential is required' });
     }
 
-    let ticket;
-    try {
-      ticket = await client.verifyIdToken({
-        idToken: idToken,
-        audience: process.env.GOOGLE_CLIENT_ID,
-      });
-    } catch (error) {
-      console.error('Google token verification failed:', error);
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid Google ID token',
-        error: error.message,
-      });
+    // Check if GOOGLE_CLIENT_ID is configured
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      console.error('GOOGLE_CLIENT_ID is not configured in environment variables');
+      return res.status(500).json({ message: 'Google authentication is not configured' });
     }
+
+    // Verify Google token
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
 
     const payload = ticket.getPayload();
-    const { sub: googleId, email, name, picture } = payload;
+    const email = payload.email;
+    const name = payload.name;
+    const googleId = payload.sub;
 
-    const allowedDomain = process.env.ALLOWED_EMAIL_DOMAIN || '@kletech.ac.in';
-    if (!email.endsWith(allowedDomain)) {
-      return res.status(403).json({
-        success: false,
-        message: `Access denied. Only users with ${allowedDomain} email addresses are allowed.`,
-        providedEmail: email,
-      });
-    }
+    console.log('Google auth successful for:', email);
 
-    let faculty = await Faculty.findOne({ email: email.toLowerCase() });
+    // Find or create faculty
+    let faculty = await Faculty.findOne({ email });
 
     if (!faculty) {
-      return res.status(404).json({
-        success: false,
-        message: 'Faculty not registered. Please contact administrator to register your email.',
-        email: email,
+      // Create new faculty with Google auth
+      faculty = new Faculty({
+        name,
+        email,
+        googleId,
+        isApproved: false, // New faculty needs approval
+        department: 'Not Specified' // Can be updated later
+      });
+      await faculty.save();
+
+      return res.status(403).json({ 
+        message: 'Account created. Please wait for admin approval.',
+        needsApproval: true 
       });
     }
 
-    if (!faculty.isActive) {
-      return res.status(403).json({
-        success: false,
-        message: 'Your account has been deactivated. Please contact administrator.',
-      });
+    // Check if faculty is approved
+    if (!faculty.isApproved) {
+      return res.status(403).json({ message: 'Your account is pending approval' });
     }
 
-    let updateFields = {
-      lastLogin: new Date(),
-    };
-
+    // Update googleId if not set
     if (!faculty.googleId) {
-      updateFields.googleId = googleId;
+      faculty.googleId = googleId;
+      await faculty.save();
     }
 
-    if (!faculty.profilePicture && picture) {
-      updateFields.profilePicture = picture;
-    }
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: faculty._id, email: faculty.email, role: 'faculty' },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
-    if (faculty.name !== name) {
-      updateFields.name = name;
-    }
-
-    faculty = await Faculty.findByIdAndUpdate(faculty._id, updateFields, { new: true }).select('-__v');
-
-    const token = generateToken({ id: faculty._id, email: faculty.email, role: 'faculty' });
-
-    return res.status(200).json({
-      success: true,
-      message: 'Authentication successful',
-      data: {
-        token: token,
-        user: {
-          id: faculty._id,
-          email: faculty.email,
-          name: faculty.name,
-          role: 'faculty',
-          profilePicture: faculty.profilePicture,
-          department: faculty.department,
-          designation: faculty.designation,
-          lastLogin: faculty.lastLogin,
-        },
-      },
+    res.json({
+      token,
+      user: {
+        id: faculty._id,
+        name: faculty.name,
+        email: faculty.email,
+        department: faculty.department,
+        role: 'faculty'
+      }
     });
   } catch (error) {
-    console.error('Faculty Google Auth Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error during authentication',
-      error: error.message,
+    console.error('Faculty Google login error:', error);
+    
+    // Provide more specific error messages
+    if (error.message && error.message.includes('Invalid token')) {
+      return res.status(401).json({ message: 'Invalid Google token. Please try again.' });
+    }
+    
+    if (error.message && error.message.includes('Token used too late')) {
+      return res.status(401).json({ message: 'Google token expired. Please try again.' });
+    }
+
+    res.status(500).json({ 
+      message: 'Server error during Google login',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
 
-const logout = async (req, res) => {
+const facultyLogout = async (req, res) => {
   try {
-    return res.status(200).json({
-      success: true,
-      message: 'Logout successful',
-    });
+    // In a stateless JWT system, logout is handled client-side
+    // But we can add token to a blacklist if needed in the future
+    res.json({ message: 'Logged out successfully' });
   } catch (error) {
-    console.error('Logout Error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error during logout',
-      error: error.message,
-    });
+    console.error('Faculty logout error:', error);
+    res.status(500).json({ message: 'Server error during logout' });
   }
 };
 
 module.exports = {
-  loginWithPassword,
-  googleAuth,
-  logout,
+  facultyLogin,
+  facultyGoogleLogin,
+  facultyLogout
 };

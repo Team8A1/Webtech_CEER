@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google'
 import { useAuth } from '../hooks/useAuth';
 import api from '../utils/api';
 
-function LabLogin() {
+function FacultyLogin() {
   const [isVisible, setIsVisible] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -23,9 +23,9 @@ function LabLogin() {
     setLoading(true)
 
     try {
-      const response = await api.post('/lab/login', { email, password });
+      const response = await api.post('/faculty/login', { email, password });
       login(response.data.token, response.data.user);
-      navigate('/lab/approve');
+      navigate('/faculty');
     } catch (error) {
       setError('Login failed. Please try again.')
       console.error('Login error:', error)
@@ -35,20 +35,35 @@ function LabLogin() {
   }
 
   const handleGoogleSuccess = async (credentialResponse) => {
-    setError('')
-    setLoading(true)
-
     try {
-      const response = await api.post('/lab/google-login', {
-        credential: credentialResponse.credential
+      const response = await api.post('/faculty/google-login', {
+        credential: credentialResponse.credential,
       });
-      login(response.data.token, response.data.user);
-      navigate('/lab/approve');
+
+      const { token, user } = response.data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      navigate('/faculty/dashboard');
     } catch (error) {
-      setError('Google login failed. Please try again.')
-      console.error('Google login error:', error)
-    } finally {
-      setLoading(false)
+      console.error('Google login error:', error);
+      
+      // Extract the error message from the server response
+      const errorMessage = error.response?.data?.message || 'Google login failed. Please try again.';
+      
+      // Check for specific error codes
+      if (error.response?.status === 403) {
+        setError('Access denied. Please ensure you are registered in the system.');
+      } else if (error.response?.data?.needsApproval) {
+        setError('Account created successfully! Please wait for admin approval before logging in.');
+      } else {
+        setError(errorMessage);
+      }
+      
+      console.log('Error details:', {
+        status: error.response?.status,
+        message: error.response?.data?.message,
+        data: error.response?.data
+      });
     }
   }
 
@@ -82,7 +97,7 @@ function LabLogin() {
           {/* Title */}
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900">
-              Lab Login
+              Faculty Login
             </h1>
             <p className="text-sm text-gray-600 mt-2">
               Please enter your details
@@ -111,7 +126,7 @@ function LabLogin() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200"
-                placeholder="lab@kletech.ac.in"
+                placeholder="faculty@kletech.ac.in"
                 required
               />
             </div>
@@ -193,10 +208,10 @@ function LabLogin() {
         <div className="space-y-8">
           <div className="space-y-4">
             <h2 className="text-5xl font-bold text-gray-900">
-              Lab<br />Management
+              Faculty<br />Portal
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed">
-              Oversee laboratory facilities, equipment, and student activities.
+              Manage your courses, students, and academic activities efficiently.
             </p>
             <p className="text-sm text-gray-500 tracking-wider">
               CENTER FOR ENGINEERING EDUCATION RESEARCH
@@ -205,38 +220,38 @@ function LabLogin() {
 
           <div className="space-y-4">
             <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 bg-gray-900 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Lab Scheduling</h3>
-                <p className="text-sm text-gray-600">Manage lab sessions and bookings</p>
+                <h3 className="font-semibold text-gray-900 mb-1">Course Management</h3>
+                <p className="text-sm text-gray-600">Create and manage course content and schedules</p>
               </div>
             </div>
 
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Equipment Tracking</h3>
-                <p className="text-sm text-gray-600">Monitor and maintain lab equipment inventory</p>
+                <h3 className="font-semibold text-gray-900 mb-1">Grade Students</h3>
+                <p className="text-sm text-gray-600">Evaluate and grade student submissions</p>
               </div>
             </div>
 
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Safety Protocols</h3>
-                <p className="text-sm text-gray-600">Ensure compliance with safety standards</p>
+                <h3 className="font-semibold text-gray-900 mb-1">Schedule Classes</h3>
+                <p className="text-sm text-gray-600">Organize and view your teaching schedule</p>
               </div>
             </div>
           </div>
@@ -246,4 +261,4 @@ function LabLogin() {
   )
 }
 
-export default LabLogin
+export default FacultyLogin

@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth';
 
 function LabApprove() {
   const [boms, setBoms] = useState([])
   const navigate = useNavigate()
+  const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    navigate('/login/lab')
+  const handleLogout = async () => {
+    try {
+      await api.post('/lab/logout');
+      logout('lab');
+    } catch (error) {
+      logout('lab');
+    }
   }
 
   useEffect(() => {
