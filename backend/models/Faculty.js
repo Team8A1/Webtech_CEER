@@ -48,6 +48,10 @@ const facultySchema = new mongoose.Schema(
     lastLogin: {
       type: Date,
     },
+    role: {
+      type: String,
+      default: 'faculty',
+    },
   },
   {
     timestamps: true,

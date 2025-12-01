@@ -12,6 +12,7 @@ const facultyRegisterRoutes = require('./routes/facultyRegisterRoutes');
 const labInchargeRegisterRoutes = require('./routes/labInchargeRegisterRoutes');
 const facultyRoutes = require('./routes/facultyRoutes');
 const labRoutes = require('./routes/labRoutes');
+const teamRoutes = require('./routes/teamRoutes');
 
 // Initialize express app
 const app = express();
@@ -43,6 +44,7 @@ app.use('/api/faculty', facultyRoutes);
 app.use('/api/lab/auth', labInchargeAuthRoutes);
 app.use('/api/lab', labInchargeRegisterRoutes);
 app.use('/api/lab', labRoutes);
+app.use('/api', teamRoutes);
 
 // Serve test HTML file
 app.get('/test', (req, res) => {

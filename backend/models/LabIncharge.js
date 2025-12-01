@@ -40,6 +40,10 @@ const labInchargeSchema = new mongoose.Schema(
     lastLogin: {
       type: Date,
     },
+    role: {
+      type: String,
+      default: 'labIncharge',
+    },
   },
   {
     timestamps: true,

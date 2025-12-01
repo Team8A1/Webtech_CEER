@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
+
 function StudentHome() {
   const navigate = useNavigate()
+  const [team, setTeam] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -54,18 +58,31 @@ function StudentHome() {
     }
   ]
 
-  const [teams, setTeams] = useState([])
-
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) {
       navigate('/login/student')
       return
     }
-    
-    const stored = JSON.parse(localStorage.getItem('teams') || '[]')
-    setTeams(stored)
+
+    fetchTeamDetails()
   }, [navigate])
+
+  const fetchTeamDetails = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await axios.get('http://localhost:5000/api/student/team/details', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (response.data.success) {
+        setTeam(response.data.team)
+      }
+    } catch (error) {
+      console.error('Error fetching team details:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
@@ -99,11 +116,11 @@ function StudentHome() {
             const hasImage = Boolean(card.image)
             const style = hasImage
               ? {
-                  backgroundImage: `linear-gradient(rgba(2,6,23,0.62), rgba(2,6,23,0.38)), url('${card.image}')`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat'
-                }
+                backgroundImage: `linear-gradient(rgba(2,6,23,0.62), rgba(2,6,23,0.38)), url('${card.image}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }
               : undefined
 
             const containerClasses = hasImage ? baseClasses : `${baseClasses} bg-gradient-to-br ${card.color}`
@@ -126,40 +143,45 @@ function StudentHome() {
         </div>
       </div>
 
-      {/* Teams created (visible after guide creates team) */}
+      {/* Team Details Section */}
       <div className="max-w-7xl mx-auto px-6 pb-12">
-        <h2 className="text-3xl font-bold text-slate-900 mb-6">Your Teams</h2>
-        {teams.length === 0 ? (
+        <h2 className="text-3xl font-bold text-slate-900 mb-6">Your Team</h2>
+        {loading ? (
+          <div className="p-8 text-center text-gray-500">Loading team details...</div>
+        ) : !team ? (
           <div className="bg-white/60 backdrop-blur rounded-lg p-12 text-center border border-slate-200">
-            <p className="text-slate-600 text-lg">No teams created yet. Teams will appear here once they are created.</p>
+            <p className="text-slate-600 text-lg">You are not assigned to any team yet.</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 gap-6">
-            {teams.map(t => (
-              <div key={t.id} className="bg-white/80 backdrop-blur border border-slate-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 group">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{t.projectTitle}</h3>
-                    <p className="text-sm text-slate-600 mt-1">Guide: <span className="font-semibold text-slate-700">{t.guideName}</span></p>
-                  </div>
-                  
-                  <div className="border-t border-slate-200 pt-4">
-                    <p className="text-sm font-semibold text-slate-700 mb-3">Team Members ({t.members?.length || 0})</p>
-                    <div className="space-y-2">
-                      {t.members?.map((m, idx) => (
-                        <div key={idx} className="flex items-center gap-3 p-2 bg-slate-50 rounded-lg">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold">{idx + 1}</div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-900">{m.name}</p>
-                            <p className="text-xs text-slate-500">{m.usn} • {m.div}</p>
-                          </div>
-                        </div>
-                      ))}
+          <div className="bg-white/80 backdrop-blur border border-slate-200 rounded-xl shadow-lg p-8">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900">{team.problemStatement}</h3>
+                <p className="text-sm text-slate-500 mt-1">Team ID: {team._id}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-slate-600">Guide</p>
+                <p className="font-semibold text-slate-900">{team.guide?.name}</p>
+                <p className="text-xs text-slate-500">{team.guide?.email}</p>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 pt-6">
+              <h4 className="text-lg font-semibold text-slate-800 mb-4">Team Members</h4>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {team.members?.map((member, idx) => (
+                  <div key={member._id} className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border border-slate-100">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm">
+                      {member.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-900">{member.name}</p>
+                      <p className="text-xs text-slate-500">{member.email}</p>
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         )}
       </div>

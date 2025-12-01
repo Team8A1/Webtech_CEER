@@ -1,5 +1,7 @@
 const { verifyToken } = require('../utils/tokenUtils');
 const User = require('../models/User');
+const Faculty = require('../models/Faculty');
+const LabIncharge = require('../models/LabIncharge');
 
 /**
  * Middleware to protect routes - verify JWT token
@@ -16,8 +18,26 @@ const protect = async (req, res, next) => {
       // Verify token
       const decoded = verifyToken(token);
 
-      // Get user from database (exclude password if you have one)
-      req.user = await User.findById(decoded.id).select('-__v');
+      // Get user based on role
+      let user;
+      if (decoded.role === 'faculty') {
+        user = await Faculty.findById(decoded.id).select('-password');
+      } else if (decoded.role === 'labIncharge') {
+        user = await LabIncharge.findById(decoded.id).select('-password');
+      } else {
+        // Default to student/user or try to find in all collections if role is missing
+        user = await User.findById(decoded.id).select('-password');
+        if (!user) {
+          user = await Faculty.findById(decoded.id).select('-password');
+          if (user) user.role = 'faculty';
+        }
+        if (!user) {
+          user = await LabIncharge.findById(decoded.id).select('-password');
+          if (user) user.role = 'labIncharge';
+        }
+      }
+
+      req.user = user;
 
       if (!req.user) {
         return res.status(401).json({
@@ -63,7 +83,7 @@ const authorize = (...roles) => {
         message: 'Not authorized, no user found',
       });
     }
-    
+
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,

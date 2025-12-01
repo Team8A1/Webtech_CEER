@@ -1,18 +1,33 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth';
+import axios from 'axios';
 
 function FacultyLanding() {
   const navigate = useNavigate()
   const { logout } = useAuth();
+  const [teams, setTeams] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock stats for now - replace with API call later
-  const [teamStats, setTeamStats] = useState({
-    total: 12,
-    inProgress: 5,
-    completed: 4,
-    pending: 3
-  });
+  useEffect(() => {
+    fetchTeams();
+  }, []);
+
+  const fetchTeams = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/faculty/team/list', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data.success) {
+        setTeams(response.data.teams);
+      }
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -41,7 +56,7 @@ function FacultyLanding() {
       </section>
 
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-8 mb-12">
           <button
             onClick={() => navigate('/faculty/approve')}
             className="bg-white p-8 rounded-lg shadow-lg text-left hover:shadow-xl transition">
@@ -57,65 +72,55 @@ function FacultyLanding() {
           </button>
 
           <div className="bg-white p-8 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold mb-4">Team Progress</h3>
-            <div className="space-y-4">
-              {/* Total Teams */}
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm font-semibold text-gray-700">Total Teams</span>
-                  <span className="text-sm font-bold text-blue-600">{teamStats.total}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all"
-                    style={{ width: `${Math.min((teamStats.total / 10) * 100, 100)}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* In Progress */}
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm font-semibold text-gray-700">In Progress</span>
-                  <span className="text-sm font-bold text-orange-600">{teamStats.inProgress}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-orange-500 h-2 rounded-full transition-all"
-                    style={{ width: `${teamStats.total ? (teamStats.inProgress / teamStats.total) * 100 : 0}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Completed */}
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm font-semibold text-gray-700">Completed</span>
-                  <span className="text-sm font-bold text-green-600">{teamStats.completed}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-green-600 h-2 rounded-full transition-all"
-                    style={{ width: `${teamStats.total ? (teamStats.completed / teamStats.total) * 100 : 0}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Pending Approval */}
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm font-semibold text-gray-700">Pending Approval</span>
-                  <span className="text-sm font-bold text-red-600">{teamStats.pending}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-red-500 h-2 rounded-full transition-all"
-                    style={{ width: `${Math.min((teamStats.pending / 10) * 100, 100)}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
+            <h3 className="text-xl font-bold mb-4">Team Overview</h3>
+            <div className="text-4xl font-bold text-blue-600">{teams.length}</div>
+            <p className="text-sm text-gray-500 mt-1">Total Teams Created</p>
           </div>
+        </div>
+
+        {/* Teams List Section */}
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h3 className="text-lg font-bold text-gray-800">My Teams</h3>
+          </div>
+
+          {loading ? (
+            <div className="p-8 text-center text-gray-500">Loading teams...</div>
+          ) : teams.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              No teams created yet. Click "Create Team" to get started.
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200">
+              {teams.map((team) => (
+                <div key={team._id} className="p-6 hover:bg-gray-50 transition">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h4 className="text-lg font-bold text-gray-900">{team.problemStatement}</h4>
+                      <p className="text-sm text-gray-500">Created on {new Date(team.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
+                      {team.members.length} Members
+                    </span>
+                  </div>
+
+                  <div className="mt-4">
+                    <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Team Members</h5>
+                    <div className="flex flex-wrap gap-2">
+                      {team.members.map((member) => (
+                        <div key={member._id} className="flex items-center bg-gray-100 rounded-full px-3 py-1">
+                          <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold mr-2">
+                            {member.name.charAt(0)}
+                          </div>
+                          <span className="text-sm text-gray-700">{member.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
