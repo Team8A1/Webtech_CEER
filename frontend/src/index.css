@@ -1,10 +1,16 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
 @theme {
   --color-maroon-400: #e57373;
   --color-maroon-700: #8b1538;
   --color-maroon-800: #6d0f2a;
   --color-maroon-900: #4a0a1c;
 }
+
 html {
   scroll-behavior: smooth;
 }
+
+.font-serif { font-family: 'Playfair Display', serif; }
+.font-sans { font-family: 'Inter', sans-serif; }
