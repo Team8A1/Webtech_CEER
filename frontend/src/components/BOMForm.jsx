@@ -4,7 +4,7 @@ function BOMForm({ onSave, initial = null, onCancel }) {
   const [form, setForm] = useState({
     slNo: '',
     sprintNo: '',
-    date: '',
+    date: new Date().toISOString().split('T')[0],
     partName: '',
     consumableName: '',
     specification: '',
@@ -17,7 +17,7 @@ function BOMForm({ onSave, initial = null, onCancel }) {
       setForm({
         slNo: initial.slNo || '',
         sprintNo: initial.sprintNo || '',
-        date: initial.date ? initial.date.split('T')[0] : '',
+        date: initial.date ? initial.date.split('T')[0] : new Date().toISOString().split('T')[0],
         partName: initial.partName || '',
         consumableName: initial.consumableName || '',
         specification: initial.specification || '',
@@ -51,7 +51,7 @@ function BOMForm({ onSave, initial = null, onCancel }) {
     }
 
     // reset only when creating new
-    if (!initial) setForm({ slNo: '', sprintNo: '', date: '', partName: '', consumableName: '', specification: '', qty: '', notifyGuide: true })
+    if (!initial) setForm({ slNo: '', sprintNo: '', date: new Date().toISOString().split('T')[0], partName: '', consumableName: '', specification: '', qty: '', notifyGuide: true })
   }
 
   return (
