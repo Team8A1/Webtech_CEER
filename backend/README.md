@@ -113,7 +113,7 @@ import { GoogleLogin } from '@react-oauth/google';
 function LoginButton() {
   const handleSuccess = async (credentialResponse) => {
     try {
-      const response = await fetch('http://localhost:5000/api/student/auth/google', {
+      const response = await fetch('http://localhost:8000/api/student/auth/google', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

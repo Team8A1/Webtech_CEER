@@ -18,7 +18,7 @@ function FacultyTeamCreate() {
   const fetchAvailableStudents = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await axios.get('http://localhost:5000/api/faculty/team/students', {
+      const response = await axios.get('http://localhost:8000/api/faculty/team/students', {
         headers: { Authorization: `Bearer ${token}` }
       })
       if (response.data.success) {
@@ -65,7 +65,7 @@ function FacultyTeamCreate() {
     try {
       const token = localStorage.getItem('token')
       const response = await axios.post(
-        'http://localhost:5000/api/faculty/team/create',
+        'http://localhost:8000/api/faculty/team/create',
         {
           teamName: projectTitle, // Using project title as team name for now
           problemStatement: projectTitle,

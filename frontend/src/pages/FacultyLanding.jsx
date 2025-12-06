@@ -16,7 +16,7 @@ function FacultyLanding() {
   const fetchTeams = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/faculty/team/list', {
+      const response = await axios.get('http://localhost:8000/api/faculty/team/list', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {

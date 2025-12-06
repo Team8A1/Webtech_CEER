@@ -22,7 +22,7 @@ function StudentLogin() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:5000/api/student/auth/login', {
+      const response = await fetch('http://localhost:8000/api/student/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ function StudentLogin() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:5000/api/student/auth/google', {
+      const response = await fetch('http://localhost:8000/api/student/auth/google', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

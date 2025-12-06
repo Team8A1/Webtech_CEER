@@ -198,7 +198,7 @@ const StudentHome = () => {
     const fetchTeam = async () => {
       try {
         // 1. Try fetching from API first
-        const response = await axios.get('http://localhost:5000/api/student/team/details', {
+        const response = await axios.get('http://localhost:8000/api/student/team/details', {
           headers: { Authorization: `Bearer ${token}` }
         });
 

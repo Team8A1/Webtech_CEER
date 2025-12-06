@@ -6,7 +6,7 @@
 
 ```env
 # Server Configuration
-PORT=5000
+PORT=8000
 NODE_ENV=development
 
 # MongoDB Configuration
@@ -37,10 +37,10 @@ Replace `GOOGLE_CLIENT_ID` in the GoogleOAuthProvider with your actual Google Cl
    - Add authorized JavaScript origins:
      - `http://localhost:5173` (Vite dev server)
      - `http://127.0.0.1:5173`
-     - `http://localhost:5000` (Backend)
+     - `http://localhost:8000` (Backend)
    - Add authorized redirect URIs:
      - `http://localhost:5173`
-     - `http://localhost:5000`
+     - `http://localhost:8000`
 
 ## API Endpoints
 
