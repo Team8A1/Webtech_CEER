@@ -108,6 +108,7 @@ const labInchargeRegisterRoutes = require("./routes/labInchargeRegisterRoutes");
 const facultyRoutes = require("./routes/facultyRoutes");
 const labRoutes = require("./routes/labRoutes");
 const teamRoutes = require("./routes/teamRoutes");
+const bomRoutes = require("./routes/bomRoutes");
 
 // Initialize app
 const app = express();
@@ -173,6 +174,7 @@ app.use("/api/lab", labInchargeRegisterRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/lab", labRoutes);
 app.use("/api", teamRoutes);
+app.use("/api", bomRoutes);
 
 // -------------------------
 // Test Route

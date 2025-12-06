@@ -1,85 +1,126 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import BOMForm from '../components/BOMForm';
 
 function FacultyApprove() {
   const [boms, setBoms] = useState([])
-  const [filter, setFilter] = useState('pending') // pending, approved, all
+  const [filter, setFilter] = useState('pending') // pending, approved, all, rejected
   const navigate = useNavigate()
   const previousPendingCountRef = useRef(0)
-  const voicePlayedRef = useRef(false)
+  const [editingBOM, setEditingBOM] = useState(null)
 
-  const playNotificationSound = () => {
-    // Create a simple beep sound using Web Audio API
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)()
-    const oscillator = audioContext.createOscillator()
-    const gainNode = audioContext.createGain()
-    
-    oscillator.connect(gainNode)
-    gainNode.connect(audioContext.destination)
-    
-    oscillator.frequency.value = 800
-    oscillator.type = 'sine'
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5)
-    
-    oscillator.start(audioContext.currentTime)
-    oscillator.stop(audioContext.currentTime + 0.5)
+  const load = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:8000/api/faculty/bom/list', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data.success) {
+        setBoms(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error loading BOMs:', error);
+    }
   }
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('boms') || '[]')
-    const currentPendingCount = stored.filter(b => !b.guideApproved).length
-    
-    // Play gentle reminder voice only once if there are pending BOMs
-    if (currentPendingCount > 0 && !voicePlayedRef.current) {
-      const utterance = new SpeechSynthesisUtterance('Gentle reminder, please approve the request')
-      utterance.rate = 0.9
-      utterance.pitch = 1.5
-      const voices = window.speechSynthesis.getVoices()
-      const femaleVoice = voices.find(voice => voice.name.includes('Female') || voice.name.includes('woman') || voice.name.includes('female'))
-      if (femaleVoice) utterance.voice = femaleVoice
-      window.speechSynthesis.speak(utterance)
-      voicePlayedRef.current = true
-    }
-    
-    previousPendingCountRef.current = currentPendingCount
-    setBoms(stored)
+    load();
   }, [])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const stored = JSON.parse(localStorage.getItem('boms') || '[]')
-      const currentPendingCount = stored.filter(b => !b.guideApproved).length
-      
-      // Play sound if new pending BOMs appeared
-      if (currentPendingCount > previousPendingCountRef.current && currentPendingCount > 0) {
-        playNotificationSound()
+    const interval = setInterval(async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:8000/api/faculty/bom/list', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response.data.success) {
+          const fetchedBoms = response.data.data;
+          // Filter out rejected items from pending count
+          const currentPendingCount = fetchedBoms.filter(b => !b.guideApproved && b.status !== 'rejected').length;
+
+          // POPUP alert if new pending BOMs appear (no sound, no voice)
+          if (currentPendingCount > previousPendingCountRef.current && currentPendingCount > 0) {
+            alert("New BOM requests pending for your approval.");
+          }
+
+          previousPendingCountRef.current = currentPendingCount;
+          setBoms(fetchedBoms);
+        }
+      } catch (error) {
+        console.error("Error polling BOMs", error);
       }
-      
-      previousPendingCountRef.current = currentPendingCount
-      setBoms(stored)
-    }, 3000) // Check every 3 seconds
+    }, 3000);
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(interval);
+  }, []);
 
-  const approve = (id) => {
-    const stored = JSON.parse(localStorage.getItem('boms') || '[]')
-    const updated = stored.map(b => b.id === id ? { ...b, guideApproved: true, guideApprovedAt: new Date().toISOString() } : b)
-    localStorage.setItem('boms', JSON.stringify(updated))
-    setBoms(updated)
+  const approve = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch('http://localhost:8000/api/faculty/bom/update', {
+        id,
+        status: 'approved'
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      load(); // Reload to get updated status
+      alert('BOM Request Approved');
+    } catch (error) {
+      console.error('Error approving BOM:', error);
+      alert('Error approving request');
+    }
+  }
+
+  const handleReject = async (id) => {
+    if (!confirm('Are you sure you want to reject this request?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch('http://localhost:8000/api/faculty/bom/update', {
+        id,
+        status: 'rejected'
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      load();
+      alert('BOM Request Rejected');
+    } catch (error) {
+      console.error('Error rejecting BOM:', error);
+      alert('Error rejecting request');
+    }
+  }
+
+  const handleUpdate = async (bomData) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch('http://localhost:8000/api/faculty/bom/update', {
+        id: editingBOM._id || editingBOM.id,
+        ...bomData
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      load();
+      setEditingBOM(null);
+      alert('BOM Request Updated');
+    } catch (error) {
+      console.error('Error updating BOM:', error);
+      alert('Error updating request');
+    }
   }
 
   const getFilteredBOMs = () => {
-    if (filter === 'pending') return boms.filter(b => !b.guideApproved)
+    if (filter === 'pending') return boms.filter(b => !b.guideApproved && b.status !== 'rejected')
     if (filter === 'approved') return boms.filter(b => b.guideApproved)
+    if (filter === 'rejected') return boms.filter(b => b.status === 'rejected')
     return boms
   }
 
   const filteredBoms = getFilteredBOMs()
-  const pendingCount = boms.filter(b => !b.guideApproved).length
+  const pendingCount = boms.filter(b => !b.guideApproved && b.status !== 'rejected').length
   const approvedCount = boms.filter(b => b.guideApproved).length
+  const rejectedCount = boms.filter(b => b.status === 'rejected').length
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -100,7 +141,7 @@ function FacultyApprove() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <div className="bg-white bg-opacity-10 backdrop-blur rounded-lg p-4 border border-white border-opacity-20">
               <div className="text-3xl font-bold text-blue-300">{boms.length}</div>
               <div className="text-sm text-gray-800 font-semibold">Total BOMs</div>
@@ -113,6 +154,10 @@ function FacultyApprove() {
               <div className="text-3xl font-bold text-green-300">{approvedCount}</div>
               <div className="text-sm text-gray-800 font-semibold">Approved</div>
             </div>
+            <div className="bg-white bg-opacity-10 backdrop-blur rounded-lg p-4 border border-white border-opacity-20">
+              <div className="text-3xl font-bold text-red-300">{rejectedCount}</div>
+              <div className="text-sm text-gray-800 font-semibold">Rejected</div>
+            </div>
           </div>
         </div>
       </section>
@@ -123,31 +168,37 @@ function FacultyApprove() {
         <div className="flex gap-4 mb-8">
           <button
             onClick={() => setFilter('pending')}
-            className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-              filter === 'pending'
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
+            className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'pending'
+              ? 'bg-blue-600 text-white shadow-lg'
+              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
           >
             Pending ({pendingCount})
           </button>
           <button
             onClick={() => setFilter('approved')}
-            className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-              filter === 'approved'
-                ? 'bg-green-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
+            className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'approved'
+              ? 'bg-green-600 text-white shadow-lg'
+              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
           >
             Approved ({approvedCount})
           </button>
           <button
+            onClick={() => setFilter('rejected')}
+            className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'rejected'
+              ? 'bg-red-600 text-white shadow-lg'
+              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
+          >
+            Rejected ({rejectedCount})
+          </button>
+          <button
             onClick={() => setFilter('all')}
-            className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-              filter === 'all'
-                ? 'bg-indigo-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
+            className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'all'
+              ? 'bg-indigo-600 text-white shadow-lg'
+              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
           >
             All ({boms.length})
           </button>
@@ -166,12 +217,12 @@ function FacultyApprove() {
           <div className="grid gap-6">
             {filteredBoms.map((bom, idx) => (
               <div
-                key={bom.id}
+                key={bom._id || bom.id}
                 className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200 overflow-hidden"
               >
                 <div className="flex items-stretch">
                   {/* Left Status Indicator */}
-                  <div className={`w-1 ${bom.guideApproved ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                  <div className={`w-1 ${bom.guideApproved ? 'bg-green-500' : (bom.status === 'rejected' ? 'bg-red-500' : 'bg-yellow-500')}`}></div>
 
                   {/* Main Content */}
                   <div className="flex-1 p-6">
@@ -224,21 +275,19 @@ function FacultyApprove() {
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-semibold text-gray-600">Guide Approval:</span>
-                              <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                bom.guideApproved
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {bom.guideApproved ? '✓ Approved' : '⏳ Pending'}
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold ${bom.guideApproved
+                                ? 'bg-green-100 text-green-800'
+                                : (bom.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')
+                                }`}>
+                                {bom.guideApproved ? '✓ Approved' : (bom.status === 'rejected' ? '✗ Rejected' : '⏳ Pending')}
                               </span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-semibold text-gray-600">Lab Approval:</span>
-                              <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                bom.labApproved
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}>
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold ${bom.labApproved
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-yellow-100 text-yellow-800'
+                                }`}>
                                 {bom.labApproved ? '✓ Approved' : '⏳ Pending'}
                               </span>
                             </div>
@@ -250,20 +299,43 @@ function FacultyApprove() {
 
                   {/* Action Button */}
                   <div className="flex items-center px-6 py-4 border-l border-gray-200 bg-gray-50">
-                    {!bom.guideApproved ? (
-                      <button
-                        onClick={() => approve(bom.id)}
-                        className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
-                      >
-                        ✓ Approve
-                      </button>
+                    {!bom.guideApproved && bom.status !== 'rejected' ? (
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => approve(bom._id || bom.id)}
+                          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors shadow"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => setEditingBOM(bom)}
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors shadow"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleReject(bom._id || bom.id)}
+                          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors shadow"
+                        >
+                          Reject
+                        </button>
+                      </div>
                     ) : (
                       <div className="text-center">
-                        <div className="text-3xl mb-2">✓</div>
-                        <span className="text-xs font-semibold text-green-700">Approved</span>
-                        <div className="text-xs text-gray-600 mt-1">
-                          {new Date(bom.guideApprovedAt).toLocaleDateString()}
-                        </div>
+                        {bom.status === 'rejected' ? (
+                          <>
+                            <div className="text-3xl mb-2 text-red-600">✗</div>
+                            <span className="text-xs font-semibold text-red-700">Rejected</span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="text-3xl mb-2 text-green-600">✓</div>
+                            <span className="text-xs font-semibold text-green-700">Approved</span>
+                            <div className="text-xs text-gray-600 mt-1">
+                              {new Date(bom.guideApprovedAt).toLocaleDateString()}
+                            </div>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
@@ -273,6 +345,22 @@ function FacultyApprove() {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      {editingBOM && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-2xl font-bold mb-4">Edit BOM Request</h2>
+              <BOMForm
+                initial={editingBOM}
+                onSave={handleUpdate}
+                onCancel={() => setEditingBOM(null)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

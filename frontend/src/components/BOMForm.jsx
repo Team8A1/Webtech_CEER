@@ -8,7 +8,8 @@ function BOMForm({ onSave, initial = null, onCancel }) {
     partName: '',
     consumableName: '',
     specification: '',
-    qty: ''
+    qty: '',
+    notifyGuide: true
   })
 
   useEffect(() => {
@@ -20,21 +21,21 @@ function BOMForm({ onSave, initial = null, onCancel }) {
         partName: initial.partName || '',
         consumableName: initial.consumableName || '',
         specification: initial.specification || '',
-        qty: initial.qty || ''
+        qty: initial.qty || '',
+        notifyGuide: true
       })
     }
   }, [initial])
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setForm(prev => ({ ...prev, [name]: value }))
+    const { name, value, type, checked } = e.target
+    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    const bom = {
-      id: initial?.id || Date.now(),
+    const bomData = {
       slNo: form.slNo,
       sprintNo: form.sprintNo,
       date: form.date,
@@ -42,30 +43,15 @@ function BOMForm({ onSave, initial = null, onCancel }) {
       consumableName: form.consumableName,
       specification: form.specification,
       qty: Number(form.qty) || 0,
-      guideApproved: initial?.guideApproved || false,
-      labApproved: initial?.labApproved || false,
-      createdAt: initial?.createdAt || new Date().toISOString()
+      notifyGuide: form.notifyGuide
     }
 
-    // simple placeholder calculations
-    const carbonFootprint = Number(bom.qty) * 1.5
-    const embodiedEnergy = Number(bom.qty) * 2.3
-
-    // persist/update
-    const stored = JSON.parse(localStorage.getItem('boms') || '[]')
-    const idx = stored.findIndex(x => x.id === bom.id)
-    if (idx >= 0) stored[idx] = bom
-    else stored.push(bom)
-    localStorage.setItem('boms', JSON.stringify(stored))
-
-    const results = JSON.parse(localStorage.getItem('bomResults') || '{}')
-    results[bom.id] = { carbonFootprint, embodiedEnergy }
-    localStorage.setItem('bomResults', JSON.stringify(results))
-
-    if (onSave) onSave(bom)
+    if (onSave) {
+      onSave(bomData);
+    }
 
     // reset only when creating new
-    if (!initial) setForm({ slNo: '', sprintNo: '', date: '', partName: '', consumableName: '', specification: '', qty: '' })
+    if (!initial) setForm({ slNo: '', sprintNo: '', date: '', partName: '', consumableName: '', specification: '', qty: '', notifyGuide: true })
   }
 
   return (
@@ -78,6 +64,17 @@ function BOMForm({ onSave, initial = null, onCancel }) {
         <input name="consumableName" value={form.consumableName} onChange={handleChange} placeholder="Name of the Consumable" className="p-3 border rounded col-span-2" />
         <input name="specification" value={form.specification} onChange={handleChange} placeholder="Specification" className="p-3 border rounded col-span-2" />
         <input name="qty" type="number" value={form.qty} onChange={handleChange} placeholder="Qty" className="p-3 border rounded" />
+        <div className="col-span-2 flex items-center gap-2">
+          <input
+            type="checkbox"
+            name="notifyGuide"
+            id="notifyGuide"
+            checked={form.notifyGuide}
+            onChange={handleChange}
+            className="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500"
+          />
+          <label htmlFor="notifyGuide" className="text-sm text-gray-700">Notify Guide via Email</label>
+        </div>
       </div>
       <div className="flex justify-between items-center">
         <div className="text-sm text-gray-600">Fields are editable — press Save to apply</div>

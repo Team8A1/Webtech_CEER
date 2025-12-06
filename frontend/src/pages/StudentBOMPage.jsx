@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BOMForm from '../components/BOMForm'
+import axios from 'axios'
 import StudentNavbar from '../components/StudentNavbar'
 import StudentFooter from '../components/StudentFooter'
 import { ArrowLeft, FileText, Download, Trash2, Edit2 } from 'lucide-react'
@@ -10,10 +11,20 @@ function StudentBOMPage() {
   const [boms, setBoms] = useState([])
   const [editing, setEditing] = useState(null)
   const [user, setUser] = useState(null)
+  const [filter, setFilter] = useState('pending')
 
-  const load = () => {
-    const stored = JSON.parse(localStorage.getItem('boms') || '[]')
-    setBoms(stored)
+  const load = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:8000/api/student/request/bom', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data.success) {
+        setBoms(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error loading BOMs:', error);
+    }
   }
 
   useEffect(() => {
@@ -22,25 +33,52 @@ function StudentBOMPage() {
     setUser(storedUser);
   }, [])
 
-  const handleSave = (bom) => {
-    load()
-    setEditing(null)
+  const handleSave = async (bomData) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (editing) {
+        // Update existing BOM
+        await axios.put(`http://localhost:8000/api/student/request/bom/${editing._id || editing.id}`, bomData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        alert('BOM Request updated successfully!');
+      } else {
+        // Create new BOM
+        await axios.post('http://localhost:8000/api/student/request/bom', bomData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        alert('BOM Request sent successfully!');
+      }
+      load();
+      setEditing(null);
+    } catch (error) {
+      console.error('Error saving BOM:', error);
+      alert(error.response?.data?.message || 'Error saving BOM request');
+    }
   }
 
-  const handleDelete = (id) => {
-    const stored = JSON.parse(localStorage.getItem('boms') || '[]')
-    const filtered = stored.filter(b => b.id !== id)
-    localStorage.setItem('boms', JSON.stringify(filtered))
-    // remove results too
-    const results = JSON.parse(localStorage.getItem('bomResults') || '{}')
-    delete results[id]
-    localStorage.setItem('bomResults', JSON.stringify(results))
-    load()
+  const handleDelete = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:8000/api/student/request/bom/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('BOM Request deleted successfully');
+      load();
+    } catch (error) {
+      console.error('Error deleting BOM:', error);
+      alert(error.response?.data?.message || 'Error deleting BOM request');
+    }
   }
 
   const handleEdit = (bom) => {
-    setEditing(bom)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (bom.guideApproved) {
+      alert("Cannot edit request after guide approval.");
+      return;
+    }
+    setEditing(bom);
+    // Scroll to top to see form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   const downloadPDF = () => {
@@ -98,7 +136,12 @@ function StudentBOMPage() {
                 <td>${bom.consumableName}</td>
                 <td>${bom.specification}</td>
                 <td style="text-align: center;">${bom.qty}</td>
-                <td><span class="badge ${bom.guideApproved ? 'badge-approved' : 'badge-pending'}">${bom.guideApproved ? 'Approved' : 'Pending'}</span></td>
+                <td>
+                  ${bom.status === 'rejected'
+        ? '<span class="badge" style="background-color: #fee2e2; color: #991b1b;">Rejected</span>'
+        : `<span class="badge ${bom.guideApproved ? 'badge-approved' : 'badge-pending'}">${bom.guideApproved ? 'Approved' : 'Pending'}</span>`
+      }
+                </td>
                 <td><span class="badge ${bom.labApproved ? 'badge-approved' : 'badge-pending'}">${bom.labApproved ? 'Approved' : 'Pending'}</span></td>
               </tr>
             `).join('')}
@@ -118,6 +161,15 @@ function StudentBOMPage() {
       printWindow.close()
     }, 250)
   }
+
+  const getFilteredBOMs = () => {
+    if (filter === 'pending') return boms.filter(b => !b.guideApproved && b.status !== 'rejected')
+    if (filter === 'approved') return boms.filter(b => b.guideApproved)
+    if (filter === 'rejected') return boms.filter(b => b.status === 'rejected')
+    return boms
+  }
+
+  const filteredBoms = getFilteredBOMs()
 
   return (
     <div className="bg-white min-h-screen font-sans selection:bg-red-100 selection:text-red-900 flex flex-col">
@@ -172,26 +224,73 @@ function StudentBOMPage() {
 
             {/* Table Section */}
             <div className="lg:col-span-8">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-serif text-stone-900">Inventory List</h2>
-                {boms.length > 0 && (
+              <div className="flex flex-col gap-6 mb-8">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-serif text-stone-900">Inventory List</h2>
+                  {boms.length > 0 && (
+                    <button
+                      onClick={downloadPDF}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-stone-900 text-white rounded-full text-sm tracking-wide hover:bg-red-700 transition-colors duration-300"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>EXPORT PDF</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter Tabs */}
+                <div className="flex gap-2 p-1 bg-stone-100 rounded-xl w-fit">
                   <button
-                    onClick={downloadPDF}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-stone-900 text-white rounded-full text-sm tracking-wide hover:bg-red-700 transition-colors duration-300"
+                    onClick={() => setFilter('pending')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${filter === 'pending'
+                      ? 'bg-white text-stone-900 shadow-sm'
+                      : 'text-stone-500 hover:text-stone-700'
+                      }`}
                   >
-                    <Download className="w-4 h-4" />
-                    <span>EXPORT PDF</span>
+                    Pending
                   </button>
-                )}
+                  <button
+                    onClick={() => setFilter('approved')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${filter === 'approved'
+                      ? 'bg-white text-green-700 shadow-sm'
+                      : 'text-stone-500 hover:text-stone-700'
+                      }`}
+                  >
+                    Approved
+                  </button>
+                  <button
+                    onClick={() => setFilter('rejected')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${filter === 'rejected'
+                      ? 'bg-white text-red-700 shadow-sm'
+                      : 'text-stone-500 hover:text-stone-700'
+                      }`}
+                  >
+                    Rejected
+                  </button>
+                  <button
+                    onClick={() => setFilter('all')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${filter === 'all'
+                      ? 'bg-white text-stone-900 shadow-sm'
+                      : 'text-stone-500 hover:text-stone-700'
+                      }`}
+                  >
+                    All
+                  </button>
+                </div>
               </div>
 
-              {boms.length === 0 ? (
+              {filteredBoms.length === 0 ? (
                 <div className="bg-white rounded-3xl border border-stone-100 p-16 text-center">
                   <div className="w-16 h-16 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6 text-stone-300">
                     <FileText className="w-8 h-8" />
                   </div>
                   <h3 className="text-xl font-serif text-stone-900 mb-2">No Items Found</h3>
-                  <p className="text-stone-500 font-light">Start by adding materials to your bill of materials list.</p>
+                  <p className="text-stone-500 font-light">
+                    {filter === 'pending' ? 'No pending items.' :
+                      filter === 'approved' ? 'No approved items.' :
+                        filter === 'rejected' ? 'No rejected items.' :
+                          'Start by adding materials to your bill of materials list.'}
+                  </p>
                 </div>
               ) : (
                 <div className="bg-white rounded-3xl border border-stone-100 overflow-hidden shadow-sm" id="bom-table-pdf">
@@ -206,8 +305,8 @@ function StudentBOMPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-stone-100">
-                        {boms.map((bom) => (
-                          <tr key={bom.id} className="group hover:bg-stone-50/50 transition-colors">
+                        {filteredBoms.map((bom) => (
+                          <tr key={bom._id || bom.id} className="group hover:bg-stone-50/50 transition-colors">
                             <td className="px-6 py-5">
                               <div className="flex flex-col">
                                 <span className="font-serif text-lg text-stone-900 font-medium">{bom.partName}</span>
@@ -225,40 +324,52 @@ function StudentBOMPage() {
                             </td>
                             <td className="px-6 py-5">
                               <div className="flex flex-col gap-2 items-center">
-                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${bom.guideApproved
-                                    ? 'bg-green-50 text-green-700 border-green-100'
-                                    : 'bg-stone-100 text-stone-500 border-stone-200'
-                                  }`}>
-                                  Guide: {bom.guideApproved ? 'Approved' : 'Pending'}
-                                </span>
-                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${bom.labApproved
-                                    ? 'bg-green-50 text-green-700 border-green-100'
-                                    : 'bg-stone-100 text-stone-500 border-stone-200'
-                                  }`}>
-                                  Lab: {bom.labApproved ? 'Approved' : 'Pending'}
-                                </span>
+                                {bom.status === 'rejected' ? (
+                                  <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border bg-red-50 text-red-700 border-red-100">
+                                    Rejected
+                                  </span>
+                                ) : (
+                                  <>
+                                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${bom.guideApproved
+                                      ? 'bg-green-50 text-green-700 border-green-100'
+                                      : 'bg-stone-100 text-stone-500 border-stone-200'
+                                      }`}>
+                                      Guide: {bom.guideApproved ? 'Approved' : 'Pending'}
+                                    </span>
+                                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${bom.labApproved
+                                      ? 'bg-green-50 text-green-700 border-green-100'
+                                      : 'bg-stone-100 text-stone-500 border-stone-200'
+                                      }`}>
+                                      Lab: {bom.labApproved ? 'Approved' : 'Pending'}
+                                    </span>
+                                  </>
+                                )}
                               </div>
                             </td>
                             <td className="px-6 py-5 text-right">
                               <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                  onClick={() => handleEdit(bom)}
-                                  className="p-2 text-stone-400 hover:text-stone-900 hover:bg-white rounded-full transition-all"
-                                  title="Edit"
-                                >
-                                  <Edit2 className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    if (confirm('Delete this BOM?')) {
-                                      handleDelete(bom.id)
-                                    }
-                                  }}
-                                  className="p-2 text-stone-400 hover:text-red-700 hover:bg-white rounded-full transition-all"
-                                  title="Delete"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                {!bom.guideApproved && bom.status !== 'rejected' && (
+                                  <>
+                                    <button
+                                      onClick={() => handleEdit(bom)}
+                                      className="p-2 text-stone-400 hover:text-stone-900 hover:bg-white rounded-full transition-all"
+                                      title="Edit"
+                                    >
+                                      <Edit2 className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        if (confirm('Delete this BOM?')) {
+                                          handleDelete(bom._id || bom.id)
+                                        }
+                                      }}
+                                      className="p-2 text-stone-400 hover:text-red-700 hover:bg-white rounded-full transition-all"
+                                      title="Delete"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </>
+                                )}
                               </div>
                             </td>
                           </tr>
