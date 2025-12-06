@@ -182,6 +182,8 @@ const StudentHome = () => {
   const [team, setTeam] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [materials, setMaterials] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     // Check Auth
@@ -264,8 +266,23 @@ const StudentHome = () => {
       }
     };
 
+    // Fetch Materials
+    const fetchMaterials = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/material/list');
+        if (response.data.success) {
+          setMaterials(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching materials", error);
+      }
+    };
+
     // Small delay to simulate loading and ensure smooth transition
-    setTimeout(fetchTeam, 500);
+    setTimeout(() => {
+      fetchTeam();
+      fetchMaterials();
+    }, 500);
 
   }, [navigate]);
 
@@ -291,6 +308,85 @@ const StudentHome = () => {
                 <ToolCard key={tool.id} tool={tool} navigate={navigate} />
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Resources Section */}
+        <section className="py-24 bg-stone-50" id="resources">
+          <div className="container mx-auto px-6">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+              <div>
+                <span className="text-red-700 text-xs font-bold uppercase tracking-widest">Resources</span>
+                <h2 className="text-4xl font-serif text-stone-900 mt-4">Available Materials</h2>
+              </div>
+
+              {/* Search Bar */}
+              <div className="w-full md:w-72">
+                <input
+                  type="text"
+                  placeholder="Search materials..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700 bg-white text-sm"
+                />
+              </div>
+            </div>
+
+            {materials.length === 0 ? (
+              <div className="text-center py-12 text-stone-500">
+                No materials currently available.
+              </div>
+            ) : (
+              <div className="bg-white rounded-3xl border border-stone-100 overflow-hidden shadow-sm">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-stone-50 border-b border-stone-100">
+                        <th className="px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest w-24">Image</th>
+                        <th className="px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Name</th>
+                        <th className="px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Specs</th>
+                        <th className="px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Description</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-stone-100">
+                      {materials
+                        .filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                        .map((material) => (
+                          <tr key={material._id} className="group hover:bg-stone-50/50 transition-colors">
+                            <td className="px-8 py-5">
+                              <div className="w-16 h-16 rounded-lg bg-stone-100 overflow-hidden border border-stone-200">
+                                <img
+                                  src={material.imageUrl}
+                                  alt={material.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            </td>
+                            <td className="px-8 py-5 align-top pt-6">
+                              <span className="font-serif text-lg text-stone-900 font-medium">{material.name}</span>
+                            </td>
+                            <td className="px-8 py-5 align-top pt-6">
+                              <span className="inline-block px-3 py-1 bg-stone-100 text-stone-600 text-xs font-medium rounded-full border border-stone-200">
+                                {material.dimension}
+                              </span>
+                            </td>
+                            <td className="px-8 py-5 align-top pt-6 max-w-xs">
+                              <p className="text-sm text-stone-500 line-clamp-2 font-light leading-relaxed">
+                                {material.description}
+                              </p>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                  {materials.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+                    <div className="p-12 text-center text-stone-400 text-sm">
+                      No materials found matching "{searchTerm}"
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </section>
 

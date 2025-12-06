@@ -109,6 +109,8 @@ const facultyRoutes = require("./routes/facultyRoutes");
 const labRoutes = require("./routes/labRoutes");
 const teamRoutes = require("./routes/teamRoutes");
 const bomRoutes = require("./routes/bomRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const materialRoutes = require("./routes/materialRoutes");
 
 // Initialize app
 const app = express();
@@ -175,6 +177,8 @@ app.use("/api/faculty", facultyRoutes);
 app.use("/api/lab", labRoutes);
 app.use("/api", teamRoutes);
 app.use("/api", bomRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/material", materialRoutes);
 
 // -------------------------
 // Test Route
