@@ -111,6 +111,7 @@ const teamRoutes = require("./routes/teamRoutes");
 const bomRoutes = require("./routes/bomRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const materialRoutes = require("./routes/materialRoutes");
+const eventRoutes = require("./routes/eventRoutes");
 
 // Initialize app
 const app = express();
@@ -179,6 +180,7 @@ app.use("/api", teamRoutes);
 app.use("/api", bomRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/material", materialRoutes);
+app.use("/api/events", eventRoutes);
 
 // -------------------------
 // Test Route
