@@ -107,7 +107,7 @@ function LabApprove() {
         <h2 className="text-2xl font-semibold">Lab Instructor Approval Queue</h2>
         <div className="flex gap-4">
           <button onClick={() => navigate('/')} className="text-sm text-gray-600 underline">Back</button>
-          <button onClick={() => { localStorage.removeItem('token'); navigate('/lab/login'); }} className="text-sm text-red-600 underline">Logout</button>
+          <button onClick={() => { localStorage.removeItem('token'); navigate('/login/lab'); }} className="text-sm text-red-600 underline">Logout</button>
         </div >
       </div >
 
