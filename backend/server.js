@@ -180,7 +180,7 @@ app.use("/api", teamRoutes);
 app.use("/api", bomRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/material", materialRoutes);
-app.use("/api", eventRoutes);
+app.use("/api/events", eventRoutes);
 
 // -------------------------
 // Test Route
