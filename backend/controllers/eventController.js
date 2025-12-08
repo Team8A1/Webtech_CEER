@@ -1,4 +1,25 @@
 const Event = require('../models/Event');
+const cloudinary = require('../config/cloudinary');
+const streamifier = require('streamifier');
+
+// Helper to upload to Cloudinary from buffer
+const uploadFromBuffer = (buffer) => {
+    return new Promise((resolve, reject) => {
+        const cld_upload_stream = cloudinary.uploader.upload_stream(
+            {
+                folder: "events"
+            },
+            (error, result) => {
+                if (result) {
+                    resolve(result);
+                } else {
+                    reject(error);
+                }
+            }
+        );
+        streamifier.createReadStream(buffer).pipe(cld_upload_stream);
+    });
+};
 
 // @desc    Get all events
 // @route   GET /api/events
@@ -21,22 +42,32 @@ const getAllEvents = async (req, res) => {
 
 // @desc    Create a new event
 // @route   POST /api/events
-// @access  Admin (Protected in real app, keeping simple for now as requested)
+// @access  Admin 
 const createEvent = async (req, res) => {
     try {
-        const { title, date, image, category } = req.body;
+        const { title, date, category } = req.body;
 
-        if (!title || !date || !image || !category) {
+        if (!title || !date || !category) {
             return res.status(400).json({
                 success: false,
                 message: 'Please provide all required fields'
             });
         }
 
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'Image is required'
+            });
+        }
+
+        const result = await uploadFromBuffer(req.file.buffer);
+
         const newEvent = await Event.create({
             title,
             date,
-            image,
+            image: result.secure_url,
+            imageId: result.public_id,
             category
         });
 
@@ -66,6 +97,11 @@ const deleteEvent = async (req, res) => {
                 success: false,
                 message: 'Event not found'
             });
+        }
+
+        // Delete image from Cloudinary if it exists
+        if (event.imageId) {
+            await cloudinary.uploader.destroy(event.imageId);
         }
 
         await event.deleteOne();

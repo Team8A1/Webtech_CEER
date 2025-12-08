@@ -14,44 +14,16 @@ const eventSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    category: {
-        type: String,
-        required: true,
-        default: 'General'
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
-});
-
-module.exports = mongoose.model('Event', eventSchema);
-
-const mongoose = require('mongoose');
-
-const eventSchema = new mongoose.Schema({
-    title: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    date: {
-        type: String,
-        required: true
-    },
-    imageUrl: {
-        type: String,
-        required: true
+    imageUrl: { // For backward compatibility
+        type: String
     },
     imageId: {
         type: String
     },
     category: {
         type: String,
-        default: 'General' // Default category as AdminDashboard doesn't seem to send it, but RecentEvents needs it.
-    },
-    description: {
-        type: String
+        required: true,
+        default: 'General'
     },
     createdAt: {
         type: Date,
