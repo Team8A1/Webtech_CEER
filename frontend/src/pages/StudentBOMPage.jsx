@@ -218,7 +218,12 @@ function StudentBOMPage() {
                     {editing ? 'Edit Item' : 'Add Item'}
                   </h2>
                 </div>
-                <BOMForm onSave={handleSave} initial={editing} onCancel={() => setEditing(null)} />
+                <BOMForm
+                  onSave={handleSave}
+                  initial={editing}
+                  onCancel={() => setEditing(null)}
+                  nextSlNo={boms.length + 1}
+                />
               </div>
             </div>
 
