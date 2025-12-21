@@ -131,7 +131,7 @@ function StudentBOMPage() {
               <tr>
                 <td>${bom.slNo}</td>
                 <td>${bom.sprintNo}</td>
-                <td>${bom.date}</td>
+                <td>${new Date(bom.date).toLocaleDateString()}</td>
                 <td><strong>${bom.partName}</strong></td>
                 <td>${bom.consumableName}</td>
                 <td>${bom.specification}</td>
@@ -316,7 +316,7 @@ function StudentBOMPage() {
                               <div className="flex flex-col">
                                 <span className="font-serif text-lg text-stone-900 font-medium">{bom.partName}</span>
                                 <span className="text-xs text-stone-400 uppercase tracking-wider mt-1">
-                                  {bom.slNo} • Sprint {bom.sprintNo} • {bom.date}
+                                  {bom.slNo} • Sprint {bom.sprintNo} • {new Date(bom.date).toLocaleDateString()}
                                 </span>
                               </div>
                             </td>

@@ -30,7 +30,7 @@ const StudentNavbar = ({ user }) => {
                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/student/dashboard')}>
                     <Wind className="w-6 h-6 text-red-700" />
                     <span className={`text-2xl font-serif tracking-widest font-bold transition-colors duration-500 ${scrolled ? 'text-stone-900' : 'text-stone-900'}`}>
-                        DASHBOARD
+                        Thinkering Lab
                     </span>
                 </div>
 

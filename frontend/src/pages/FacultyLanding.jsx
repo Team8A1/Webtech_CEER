@@ -9,9 +9,27 @@ function FacultyLanding() {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [pendingBOMCount, setPendingBOMCount] = useState(0);
+
   useEffect(() => {
     fetchTeams();
+    fetchPendingBOMs();
   }, []);
+
+  const fetchPendingBOMs = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:8000/api/faculty/bom/list', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data.success) {
+        const pending = response.data.data.filter(b => !b.guideApproved && b.status !== 'rejected').length;
+        setPendingBOMCount(pending);
+      }
+    } catch (error) {
+      console.error('Error fetching BOMs:', error);
+    }
+  };
 
   const fetchTeams = async () => {
     try {
@@ -59,8 +77,11 @@ function FacultyLanding() {
         <div className="grid md:grid-cols-3 gap-8 mb-12">
           <button
             onClick={() => navigate('/faculty/approve')}
-            className="bg-white p-8 rounded-lg shadow-lg text-left hover:shadow-xl transition">
-            <h3 className="text-xl font-bold mb-2">BOM Approval Queue</h3>
+            className="bg-white p-8 rounded-lg shadow-lg text-left hover:shadow-xl transition relative group">
+            {pendingBOMCount > 0 && (
+              <div className="absolute top-4 right-4 w-4 h-4 bg-red-600 rounded-full animate-pulse shadow-sm border-2 border-white"></div>
+            )}
+            <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600 transition-colors">BOM Approval Queue</h3>
             <p className="text-sm text-gray-600">Review and approve Bill of Materials submitted by students.</p>
           </button>
 
