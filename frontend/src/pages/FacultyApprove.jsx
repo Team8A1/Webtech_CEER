@@ -83,10 +83,6 @@ function FacultyApprove() {
   }
 
   const confirmReject = async () => {
-    if (!rejectionReason.trim()) {
-      alert("Please provide a reason for rejection.");
-      return;
-    }
     try {
       const token = localStorage.getItem('token');
       await axios.patch('http://localhost:8000/api/faculty/bom/update', {
@@ -378,11 +374,11 @@ function FacultyApprove() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold mb-4">Reject Request</h3>
-            <p className="text-gray-600 mb-4">Please provide a reason for rejecting this request.</p>
+            <p className="text-gray-600 mb-4">Please provide a reason for rejecting this request (Optional).</p>
             <textarea
               className="w-full p-3 border border-gray-300 rounded mb-4 focus:ring-2 focus:ring-red-500 outline-none"
               rows="4"
-              placeholder="Reason for rejection..."
+              placeholder="Reason for rejection (Optional)..."
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
             ></textarea>
