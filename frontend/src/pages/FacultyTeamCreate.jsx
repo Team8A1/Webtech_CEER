@@ -11,6 +11,11 @@ function FacultyTeamCreate() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [divisionFilter, setDivisionFilter] = useState('All')
+  const [tempSelectedIds, setTempSelectedIds] = useState(new Set())
+
   useEffect(() => {
     fetchAvailableStudents()
   }, [])
@@ -32,26 +37,42 @@ function FacultyTeamCreate() {
     }
   }
 
-  const handleStudentSelect = (e) => {
-    const studentId = e.target.value
-    if (!studentId) return
+  const openSelectionModal = () => {
+    setTempSelectedIds(new Set(selectedStudents.map(s => s._id)))
+    setDivisionFilter('All')
+    setIsModalOpen(true)
+  }
 
-    const student = availableStudents.find(s => s._id === studentId)
-    if (student && !selectedStudents.find(s => s._id === studentId)) {
-      setSelectedStudents([...selectedStudents, student])
-      // Remove from available list temporarily to avoid double selection
-      setAvailableStudents(availableStudents.filter(s => s._id !== studentId))
+  const toggleStudentSelection = (studentId) => {
+    const newSelection = new Set(tempSelectedIds)
+    if (newSelection.has(studentId)) {
+      newSelection.delete(studentId)
+    } else {
+      newSelection.add(studentId)
     }
-    e.target.value = '' // Reset dropdown
+    setTempSelectedIds(newSelection)
+  }
+
+  const confirmSelection = () => {
+    const selected = availableStudents.filter(s => tempSelectedIds.has(s._id))
+    setSelectedStudents(selected)
+    setIsModalOpen(false)
   }
 
   const removeMember = (studentId) => {
-    const student = selectedStudents.find(s => s._id === studentId)
-    if (student) {
-      setSelectedStudents(selectedStudents.filter(s => s._id !== studentId))
-      setAvailableStudents([...availableStudents, student])
-    }
+    setSelectedStudents(selectedStudents.filter(s => s._id !== studentId))
   }
+
+  const getFilteredStudents = () => {
+    return availableStudents.filter(student => {
+      if (divisionFilter === 'All') return true
+      if (divisionFilter === 'No Division') return !student.division
+      return student.division === divisionFilter
+    })
+  }
+
+  // Calculate unique divisions from available students
+  const uniqueDivisions = ['All', ...new Set(availableStudents.map(s => s.division).filter(Boolean)), 'No Division']
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -138,33 +159,22 @@ function FacultyTeamCreate() {
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-purple-300/30 to-pink-300/30 rounded-xl blur"></div>
             <div className="relative bg-white/80 backdrop-blur-md border border-slate-200/50 rounded-xl p-8 shadow-lg">
-              <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center">
-                <span className="w-1 h-7 bg-gradient-to-b from-purple-500 to-pink-600 rounded mr-3"></span>
-                Team Members
-              </h2>
-
-              {/* Add Member Dropdown */}
-              <div className="bg-slate-50 rounded-lg p-6 border border-slate-200/50 mb-6">
-                <p className="text-sm text-slate-700 mb-4 font-semibold">Select students to add to the team</p>
-                <select
-                  onChange={handleStudentSelect}
-                  className="w-full bg-white border border-slate-300/50 rounded-lg px-3 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  defaultValue=""
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-slate-900 flex items-center">
+                  <span className="w-1 h-7 bg-gradient-to-b from-purple-500 to-pink-600 rounded mr-3"></span>
+                  Team Members
+                </h2>
+                <button
+                  type="button"
+                  onClick={openSelectionModal}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                 >
-                  <option value="" disabled>Select a student...</option>
-                  {availableStudents.map(student => (
-                    <option key={student._id} value={student._id}>
-                      {student.name} ({student.email})
-                    </option>
-                  ))}
-                </select>
-                {availableStudents.length === 0 && (
-                  <p className="text-xs text-orange-500 mt-2">No available students found (or all are already assigned).</p>
-                )}
+                  + Add Members
+                </button>
               </div>
 
               {/* Members List */}
-              {selectedStudents.length > 0 && (
+              {selectedStudents.length > 0 ? (
                 <div className="space-y-2">
                   <p className="text-sm text-slate-700 font-semibold mb-3">Selected Members ({selectedStudents.length})</p>
                   {selectedStudents.map((m, idx) => (
@@ -173,7 +183,7 @@ function FacultyTeamCreate() {
                         <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white text-sm font-bold">{idx + 1}</span>
                         <div>
                           <p className="text-slate-900 font-semibold">{m.name}</p>
-                          <p className="text-xs text-slate-500">{m.email}</p>
+                          <p className="text-xs text-slate-500">{m.email} {m.division && <span className="bg-slate-200 px-1 rounded text-[10px] ml-1">{m.division}</span>}</p>
                         </div>
                       </div>
                       <button
@@ -185,6 +195,10 @@ function FacultyTeamCreate() {
                       </button>
                     </div>
                   ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-slate-500 bg-slate-50 rounded-lg border border-dashed border-slate-300">
+                  No members selected. Click "Add Members" to start.
                 </div>
               )}
             </div>
@@ -209,6 +223,81 @@ function FacultyTeamCreate() {
           </div>
         </form>
       </div>
+
+      {/* Student Selection Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-200 bg-slate-50">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-slate-800">Select Team Members</h3>
+                <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+
+              {/* Division Filter */}
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-slate-600">Filter by Division:</label>
+                <select
+                  value={divisionFilter}
+                  onChange={(e) => setDivisionFilter(e.target.value)}
+                  className="bg-white border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  {uniqueDivisions.map(div => (
+                    <option key={div} value={div}>{div}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-2">
+              <div className="space-y-1">
+                {getFilteredStudents().length > 0 ? (
+                  getFilteredStudents().map(student => (
+                    <label key={student._id} className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors ${tempSelectedIds.has(student._id) ? 'bg-blue-50 border border-blue-200' : 'hover:bg-slate-50 border border-transparent'}`}>
+                      <input
+                        type="checkbox"
+                        checked={tempSelectedIds.has(student._id)}
+                        onChange={() => toggleStudentSelection(student._id)}
+                        className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 mr-4"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium text-slate-900">{student.name}</div>
+                        <div className="text-sm text-slate-500">
+                          {student.email}
+                          {student.division && <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">Div: {student.division}</span>}
+                        </div>
+                      </div>
+                    </label>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-slate-500">
+                    No students found for this division.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 text-slate-600 font-medium hover:text-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmSelection}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm"
+              >
+                Add Details ({tempSelectedIds.size})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -7,7 +7,7 @@ const User = require('../models/User');
  */
 const registerStudent = async (req, res) => {
   try {
-    const { email, name, password } = req.body;
+    const { email, name, password, division } = req.body;
     const allowedDomain = process.env.ALLOWED_EMAIL_DOMAIN || '@kletech.ac.in';
 
     // Validate input
@@ -39,6 +39,7 @@ const registerStudent = async (req, res) => {
     user = new User({
       email: email.toLowerCase(),
       name,
+      division: division ? division.toUpperCase() : undefined,
       password: password || undefined,
       role: 'student',
       isActive: true,

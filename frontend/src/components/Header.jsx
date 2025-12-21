@@ -1,103 +1,90 @@
 import { useState, useEffect } from 'react'
+import { Menu, X } from 'lucide-react'
 
 function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [scrollProgress, setScrollProgress] = useState(0)
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollY = window.scrollY
-      const maxScroll = 200 // Full solid at 200px
-      const progress = Math.min(scrollY / maxScroll, 1) // 0 to 1
-      setScrollProgress(progress)
+      setScrolled(window.scrollY > 50)
     }
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const isScrolled = scrollProgress > 0.25
-
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 ${
-        isScrolled ? 'shadow-lg' : ''
-      } py-2`}
-      style={{
-        background: `linear-gradient(to bottom, 
-          rgba(25, 30, 38, ${scrollProgress}) 0%, 
-          rgba(25, 30, 38, ${scrollProgress}) ${scrollProgress * 100}%, 
-          transparent ${scrollProgress * 100}%, 
-          transparent 100%)`
-      }}
+    <header
+      className={`fixed w-full z-50 transition-all duration-500 px-6 ${scrolled
+        ? 'bg-[#0F172B]/90 backdrop-blur-md py-3 shadow-sm border-b border-slate-800'
+        : 'bg-transparent py-4'
+        }`}
     >
-      <div className="max-w-full px-6">
+      <div className="container mx-auto px-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <img 
-              src="/images/logo.png" 
-              alt="KLE Tech Logo" 
+            <img
+              src="/images/logo.png"
+              alt="KLE Tech Logo"
               className="h-10 w-auto object-contain"
             />
           </div>
 
-          <nav className="hidden lg:flex items-center space-x-8">
-            <a href="#home" className="text-white hover:text-maroon-400 font-medium transition-colors duration-200">
-              Home
-            </a>
-            <a href="#about" className="text-white hover:text-maroon-400 font-medium transition-colors duration-200">
-              About
-            </a>
-            {/* <a href="#departments" className="text-white hover:text-maroon-400 font-medium transition-colors duration-200">
-              Departments
-            </a>
-            <a href="#resources" className="text-white hover:text-maroon-400 font-medium transition-colors duration-200">
-              Student Resources
-            </a>
-            <a href="#contact" className="text-white hover:text-maroon-400 font-medium transition-colors duration-200">
-              Contact
-            </a> */}
-            <a href="/login" className="text-white hover:text-maroon-400 font-medium transition-colors duration-200">
-              Login
-            </a>
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-12">
+            {[
+              { name: 'Home', href: '#home' },
+              { name: 'About', href: '#about' },
+              { name: 'Login', href: '/login' }
+            ].map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className={`text-sm uppercase tracking-widest font-medium transition-colors duration-300 relative group ${scrolled ? 'text-white hover:text-red-400' : 'text-white hover:text-gray-300'
+                  }`}
+              >
+                {item.name}
+                <span className={`absolute -bottom-2 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${scrolled ? 'bg-red-400' : 'bg-white'
+                  }`}></span>
+              </a>
+            ))}
           </nav>
 
+          {/* Mobile Menu Toggle */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 rounded-lg hover:bg-slate-700 transition-colors"
+            className={`lg:hidden p-2 rounded-lg transition-colors ${scrolled ? 'text-white hover:bg-white/10' : 'text-white hover:bg-white/10'
+              }`}
           >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isMobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
 
-        {isMobileMenuOpen && (
-          <nav className="lg:hidden mt-4 pb-4 space-y-3 bg-[#191E26] rounded-lg px-4 py-3 shadow-xl">
-            <a href="#home" className="block text-white hover:text-maroon-400 font-medium transition-colors duration-200 py-2">
-              Home
-            </a>
-            <a href="#about" className="block text-white hover:text-maroon-400 font-medium transition-colors duration-200 py-2">
-              About
-            </a>
-            {/* <a href="#departments" className="block text-white hover:text-maroon-400 font-medium transition-colors duration-200 py-2">
-              Departments
-            </a>
-            <a href="#resources" className="block text-white hover:text-maroon-400 font-medium transition-colors duration-200 py-2">
-              Student Resources
-            </a>
-            <a href="#contact" className="block text-white hover:text-maroon-400 font-medium transition-colors duration-200 py-2">
-              Contact
-            </a> */}
-            <a href="/login" className="block text-white hover:text-maroon-400 font-medium transition-colors duration-200 py-2">
-              Login
-            </a>
+        {/* Mobile Menu */}
+        <div className={`lg:hidden absolute top-full left-0 w-full bg-white border-t border-stone-100 transition-all duration-300 overflow-hidden shadow-xl ${isMobileMenuOpen ? 'max-h-96' : 'max-h-0'
+          }`}>
+          <nav className="flex flex-col p-6 space-y-6">
+            {[
+              { name: 'Home', href: '#home' },
+              { name: 'About', href: '#about' },
+              { name: 'Login', href: '/login' }
+            ].map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className="text-stone-600 hover:text-red-700 text-lg font-serif transition-colors duration-200"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.name}
+              </a>
+            ))}
           </nav>
-        )}
+        </div>
       </div>
     </header>
   )

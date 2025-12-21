@@ -59,6 +59,7 @@ const registerBulkStudents = async (req, res) => {
                 const newStudent = new User({
                     name: student.name,
                     email: student.email,
+                    division: student.division ? student.division.toUpperCase() : undefined,
                     role: 'student'
                 });
                 await newStudent.save();

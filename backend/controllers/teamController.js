@@ -109,7 +109,7 @@ const getAvailableStudents = async (req, res) => {
         const students = await User.find({
             role: 'student',
             teamId: { $exists: false }
-        }).select('name email');
+        }).select('name email division').sort({ division: 1, name: 1 });
 
         return res.status(200).json({
             success: true,

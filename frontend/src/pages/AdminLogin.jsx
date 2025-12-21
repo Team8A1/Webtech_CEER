@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import BackToLoginButton from '../components/BackToLoginButton'
 
 function AdminLogin() {
   const [isVisible, setIsVisible] = useState(false)
@@ -16,10 +17,11 @@ function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-between p-20 relative">
+      <BackToLoginButton/>
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="/images/college.png" 
+          src="/images/rh.jpg" 
           alt="Campus Background" 
           className="w-full h-full object-cover opacity-20"
         />

@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 function AdminUserManagement() {
   const navigate = useNavigate()
   const [users, setUsers] = useState([])
   const [filter, setFilter] = useState('all')
   const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState({ name: '', email: '', role: 'student', status: 'active' })
+  const [formData, setFormData] = useState({ name: '', email: '', role: 'student', status: 'active', division: '' })
 
   useEffect(() => {
+    // Ideally fetch from backend, but keeping mock list for now + new additions
     const users = JSON.parse(localStorage.getItem('users') || '[]')
     setUsers(users)
   }, [])
@@ -29,16 +31,52 @@ function AdminUserManagement() {
 
   const filteredUsers = filter === 'all' ? users : users.filter(u => u.role === filter)
 
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     if (formData.name && formData.email) {
-      const newUser = {
-        id: users.length + 1,
-        ...formData,
-        joinDate: new Date().toISOString().split('T')[0]
+      if (formData.role === 'student') {
+        try {
+          // Call Backend API for Students
+          const response = await axios.post('http://localhost:8000/api/admin/register/students', {
+            students: [{
+              name: formData.name,
+              email: formData.email,
+              division: formData.division
+            }]
+          })
+
+          if (response.data.success) {
+            alert('Student registered successfully in backend!')
+            // Update local mock list for display
+            const newUser = {
+              id: users.length + 1,
+              ...formData,
+              joinDate: new Date().toISOString().split('T')[0]
+            }
+            const updatedUsers = [...users, newUser]
+            setUsers(updatedUsers)
+            localStorage.setItem('users', JSON.stringify(updatedUsers))
+
+            setFormData({ name: '', email: '', role: 'student', status: 'active', division: '' })
+            setShowForm(false)
+          }
+        } catch (error) {
+          console.error('Error registering student:', error)
+          alert('Failed to register student: ' + (error.response?.data?.message || error.message))
+        }
+      } else {
+        // Mock behavior for other roles for now
+        const newUser = {
+          id: users.length + 1,
+          ...formData,
+          joinDate: new Date().toISOString().split('T')[0]
+        }
+        setUsers([...users, newUser])
+        localStorage.setItem('users', JSON.stringify([...users, newUser]))
+        setFormData({ name: '', email: '', role: 'student', status: 'active', division: '' })
+        setShowForm(false)
       }
-      setUsers([...users, newUser])
-      setFormData({ name: '', email: '', role: 'student', status: 'active' })
-      setShowForm(false)
+    } else {
+      alert('Please fill in Name and Email')
     }
   }
 
@@ -89,6 +127,19 @@ function AdminUserManagement() {
                 <option value="lab_instructor">Lab Instructor</option>
                 <option value="admin">Admin</option>
               </select>
+
+              {formData.role === 'student' && (
+                <select
+                  value={formData.division}
+                  onChange={(e) => setFormData({ ...formData, division: e.target.value })}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                >
+                  <option value="">Select Division</option>
+                  <option value="A">Division A</option>
+                  <option value="B">Division B</option>
+                  <option value="C">Division C</option>
+                </select>
+              )}
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
@@ -120,25 +171,22 @@ function AdminUserManagement() {
           <div className="flex gap-3">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                filter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'
-              }`}
+              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${filter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'
+                }`}
             >
               All ({users.length})
             </button>
             <button
               onClick={() => setFilter('student')}
-              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                filter === 'student' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'
-              }`}
+              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${filter === 'student' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'
+                }`}
             >
               Students ({users.filter(u => u.role === 'student').length})
             </button>
             <button
               onClick={() => setFilter('faculty')}
-              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                filter === 'faculty' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'
-              }`}
+              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${filter === 'faculty' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'
+                }`}
             >
               Faculty ({users.filter(u => u.role === 'faculty').length})
             </button>
@@ -161,6 +209,7 @@ function AdminUserManagement() {
                 <tr>
                   <th className="px-6 py-4 text-left font-semibold">Name</th>
                   <th className="px-6 py-4 text-left font-semibold">Email</th>
+                  <th className="px-6 py-4 text-left font-semibold">Division</th>
                   <th className="px-6 py-4 text-left font-semibold">Role</th>
                   <th className="px-6 py-4 text-left font-semibold">Status</th>
                   <th className="px-6 py-4 text-left font-semibold">Join Date</th>
@@ -171,6 +220,7 @@ function AdminUserManagement() {
                   <tr key={user.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-blue-50'}>
                     <td className="px-6 py-4 font-semibold text-gray-900">{user.name}</td>
                     <td className="px-6 py-4 text-gray-700">{user.email}</td>
+                    <td className="px-6 py-4 text-gray-700">{user.division || '-'}</td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${getRoleBadgeColor(user.role)}`}>
                         {user.role.replace('_', ' ').toUpperCase()}

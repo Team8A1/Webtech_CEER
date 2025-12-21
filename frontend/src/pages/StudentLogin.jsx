@@ -91,7 +91,7 @@ function StudentLogin() {
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/images/college.png"
+          src="/images/rh.jpg"
           alt="Campus Background"
           className="w-full h-full object-cover opacity-20"
         />
