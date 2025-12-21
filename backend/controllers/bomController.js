@@ -185,7 +185,7 @@ const deleteBOMRequest = async (req, res) => {
 // @access  Private (Faculty)
 const updateBOMRequestStatus = async (req, res) => {
     try {
-        const { id, status, slNo, sprintNo, date, partName, consumableName, specification, qty } = req.body;
+        const { id, status, slNo, sprintNo, date, partName, consumableName, specification, qty, reason } = req.body;
 
         const bomRequest = await BOMRequest.findById(id);
 
@@ -221,6 +221,9 @@ const updateBOMRequestStatus = async (req, res) => {
                 bomRequest.guideApprovedAt = null;
                 // Reset lab approval if rejected by guide (though unlikely to be lab approved if guide hasn't)
                 bomRequest.labApproved = false;
+                if (reason) {
+                    bomRequest.rejectionReason = reason;
+                }
             }
         }
 

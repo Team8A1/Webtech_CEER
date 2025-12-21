@@ -5,12 +5,12 @@ import { Search, ChevronDown } from 'lucide-react'
 function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1 }) {
   const [form, setForm] = useState({
     slNo: initial ? initial.slNo : String(nextSlNo).padStart(3, '0'), // Auto-increment or use initial
-    sprintNo: '',
+    sprintNo: '1',
     date: new Date().toISOString().split('T')[0],
     partName: '',
     consumableName: '',
     specification: '',
-    qty: '',
+    qty: '1',
     notifyGuide: true
   })
 
@@ -136,12 +136,12 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1 }) {
     // reset only when creating new
     if (!initial) setForm({
       slNo: String(Number(nextSlNo) + 1).padStart(3, '0'), // Optimistically increment for next interaction until parent updates
-      sprintNo: '',
+      sprintNo: '1',
       date: new Date().toISOString().split('T')[0],
       partName: '',
       consumableName: '',
       specification: '',
-      qty: '',
+      qty: '1',
       notifyGuide: true
     })
   }
@@ -151,20 +151,20 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1 }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">SL. No</label>
-          <input name="slNo" value={form.slNo} onChange={handleChange} placeholder="001" className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
+          <input name="slNo" value={form.slNo} onChange={handleChange} placeholder="001" required className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Sprint No</label>
-          <input name="sprintNo" value={form.sprintNo} onChange={handleChange} placeholder="1" className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
+          <input name="sprintNo" value={form.sprintNo} onChange={handleChange} placeholder="1" required className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
         </div>
 
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Date</label>
-          <input name="date" type="date" value={form.date} onChange={handleChange} className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
+          <input name="date" type="date" value={form.date} onChange={handleChange} required className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Part Name / Drawing</label>
-          <input name="partName" value={form.partName} onChange={handleChange} placeholder="e.g. Robot Arm Base" className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
+          <input name="partName" value={form.partName} onChange={handleChange} placeholder="e.g. Robot Arm Base" required className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
         </div>
 
         {/* Searchable Select for Consumable */}
@@ -179,6 +179,7 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1 }) {
               placeholder="Search or type consumable name..."
               className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all pl-10"
               autoComplete="off"
+              required
             />
             <Search className="absolute left-3 top-3.5 w-5 h-5 text-stone-400" />
             <button type="button" onClick={() => setShowSuggestions(!showSuggestions)} className="absolute right-3 top-3.5 text-stone-400 hover:text-stone-600">
@@ -207,12 +208,12 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1 }) {
 
         <div className="col-span-2 flex flex-col gap-1">
           <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Specification</label>
-          <input name="specification" value={form.specification} onChange={handleChange} placeholder="e.g. 10k Ohm, 1/4 Watt" className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
+          <input name="specification" value={form.specification} onChange={handleChange} placeholder="e.g. 10k Ohm, 1/4 Watt" required className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
         </div>
 
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Quantity</label>
-          <input name="qty" type="number" value={form.qty} onChange={handleChange} placeholder="1" min="1" className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
+          <input name="qty" type="number" value={form.qty} onChange={handleChange} placeholder="1" min="1" required className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
         </div>
 
         <div className="flex items-center gap-3 pt-6 h-full">
