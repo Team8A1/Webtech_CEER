@@ -9,6 +9,9 @@ function FacultyApprove() {
   const navigate = useNavigate()
   const previousPendingCountRef = useRef(0)
   const [editingBOM, setEditingBOM] = useState(null)
+  const [rejectingId, setRejectingId] = useState(null)
+  const [rejectionReason, setRejectionReason] = useState('')
+
 
   const load = async () => {
     try {
@@ -74,18 +77,29 @@ function FacultyApprove() {
     }
   }
 
-  const handleReject = async (id) => {
-    if (!confirm('Are you sure you want to reject this request?')) return;
+  const handleRejectClick = (id) => {
+    setRejectingId(id)
+    setRejectionReason('')
+  }
+
+  const confirmReject = async () => {
+    if (!rejectionReason.trim()) {
+      alert("Please provide a reason for rejection.");
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
       await axios.patch('http://localhost:8000/api/faculty/bom/update', {
-        id,
-        status: 'rejected'
+        id: rejectingId,
+        status: 'rejected',
+        reason: rejectionReason
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       load();
       alert('BOM Request Rejected');
+      setRejectingId(null);
+      setRejectionReason('');
     } catch (error) {
       console.error('Error rejecting BOM:', error);
       alert('Error rejecting request');
@@ -314,7 +328,7 @@ function FacultyApprove() {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleReject(bom._id || bom.id)}
+                          onClick={() => handleRejectClick(bom._id || bom.id)}
                           className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors shadow"
                         >
                           Reject
@@ -357,6 +371,37 @@ function FacultyApprove() {
                 onSave={handleUpdate}
                 onCancel={() => setEditingBOM(null)}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {rejectingId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold mb-4">Reject Request</h3>
+            <p className="text-gray-600 mb-4">Please provide a reason for rejecting this request.</p>
+            <textarea
+              className="w-full p-3 border border-gray-300 rounded mb-4 focus:ring-2 focus:ring-red-500 outline-none"
+              rows="4"
+              placeholder="Reason for rejection..."
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+            ></textarea>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setRejectingId(null)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmReject}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Reject Request
+              </button>
             </div>
           </div>
         </div>

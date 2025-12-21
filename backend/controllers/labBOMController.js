@@ -61,7 +61,7 @@ const approveLabBOMRequest = async (req, res) => {
 // @access  Private (LabIncharge)
 const rejectLabBOMRequest = async (req, res) => {
     try {
-        const { id } = req.body;
+        const { id, reason } = req.body;
         const labInchargeId = req.user._id;
 
         const bomRequest = await BOMRequest.findById(id);
@@ -79,6 +79,9 @@ const rejectLabBOMRequest = async (req, res) => {
         bomRequest.labApprovedBy = labInchargeId;
         bomRequest.labApprovedAt = Date.now();
         bomRequest.status = 'rejected';
+        if (reason) {
+            bomRequest.rejectionReason = reason;
+        }
 
         await bomRequest.save();
 

@@ -8,6 +8,8 @@ function LabApprove() {
   const [filter, setFilter] = useState('pending') // pending, approved, all, rejected
   const navigate = useNavigate()
   const previousPendingCountRef = useRef(0)
+  const [rejectingId, setRejectingId] = useState(null)
+  const [rejectionReason, setRejectionReason] = useState('')
 
   const load = async () => {
     try {
@@ -72,17 +74,28 @@ function LabApprove() {
     }
   }
 
-  const handleReject = async (id) => {
-    if (!confirm('Are you sure you want to reject this request?')) return;
+  const handleRejectClick = (id) => {
+    setRejectingId(id)
+    setRejectionReason('')
+  }
+
+  const confirmReject = async () => {
+    if (!rejectionReason.trim()) {
+      alert("Please provide a reason for rejection.");
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
       await axios.patch('http://localhost:8000/api/lab/bom/reject', {
-        id
+        id: rejectingId,
+        reason: rejectionReason
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       load();
       alert('BOM Request Rejected by Lab');
+      setRejectingId(null);
+      setRejectionReason('');
     } catch (error) {
       console.error('Error rejecting BOM:', error);
       alert('Error rejecting request');
@@ -264,9 +277,9 @@ function LabApprove() {
                               <span className="text-sm font-semibold text-gray-600">Lab Approval:</span>
                               <span className={`px-3 py-1 rounded-full text-xs font-bold ${bom.labApproved
                                 ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800'
+                                : (bom.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')
                                 }`}>
-                                {bom.labApproved ? '✓ Approved' : '⏳ Pending'}
+                                {bom.labApproved ? '✓ Approved' : (bom.status === 'rejected' ? '✗ Rejected' : '⏳ Pending')}
                               </span>
                             </div>
                           </div>
@@ -277,7 +290,7 @@ function LabApprove() {
 
                   {/* Action Button */}
                   <div className="flex items-center px-6 py-4 border-l border-gray-200 bg-gray-50">
-                    {!bom.labApproved ? (
+                    {!bom.labApproved && bom.status !== 'rejected' ? (
                       <div className="flex flex-col gap-2">
                         <button
                           onClick={() => approve(bom._id || bom.id)}
@@ -286,7 +299,7 @@ function LabApprove() {
                           ✓ Approve
                         </button>
                         <button
-                          onClick={() => handleReject(bom._id || bom.id)}
+                          onClick={() => handleRejectClick(bom._id || bom.id)}
                           className="px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors shadow-md hover:shadow-lg"
                         >
                           Reject
@@ -294,11 +307,25 @@ function LabApprove() {
                       </div>
                     ) : (
                       <div className="text-center">
-                        <div className="text-3xl mb-2">✓</div>
-                        <span className="text-xs font-semibold text-green-700">Approved</span>
-                        <div className="text-xs text-gray-600 mt-1">
-                          {new Date(bom.labApprovedAt).toLocaleDateString()}
-                        </div>
+                        {bom.status === 'rejected' ? (
+                          <>
+                            <div className="text-3xl mb-2 text-red-600">✗</div>
+                            <span className="text-xs font-semibold text-red-700">Rejected</span>
+                            {bom.rejectionReason && (
+                              <div className="text-xs text-gray-500 mt-2 italic max-w-[120px] mx-auto break-words">
+                                "{bom.rejectionReason}"
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <div className="text-3xl mb-2 text-green-600">✓</div>
+                            <span className="text-xs font-semibold text-green-700">Approved</span>
+                            <div className="text-xs text-gray-600 mt-1">
+                              {new Date(bom.labApprovedAt).toLocaleDateString()}
+                            </div>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
@@ -308,8 +335,44 @@ function LabApprove() {
           </div>
         )
       }
+
+
+
+      {/* Reject Modal */}
+      {rejectingId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold mb-4">Reject Request</h3>
+            <p className="text-gray-600 mb-4">Please provide a reason for rejection.</p>
+            <textarea
+              className="w-full p-3 border border-gray-300 rounded mb-4 focus:ring-2 focus:ring-red-500 outline-none"
+              rows="4"
+              placeholder="Reason for rejection..."
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+            ></textarea>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setRejectingId(null)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmReject}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Reject Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div >
   )
 }
 
 export default LabApprove
+
+/* Reject Modal for LabApprove */
+// Appending modal to the end of the return statement (inside the component) would be cleaner, but since I'm editing using chunks, I'll insert it before the closing </div> of the main return.
