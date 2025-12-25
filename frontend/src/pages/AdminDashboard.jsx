@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 import {
   LayoutDashboard,
   Users,
@@ -14,7 +14,9 @@ import {
   Upload,
   Search,
   LogOut,
-  UserPlus
+  UserPlus,
+  Settings,
+  Lock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -60,21 +62,21 @@ const AdminDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/admin/dashboard');
+      const response = await api.get('/admin/dashboard');
       if (response.data.success) setFacultiesData(response.data.data);
     } catch (error) { console.error('Error fetching dashboard:', error); }
   };
 
   const fetchMaterials = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/material/list');
+      const response = await api.get('/material/list');
       if (response.data.success) setMaterialsData(response.data.data);
     } catch (error) { console.error('Error fetching materials:', error); }
   };
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/events');
+      const response = await api.get('/events');
       if (response.data.success) setEventsData(response.data.data);
     } catch (error) { console.error('Error fetching events:', error); }
   };
@@ -88,10 +90,16 @@ const AdminDashboard = () => {
 
     try {
       const url = editingMaterial
-        ? `http://localhost:8000/api/material/update/${editingMaterial._id}`
-        : 'http://localhost:8000/api/material/add';
+        ? `/material/update/${editingMaterial._id}`
+        : '/material/add';
 
-      editingMaterial ? await axios.put(url, formData) : await axios.post(url, formData);
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      };
+
+      editingMaterial ? await api.put(url, formData, config) : await api.post(url, formData, config);
 
       alert(`Material ${editingMaterial ? 'updated' : 'added'} successfully`);
       setShowMaterialModal(false);
@@ -99,7 +107,7 @@ const AdminDashboard = () => {
       setMaterialForm({ name: '', dimension: '', description: '', image: null });
       fetchMaterials();
     } catch (error) {
-      alert('Error saving material');
+      alert('Error saving material: ' + (error.response?.data?.message || error.message));
       console.error(error);
     }
   };
@@ -107,7 +115,7 @@ const AdminDashboard = () => {
   const handleDeleteMaterial = async (id) => {
     if (!confirm('Delete this material?')) return;
     try {
-      await axios.delete(`http://localhost:8000/api/material/delete/${id}`);
+      await api.delete(`/material/delete/${id}`);
       fetchMaterials();
     } catch (error) { alert('Error deleting material'); }
   };
@@ -123,7 +131,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      await axios.post('http://localhost:8000/api/events', formData, {
+      await api.post('/events', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -141,20 +149,20 @@ const AdminDashboard = () => {
   const handleDeleteEvent = async (id) => {
     if (!confirm('Delete this event?')) return;
     try {
-      await axios.delete(`http://localhost:8000/api/events/${id}`);
+      await api.delete(`/events/${id}`);
       fetchEvents();
     } catch (error) { alert('Error deleting event'); }
   };
 
   const handleUserRegister = async (e) => {
     e.preventDefault();
-    const endpoint = userType === 'student' ? '/api/student/register' : '/api/faculty/register';
+    const endpoint = userType === 'student' ? '/student/register' : '/faculty/register';
     const payload = userType === 'student'
       ? { name: userForm.name, email: userForm.email, password: userForm.password, usn: userForm.usn, div: userForm.div, batch: userForm.batch }
       : { name: userForm.name, email: userForm.email, password: userForm.password, department: userForm.department, designation: userForm.designation };
 
     try {
-      await axios.post(`http://localhost:8000${endpoint}`, payload);
+      await api.post(`${endpoint}`, payload);
       alert(`${userType === 'student' ? 'Student' : 'Faculty'} registered successfully`);
       setShowUserModal(false);
       setUserForm({ name: '', email: '', usn: '', div: '', batch: '', department: '', designation: '', password: '' });
@@ -166,8 +174,9 @@ const AdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken'); // Assuming token based auth later, or just simple redirect for now
-    navigate('/');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login/admin');
   };
 
 
@@ -193,6 +202,7 @@ const AdminDashboard = () => {
             { id: 'users', label: 'User Registration', icon: <UserPlus size={20} /> },
             { id: 'events', label: 'Recent Events', icon: <Calendar size={20} /> },
             { id: 'materials', label: 'Materials', icon: <Package size={20} /> },
+            { id: 'settings', label: 'Settings', icon: <Settings size={20} /> },
           ].map((item) => (
             <button
               key={item.id}
@@ -477,7 +487,7 @@ const AdminDashboard = () => {
                               if (!userObj.password) userObj.password = '123456';
 
                               try {
-                                await axios.post('http://localhost:8000/api/student/register', userObj);
+                                await api.post('/student/register', userObj);
                                 successCount++;
                               } catch (err) {
                                 console.error(`Failed row ${i}:`, err);
@@ -573,6 +583,65 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Settings Tab */}
+          {activeTab === 'settings' && (
+            <div className="max-w-xl mx-auto">
+              <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-black">
+                    <Lock size={24} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold">Security Settings</h2>
+                    <p className="text-sm text-gray-500">Manage your password and security preferences</p>
+                  </div>
+                </div>
+
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  const current = e.target.currentPassword.value;
+                  const newPass = e.target.newPassword.value;
+                  const confirmPass = e.target.confirmPassword.value;
+
+                  if (newPass !== confirmPass) {
+                    alert("New passwords do not match");
+                    return;
+                  }
+
+                  try {
+                    const response = await api.post('/admin/change-password', {
+                      currentPassword: current,
+                      newPassword: newPass
+                    });
+                    if (response.data.success) {
+                      alert('Password updated successfully');
+                      e.target.reset();
+                    }
+                  } catch (error) {
+                    alert(error.response?.data?.message || 'Failed to update password');
+                  }
+                }} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Current Password</label>
+                    <input name="currentPassword" type="password" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">New Password</label>
+                    <input name="newPassword" type="password" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Confirm New Password</label>
+                    <input name="confirmPassword" type="password" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black transition-all" />
+                  </div>
+
+                  <button type="submit" className="w-full py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors mt-4">
+                    Update Password
+                  </button>
+                </form>
               </div>
             </div>
           )}

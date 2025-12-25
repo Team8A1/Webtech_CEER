@@ -24,6 +24,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Don't redirect if it's a login attempt failure
+      if (error.config.url.includes('/login') || error.config.url.includes('/auth') || error.config.url.includes('password')) {
+        return Promise.reject(error);
+      }
+
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       const user = JSON.parse(localStorage.getItem('user') || '{}');

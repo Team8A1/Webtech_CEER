@@ -41,7 +41,11 @@ function App() {
             <LabApprove />
           </ProtectedRoute>
         } />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/dashboard" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
         <Route path="/student/landing" element={
           <ProtectedRoute allowedRoles={['student']}>
             <StudentLanding />

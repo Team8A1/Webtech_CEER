@@ -2,6 +2,7 @@ const { verifyToken } = require('../utils/tokenUtils');
 const User = require('../models/User');
 const Faculty = require('../models/Faculty');
 const LabIncharge = require('../models/LabIncharge');
+const Admin = require('../models/Admin');
 
 /**
  * Middleware to protect routes - verify JWT token
@@ -24,6 +25,8 @@ const protect = async (req, res, next) => {
         user = await Faculty.findById(decoded.id).select('-password');
       } else if (decoded.role === 'labIncharge') {
         user = await LabIncharge.findById(decoded.id).select('-password');
+      } else if (decoded.role === 'admin') {
+        user = await Admin.findById(decoded.id).select('-password');
       } else {
         // Default to student/user or try to find in all collections if role is missing
         user = await User.findById(decoded.id).select('-password');
@@ -46,7 +49,7 @@ const protect = async (req, res, next) => {
         });
       }
 
-      if (!req.user.isActive) {
+      if (req.user.isActive === false) {
         return res.status(403).json({
           success: false,
           message: 'User account is inactive',

@@ -1,10 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const { getDashboardData, registerBulkStudents, registerBulkFaculty } = require('../controllers/adminController');
+const {
+    getDashboardData,
+    registerBulkStudents,
+    registerBulkFaculty,
+    createAdmin,
+    loginAdmin,
+    changePassword
+} = require('../controllers/adminController');
+const { protect, authorize } = require('../middleware/authMiddleware');
 
-// Public route for now as requested for verification
+// Auth Routes
+router.post('/login', loginAdmin);
+router.post('/create', createAdmin); // Public for initial setup
+
+// Protected Routes - Admin Only
+router.use(protect);
+router.use(authorize('admin'));
+
 router.get('/dashboard', getDashboardData);
 router.post('/register/students', registerBulkStudents);
 router.post('/register/faculty', registerBulkFaculty);
+router.post('/change-password', changePassword);
 
 module.exports = router;

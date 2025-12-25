@@ -1,32 +1,62 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import api from '../utils/api'
 import BackToLoginButton from '../components/BackToLoginButton'
 
 function AdminLogin() {
   const [isVisible, setIsVisible] = useState(false)
   const navigate = useNavigate()
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     setIsVisible(true)
   }, [])
 
-  const handleLogin = (e) => {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value
+    })
+  }
+
+  const handleLogin = async (e) => {
     e.preventDefault()
-    navigate('/admin/dashboard')
+    setError('')
+    setLoading(true)
+
+    try {
+      const response = await api.post('/admin/login', formData)
+
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.data))
+        navigate('/admin/dashboard')
+      }
+    } catch (err) {
+      console.error(err)
+      setError(err.response?.data?.message || 'Login failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-between p-20 relative">
-      <BackToLoginButton/>
+      <BackToLoginButton />
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src="/images/rh.jpg" 
-          alt="Campus Background" 
+        <img
+          src="/images/rh.jpg"
+          alt="Campus Background"
           className="w-full h-full object-cover opacity-20"
         />
       </div>
-      
+
       {/* Left Side - Login Form */}
       <div className="w-full max-w-sm relative z-10">
         <div className="bg-white p-6 shadow-lg">
@@ -49,26 +79,35 @@ function AdminLogin() {
             </p>
           </div>
 
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label 
-                htmlFor="username" 
+              <label
+                htmlFor="email"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Username
+                Email
               </label>
               <input
-                type="text"
-                id="username"
+                type="email"
+                id="email"
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200"
-                placeholder="Jonathan_Reichert07"
+                placeholder="admin@example.com"
+                required
               />
             </div>
 
             <div>
-              <label 
-                htmlFor="password" 
+              <label
+                htmlFor="password"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Password
@@ -76,14 +115,17 @@ function AdminLogin() {
               <input
                 type="password"
                 id="password"
+                value={formData.password}
+                onChange={handleChange}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200"
                 placeholder="••••••••••"
+                required
               />
             </div>
 
             <div className="text-right">
-              <a 
-                href="#" 
+              <a
+                href="#"
                 className="text-sm font-medium text-gray-900 hover:text-gray-700 underline underline-offset-2 transition-colors duration-200"
               >
                 Forgot password?
@@ -92,17 +134,19 @@ function AdminLogin() {
 
             <button
               type="submit"
-              className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3.5 transition-all duration-200 hover:shadow-lg active:scale-[0.98]"
+              disabled={loading}
+              className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3.5 transition-all duration-200 hover:shadow-lg active:scale-[0.98] disabled:opacity-50"
             >
-              Sign In
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 
           {/* Footer */}
           <div className="text-center mt-6">
             <span className="text-sm text-gray-600">Are you new? </span>
-            <a 
-              href="#" 
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); alert('Please ask current admin to create an account for you.'); }}
               className="text-sm font-medium text-gray-900 hover:text-gray-700 underline underline-offset-2 transition-colors duration-200"
             >
               Create an Account
