@@ -158,10 +158,7 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1 }) {
           <input name="sprintNo" value={form.sprintNo} onChange={handleChange} placeholder="1" required className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Date</label>
-          <input name="date" type="date" value={form.date} onChange={handleChange} required className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
-        </div>
+
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Part Name / Drawing</label>
           <input name="partName" value={form.partName} onChange={handleChange} placeholder="e.g. Robot Arm Base" required className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />

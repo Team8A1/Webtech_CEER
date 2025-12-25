@@ -30,7 +30,7 @@ const StudentNavbar = ({ user }) => {
                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/student/dashboard')}>
                     <Wind className="w-6 h-6 text-red-700" />
                     <span className={`text-2xl font-serif tracking-widest font-bold transition-colors duration-500 ${scrolled ? 'text-stone-900' : 'text-stone-900'}`}>
-                        DASHBOARD
+                        Thinkering Lab
                     </span>
                 </div>
 
@@ -50,7 +50,7 @@ const StudentNavbar = ({ user }) => {
                     <div className="flex items-center gap-4">
                         {user && (
                             <span className="text-sm font-medium text-stone-600 hidden lg:block">
-                                Hello, {user.name || 'Student'}
+                                Hello, {(user.name || 'Student').toUpperCase()}
                             </span>
                         )}
                         <button
@@ -77,7 +77,7 @@ const StudentNavbar = ({ user }) => {
                 <div className="flex flex-col p-6 space-y-6">
                     {user && (
                         <div className="text-stone-500 text-sm font-medium pb-4 border-b border-stone-100">
-                            Signed in as {user.name}
+                            Signed in as {user.name.toUpperCase()}
                         </div>
                     )}
                     {['Projects', 'Team', 'Resources'].map((item) => (

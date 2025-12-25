@@ -83,10 +83,6 @@ function FacultyApprove() {
   }
 
   const confirmReject = async () => {
-    if (!rejectionReason.trim()) {
-      alert("Please provide a reason for rejection.");
-      return;
-    }
     try {
       const token = localStorage.getItem('token');
       await axios.patch('http://localhost:8000/api/faculty/bom/update', {
@@ -126,7 +122,7 @@ function FacultyApprove() {
 
   const getFilteredBOMs = () => {
     if (filter === 'pending') return boms.filter(b => !b.guideApproved && b.status !== 'rejected')
-    if (filter === 'approved') return boms.filter(b => b.guideApproved)
+    if (filter === 'approved') return boms.filter(b => b.guideApproved && b.status !== 'rejected')
     if (filter === 'rejected') return boms.filter(b => b.status === 'rejected')
     return boms
   }
@@ -239,29 +235,26 @@ function FacultyApprove() {
                   <div className={`w-1 ${bom.guideApproved ? 'bg-green-500' : (bom.status === 'rejected' ? 'bg-red-500' : 'bg-yellow-500')}`}></div>
 
                   {/* Main Content */}
-                  <div className="flex-1 p-6">
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {/* Left Column - BOM Details */}
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-4">{bom.partName || 'Unnamed Part'}</h3>
-
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-start">
-                            <span className="text-sm font-semibold text-gray-600">Serial Number:</span>
-                            <span className="text-sm text-gray-900 font-medium">{bom.slNo}</span>
-                          </div>
-                          <div className="flex justify-between items-start">
-                            <span className="text-sm font-semibold text-gray-600">Sprint:</span>
-                            <span className="text-sm text-gray-900 font-medium">{bom.sprintNo}</span>
-                          </div>
-                          <div className="flex justify-between items-start">
-                            <span className="text-sm font-semibold text-gray-600">Date:</span>
-                            <span className="text-sm text-gray-900 font-medium">{bom.date}</span>
-                          </div>
-                          <div className="flex justify-between items-start">
-                            <span className="text-sm font-semibold text-gray-600">Quantity:</span>
-                            <span className="text-sm text-gray-900 font-medium">{bom.qty}</span>
-                          </div>
+                  {/* Main Content */}
+                  <div className="flex-1 p-6 min-w-0">
+                    <div className="grid md:grid-cols-[3fr_2fr] gap-6">
+                      {/* Left Column - Consumable Details */}
+                      <div className="min-w-0 space-y-3">
+                        <div className="grid grid-cols-[140px_1fr] items-start">
+                          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Consumable Name:</span>
+                          <div className="text-sm text-gray-900 font-medium max-h-24 overflow-auto pb-2">{bom.consumableName}</div>
+                        </div>
+                        <div className="grid grid-cols-[140px_1fr] items-start">
+                          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Specification:</span>
+                          <div className="text-sm text-gray-900 font-medium max-h-24 overflow-auto pb-2">{bom.specification}</div>
+                        </div>
+                        <div className="grid grid-cols-[140px_1fr] items-start">
+                          <span className="text-sm font-semibold text-gray-600">Quantity:</span>
+                          <span className="text-sm text-gray-900 font-medium">{bom.qty}</span>
+                        </div>
+                        <div className="grid grid-cols-[140px_1fr] items-start">
+                          <span className="text-sm font-semibold text-gray-600">Date:</span>
+                          <span className="text-sm text-gray-900 font-medium">{new Date(bom.date).toLocaleDateString()}</span>
                         </div>
 
                         <div className="mt-4 pt-4 border-t border-gray-200">
@@ -271,38 +264,38 @@ function FacultyApprove() {
                         </div>
                       </div>
 
-                      {/* Right Column - Material & Status */}
-                      <div>
-                        <div className="space-y-4">
-                          <div>
-                            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Consumable Name</label>
-                            <p className="text-sm text-gray-900 mt-1">{bom.consumableName}</p>
+                      {/* Right Column - Project Info & Status */}
+                      <div className="min-w-0">
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-[140px_1fr] items-start">
+                            <span className="text-sm font-semibold text-gray-600">Part Name:</span>
+                            <div className="text-sm text-gray-900 font-medium max-h-24 overflow-auto pb-2">{bom.partName || 'Unnamed Part'}</div>
                           </div>
-                          <div>
-                            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Specification</label>
-                            <p className="text-sm text-gray-900 mt-1 bg-gray-50 p-2 rounded">{bom.specification}</p>
+                          <div className="grid grid-cols-[140px_1fr] items-start">
+                            <span className="text-sm font-semibold text-gray-600">Sprint:</span>
+                            <div className="text-sm text-gray-900 font-medium max-h-24 overflow-auto pb-2">{bom.sprintNo}</div>
                           </div>
                         </div>
 
                         {/* Approval Status */}
                         <div className="mt-4 pt-4 border-t border-gray-200">
                           <div className="space-y-2">
-                            <div className="flex items-center justify-between">
+                            <div className="grid grid-cols-[140px_1fr] items-center">
                               <span className="text-sm font-semibold text-gray-600">Guide Approval:</span>
-                              <span className={`px-3 py-1 rounded-full text-xs font-bold ${bom.guideApproved
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold w-fit ${bom.guideApproved
                                 ? 'bg-green-100 text-green-800'
                                 : (bom.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')
                                 }`}>
                                 {bom.guideApproved ? '✓ Approved' : (bom.status === 'rejected' ? '✗ Rejected' : '⏳ Pending')}
                               </span>
                             </div>
-                            <div className="flex items-center justify-between">
+                            <div className="grid grid-cols-[140px_1fr] items-center">
                               <span className="text-sm font-semibold text-gray-600">Lab Approval:</span>
-                              <span className={`px-3 py-1 rounded-full text-xs font-bold ${bom.labApproved
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold w-fit ${bom.labApproved
                                 ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800'
+                                : (bom.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')
                                 }`}>
-                                {bom.labApproved ? '✓ Approved' : '⏳ Pending'}
+                                {bom.labApproved ? '✓ Approved' : (bom.status === 'rejected' ? '✗ Rejected' : '⏳ Pending')}
                               </span>
                             </div>
                           </div>
@@ -381,11 +374,11 @@ function FacultyApprove() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold mb-4">Reject Request</h3>
-            <p className="text-gray-600 mb-4">Please provide a reason for rejecting this request.</p>
+            <p className="text-gray-600 mb-4">Please provide a reason for rejecting this request (Optional).</p>
             <textarea
               className="w-full p-3 border border-gray-300 rounded mb-4 focus:ring-2 focus:ring-red-500 outline-none"
               rows="4"
-              placeholder="Reason for rejection..."
+              placeholder="Reason for rejection (Optional)..."
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
             ></textarea>

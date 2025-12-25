@@ -82,6 +82,9 @@ function StudentBOMPage() {
   }
 
   const downloadPDF = () => {
+    // Filter to only include approved items (not rejected)
+    const approvedBoms = boms.filter(b => b.guideApproved && b.status !== 'rejected')
+
     const element = document.getElementById('bom-table-pdf')
     const printWindow = window.open('', '', 'height=600,width=1200')
 
@@ -108,7 +111,7 @@ function StudentBOMPage() {
       </head>
       <body>
         <div class="header">
-          <h1>Bill of Materials Report</h1>
+          <h1>Bill of Materials Report - Approved Items</h1>
           <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
         </div>
         
@@ -127,20 +130,17 @@ function StudentBOMPage() {
             </tr>
           </thead>
           <tbody>
-            ${boms.map(bom => `
+            ${approvedBoms.map(bom => `
               <tr>
                 <td>${bom.slNo}</td>
                 <td>${bom.sprintNo}</td>
-                <td>${bom.date}</td>
+                <td>${new Date(bom.date).toLocaleDateString()}</td>
                 <td><strong>${bom.partName}</strong></td>
                 <td>${bom.consumableName}</td>
                 <td>${bom.specification}</td>
                 <td style="text-align: center;">${bom.qty}</td>
                 <td>
-                  ${bom.status === 'rejected'
-        ? '<span class="badge" style="background-color: #fee2e2; color: #991b1b;">Rejected</span>'
-        : `<span class="badge ${bom.guideApproved ? 'badge-approved' : 'badge-pending'}">${bom.guideApproved ? 'Approved' : 'Pending'}</span>`
-      }
+                  <span class="badge badge-approved">Approved</span>
                 </td>
                 <td><span class="badge ${bom.labApproved ? 'badge-approved' : 'badge-pending'}">${bom.labApproved ? 'Approved' : 'Pending'}</span></td>
               </tr>
@@ -149,7 +149,7 @@ function StudentBOMPage() {
         </table>
         
         <div class="footer">
-          <p>This is an auto-generated report. Total Records: ${boms.length}</p>
+          <p>This is an auto-generated report. Total Approved Records: ${approvedBoms.length}</p>
         </div>
       </body>
       </html>
@@ -164,7 +164,7 @@ function StudentBOMPage() {
 
   const getFilteredBOMs = () => {
     if (filter === 'pending') return boms.filter(b => !b.guideApproved && b.status !== 'rejected')
-    if (filter === 'approved') return boms.filter(b => b.guideApproved)
+    if (filter === 'approved') return boms.filter(b => b.guideApproved && b.status !== 'rejected')
     if (filter === 'rejected') return boms.filter(b => b.status === 'rejected')
     return boms
   }
@@ -306,7 +306,7 @@ function StudentBOMPage() {
                           <th className="px-6 py-4 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Details</th>
                           <th className="px-6 py-4 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Specs</th>
                           <th className="px-6 py-4 text-center text-xs font-bold text-stone-500 uppercase tracking-widest">Status</th>
-                          <th className="px-6 py-4 text-right text-xs font-bold text-stone-500 uppercase tracking-widest">Actions</th>
+                          <th className="px-6 py-4 text-right text-xs font-bold text-stone-500 uppercase tracking-widest">{filter === 'rejected' ? 'Reason' : 'Actions'}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-stone-100">
@@ -314,9 +314,9 @@ function StudentBOMPage() {
                           <tr key={bom._id || bom.id} className="group hover:bg-stone-50/50 transition-colors">
                             <td className="px-6 py-5">
                               <div className="flex flex-col">
-                                <span className="font-serif text-lg text-stone-900 font-medium">{bom.partName}</span>
+                                <div className="font-serif text-lg text-stone-900 font-medium w-[30ch] overflow-auto pb-2 whitespace-nowrap">{bom.partName}</div>
                                 <span className="text-xs text-stone-400 uppercase tracking-wider mt-1">
-                                  {bom.slNo} • Sprint {bom.sprintNo} • {bom.date}
+                                  {bom.slNo} • Sprint {bom.sprintNo} • {new Date(bom.date).toLocaleDateString()}
                                 </span>
                               </div>
                             </td>
@@ -352,30 +352,36 @@ function StudentBOMPage() {
                               </div>
                             </td>
                             <td className="px-6 py-5 text-right">
-                              <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                {!bom.guideApproved && bom.status !== 'rejected' && (
-                                  <>
-                                    <button
-                                      onClick={() => handleEdit(bom)}
-                                      className="p-2 text-stone-400 hover:text-stone-900 hover:bg-white rounded-full transition-all"
-                                      title="Edit"
-                                    >
-                                      <Edit2 className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        if (confirm('Delete this BOM?')) {
-                                          handleDelete(bom._id || bom.id)
-                                        }
-                                      }}
-                                      className="p-2 text-stone-400 hover:text-red-700 hover:bg-white rounded-full transition-all"
-                                      title="Delete"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  </>
-                                )}
-                              </div>
+                              {bom.status === 'rejected' ? (
+                                <div className="text-sm text-red-600 font-medium w-[30ch] overflow-auto pb-2 whitespace-nowrap ml-auto">
+                                  {bom.rejectionReason || 'No reason provided'}
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  {!bom.guideApproved && bom.status !== 'rejected' && (
+                                    <>
+                                      <button
+                                        onClick={() => handleEdit(bom)}
+                                        className="p-2 text-stone-400 hover:text-stone-900 hover:bg-white rounded-full transition-all"
+                                        title="Edit"
+                                      >
+                                        <Edit2 className="w-4 h-4" />
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          if (confirm('Delete this BOM?')) {
+                                            handleDelete(bom._id || bom.id)
+                                          }
+                                        }}
+                                        className="p-2 text-stone-400 hover:text-red-700 hover:bg-white rounded-full transition-all"
+                                        title="Delete"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              )}
                             </td>
                           </tr>
                         ))}
