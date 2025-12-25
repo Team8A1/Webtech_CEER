@@ -16,7 +16,9 @@ import {
   LogOut,
   UserPlus,
   Settings,
-  Lock
+
+  Lock,
+  Wrench
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,6 +30,7 @@ const AdminDashboard = () => {
   // Data States
   const [facultiesData, setFacultiesData] = useState([]);
   const [materialsData, setMaterialsData] = useState([]);
+  const [equipmentsData, setEquipmentsData] = useState([]);
   const [eventsData, setEventsData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,6 +46,9 @@ const AdminDashboard = () => {
   const [showEventModal, setShowEventModal] = useState(false);
   const [eventForm, setEventForm] = useState({ title: '', date: '', category: '', image: null });
 
+  const [showEquipmentModal, setShowEquipmentModal] = useState(false);
+  const [equipmentForm, setEquipmentForm] = useState({ name: '', description: '', inCharge: '', image: null });
+
   const [showUserModal, setShowUserModal] = useState(false);
   const [userType, setUserType] = useState('student'); // 'student' or 'faculty'
   const [userForm, setUserForm] = useState({
@@ -56,7 +62,7 @@ const AdminDashboard = () => {
 
   const fetchInitialData = async () => {
     setLoading(true);
-    await Promise.all([fetchDashboardData(), fetchMaterials(), fetchEvents()]);
+    await Promise.all([fetchDashboardData(), fetchMaterials(), fetchEvents(), fetchEquipments()]);
     setLoading(false);
   };
 
@@ -79,6 +85,13 @@ const AdminDashboard = () => {
       const response = await api.get('/events');
       if (response.data.success) setEventsData(response.data.data);
     } catch (error) { console.error('Error fetching events:', error); }
+  };
+
+  const fetchEquipments = async () => {
+    try {
+      const response = await api.get('/equipment/list');
+      if (response.data.success) setEquipmentsData(response.data.data);
+    } catch (error) { console.error('Error fetching equipments:', error); }
   };
 
   // --- Handlers ---
@@ -154,6 +167,37 @@ const AdminDashboard = () => {
     } catch (error) { alert('Error deleting event'); }
   };
 
+  const handleEquipmentSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('name', equipmentForm.name);
+    formData.append('description', equipmentForm.description);
+    formData.append('inCharge', equipmentForm.inCharge);
+    if (equipmentForm.image) {
+      formData.append('image', equipmentForm.image);
+    }
+
+    try {
+      await api.post('/equipment/add', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      alert('Equipment added successfully');
+      setShowEquipmentModal(false);
+      setEquipmentForm({ name: '', description: '', inCharge: '', image: null });
+      fetchEquipments();
+    } catch (error) {
+      alert('Error saving equipment: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const handleDeleteEquipment = async (id) => {
+    if (!confirm('Delete this equipment?')) return;
+    try {
+      await api.delete(`/equipment/delete/${id}`);
+      fetchEquipments();
+    } catch (error) { alert('Error deleting equipment'); }
+  };
+
   const handleUserRegister = async (e) => {
     e.preventDefault();
     const endpoint = userType === 'student' ? '/student/register' : '/faculty/register';
@@ -202,6 +246,7 @@ const AdminDashboard = () => {
             { id: 'users', label: 'User Registration', icon: <UserPlus size={20} /> },
             { id: 'events', label: 'Recent Events', icon: <Calendar size={20} /> },
             { id: 'materials', label: 'Materials', icon: <Package size={20} /> },
+            { id: 'equipment', label: 'Equipment', icon: <Wrench size={20} /> },
             { id: 'settings', label: 'Settings', icon: <Settings size={20} /> },
           ].map((item) => (
             <button
@@ -232,6 +277,7 @@ const AdminDashboard = () => {
             {activeTab === 'users' && 'User Registration'}
             {activeTab === 'events' && 'Event Management'}
             {activeTab === 'materials' && 'Material Management'}
+            {activeTab === 'equipment' && 'Equipment Management'}
           </h1>
           <div className="flex items-center gap-4">
             <div className="w-8 h-8 bg-black rounded-full text-white flex items-center justify-center text-sm font-bold">A</div>
@@ -587,6 +633,40 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* Equipment Tab */}
+          {activeTab === 'equipment' && (
+            <div className="max-w-6xl mx-auto">
+              <div className="flex justify-end mb-8">
+                <button
+                  onClick={() => setShowEquipmentModal(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                >
+                  <Plus size={18} /> Add Equipment
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {equipmentsData.map(item => (
+                  <div key={item._id} className="group relative bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all">
+                    <div className="aspect-video bg-gray-100 overflow-hidden relative">
+                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                      <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => handleDeleteEquipment(item._id)} className="p-2 bg-white rounded-full shadow hover:text-red-600">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-gray-900 mb-1">{item.name}</h3>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">In Charge: {item.inCharge}</p>
+                      <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Settings Tab */}
           {activeTab === 'settings' && (
             <div className="max-w-xl mx-auto">
@@ -731,6 +811,34 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   <button type="submit" className="w-full py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800">Create Event</button>
+                </form>
+              </div>
+            </div>
+          )
+        }
+
+        {/* Equipment Modal */}
+        {
+          showEquipmentModal && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-bold">Add New Equipment</h2>
+                  <button onClick={() => setShowEquipmentModal(false)}><X className="text-gray-400 hover:text-black" /></button>
+                </div>
+                <form onSubmit={handleEquipmentSubmit} className="space-y-4">
+                  <input type="text" placeholder="Equipment Name" required value={equipmentForm.name} onChange={e => setEquipmentForm({ ...equipmentForm, name: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black" />
+                  <input type="text" placeholder="Person In Charge" required value={equipmentForm.inCharge} onChange={e => setEquipmentForm({ ...equipmentForm, inCharge: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black" />
+                  <textarea placeholder="Description" required value={equipmentForm.description} onChange={e => setEquipmentForm({ ...equipmentForm, description: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black h-24 resize-none" />
+
+                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors relative">
+                    <input type="file" accept="image/*" onChange={e => setEquipmentForm({ ...equipmentForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" required />
+                    <div className="flex flex-col items-center gap-2 text-gray-400">
+                      <Upload size={24} />
+                      <span className="text-sm">{equipmentForm.image?.name || 'Upload Equipment Image'}</span>
+                    </div>
+                  </div>
+                  <button type="submit" className="w-full py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800">Add Equipment</button>
                 </form>
               </div>
             </div>

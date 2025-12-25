@@ -1,192 +1,185 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Search, Info, User } from 'lucide-react';
+import StudentNavbar from '../components/StudentNavbar';
+import StudentFooter from '../components/StudentFooter';
 
 function AvailableMachines() {
-  const [selectedMachine, setSelectedMachine] = useState(null)
+  const [equipment, setEquipment] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedItem, setSelectedItem] = useState(null);
 
-  const machines = [
-    {
-      id: 1,
-      name: 'Lathe Machine',
-      category: 'Machining',
-      description: 'Precision machine for cylindrical and conical shaping',
-      specs: 'Chuck capacity: 16mm, Speed: 200-2500 RPM',
-      usage: 'Turning, threading, facing operations',
-      capacity: '3 simultaneous uses'
-    },
-    {
-      id: 2,
-      name: 'Drilling Machine',
-      category: 'Machining',
-      description: 'Vertical drilling machine for precision hole making',
-      specs: 'Max spindle speed: 3000 RPM, Table size: 600x400mm',
-      usage: 'Drilling, boring, reaming holes'
-    },
-    {
-      id: 3,
-      name: '3D Printer',
-      category: 'Additive Manufacturing',
-      description: 'FDM 3D printer for rapid prototyping',
-      specs: 'Build volume: 200x200x200mm, Resolution: 0.1mm',
-      usage: 'Prototype creation, custom part manufacturing'
-    },
-    {
-      id: 4,
-      name: 'Soldering Iron',
-      category: 'Electronics',
-      description: 'Temperature-controlled soldering station',
-      specs: 'Temperature range: 200-450°C, Tip size: 1.6mm',
-      usage: 'PCB assembly, component soldering'
-    },
-    {
-      id: 5,
-      name: 'CNC Machine',
-      category: 'Machining',
-      description: 'Computer numerical control machine for complex cuts',
-      specs: 'Work area: 1000x500mm, Speed: 0-3000 RPM',
-      usage: 'Precision cutting, engraving, milling'
-    },
-    {
-      id: 6,
-      name: 'Oscilloscope',
-      category: 'Measurement',
-      description: 'Electronic test instrument for signal analysis',
-      specs: 'Channels: 2, Bandwidth: 100MHz, Sample rate: 1GSa/s',
-      usage: 'Signal measurement, circuit debugging'
-    },
-    {
-      id: 7,
-      name: 'Multimeter',
-      category: 'Measurement',
-      description: 'Digital multimeter for voltage and current measurement',
-      specs: 'DC voltage: 0-1000V, Current: 0-10A',
-      usage: 'Circuit testing, troubleshooting'
-    },
-    {
-      id: 8,
-      name: 'Hand Tools Kit',
-      category: 'Tools',
-      description: 'Complete set of hand tools for assembly and disassembly',
-      specs: '50+ pieces including wrenches, screwdrivers, pliers',
-      usage: 'General assembly, maintenance, repairs'
+  useEffect(() => {
+    fetchEquipment();
+  }, []);
+
+  const fetchEquipment = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/equipment/list');
+      if (response.data.success) {
+        setEquipment(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching equipment:', error);
+    } finally {
+      setLoading(false);
     }
-  ]
+  };
 
-  if (selectedMachine) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-        {/* Header */}
-        <section className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white">
-          <div className="max-w-7xl mx-auto px-6 py-12">
-            <button
-              onClick={() => setSelectedMachine(null)}
-              className="mb-6 px-4 py-2 bg-white text-slate-900 rounded-lg font-semibold hover:bg-slate-100 transition-colors"
-            >
-              ← Back to Machines
-            </button>
-            <h1 className="text-4xl font-bold">{selectedMachine.name}</h1>
-            <p className="text-slate-300 mt-2">{selectedMachine.category}</p>
-          </div>
-        </section>
-
-        {/* Content */}
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Info Section */}
-            <div>
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Category</h2>
-                <p className="text-blue-600 font-semibold text-lg">{selectedMachine.category}</p>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Status</h2>
-                <p className="text-green-600 font-bold text-lg">✓ Available</p>
-              </div>
-            </div>
-
-            {/* Details Section */}
-            <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Description</h2>
-                <p className="text-gray-700 leading-relaxed">{selectedMachine.description}</p>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Specifications</h2>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-gray-600 font-semibold">Technical Details:</span>
-                    <p className="text-gray-900 mt-1">{selectedMachine.specs}</p>
-                  </div>
-                  {selectedMachine.capacity && (
-                    <div>
-                      <span className="text-gray-600 font-semibold">Capacity:</span>
-                      <p className="text-gray-900 mt-1">{selectedMachine.capacity}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Usage & Applications</h2>
-                <p className="text-gray-700">{selectedMachine.usage}</p>
-              </div>
-
-              <div className="bg-blue-50 rounded-lg border-l-4 border-blue-600 p-6">
-                <h3 className="text-lg font-bold text-blue-900 mb-2">Safety Guidelines & Selection</h3>
-                <ul className="text-sm text-blue-800 space-y-2">
-                  <li>✓ Ensure proper training before using any machine</li>
-                  <li>✓ Always wear appropriate safety equipment (goggles, gloves)</li>
-                  <li>✓ Check machine condition and cleanliness before use</li>
-                  <li>✓ Verify machine availability in the booking system</li>
-                  <li>✓ Get lab instructor approval before operation</li>
-                  <li>✓ Clean and return machine in proper condition</li>
-                  <li>✓ Report any issues immediately to lab staff</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const filteredEquipment = equipment.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Header */}
-      <section className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <h1 className="text-4xl font-bold mb-2">Available Machines</h1>
-          <p className="text-slate-300">Browse equipment and machines available in the laboratory</p>
+    <div className="min-h-screen bg-stone-50 font-sans text-stone-900">
+      {/* Reusing StudentNavbar if meaningful, or just a header */}
+      <section className="bg-white border-b border-stone-200">
+        <div className="container mx-auto px-6 py-6">
+          <h1 className="text-3xl font-serif text-stone-900">Available Equipment</h1>
+          <p className="text-stone-500 mt-2">Browse the list of equipment available in the laboratory.</p>
         </div>
       </section>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="space-y-4">
-          {machines.map(machine => (
-            <div
-              key={machine.id}
-              onClick={() => setSelectedMachine(machine)}
-              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200 p-6 cursor-pointer hover:border-blue-400"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">{machine.name}</h3>
-                  <p className="text-sm text-blue-600 font-semibold mt-1">{machine.category}</p>
-                  <p className="text-sm text-gray-600 mt-2">{machine.description}</p>
-                  <p className="text-sm text-gray-500 mt-2">Status: Available</p>
+      <main className="container mx-auto px-6 py-12">
+        {/* Search Bar */}
+        <div className="mb-10 max-w-md">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
+            <input
+              type="text"
+              placeholder="Search equipment..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900 transition-all font-medium"
+            />
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-900"></div>
+          </div>
+        ) : filteredEquipment.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-3xl border border-stone-100">
+            <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Info className="w-8 h-8 text-stone-400" />
+            </div>
+            <h3 className="text-xl font-serif text-stone-900 mb-2">No Equipment Found</h3>
+            <p className="text-stone-500">
+              {searchTerm ? `No matches for "${searchTerm}"` : "No equipment has been listed yet."}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredEquipment.map((item) => (
+              <div
+                key={item._id}
+                onClick={() => setSelectedItem(item)}
+                className="group bg-white rounded-2xl overflow-hidden border border-stone-200 hover:shadow-xl hover:border-stone-300 transition-all duration-300 cursor-pointer flex flex-col h-full"
+              >
+                {/* Image */}
+                <div className="h-56 relative overflow-hidden bg-stone-100">
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors whitespace-nowrap ml-4">
-                  View Details
+
+                {/* Content */}
+                <div className="p-6 flex flex-col flex-grow">
+                  <h3 className="text-xl font-serif text-stone-900 mb-2 group-hover:text-red-700 transition-colors">
+                    {item.name}
+                  </h3>
+
+                  {/* In Charge */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="p-1 bg-stone-100 rounded-full">
+                      <User className="w-3 h-3 text-stone-500" />
+                    </div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
+                      In Charge: <span className="text-stone-900">{item.inCharge}</span>
+                    </span>
+                  </div>
+
+                  <p className="text-stone-600 text-sm leading-relaxed line-clamp-3 mb-4 flex-grow">
+                    {item.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+
+      {/* Detail Modal */}
+      {selectedItem && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
+          onClick={() => setSelectedItem(null)}
+        >
+          <div
+            className="bg-white rounded-[2rem] max-w-2xl w-full flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="h-72 relative">
+              <img
+                src={selectedItem.imageUrl}
+                alt={selectedItem.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+              <div className="absolute bottom-6 left-6 text-white">
+                <h2 className="text-3xl font-serif mb-2">{selectedItem.name}</h2>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-1 bg-white/20 backdrop-blur-md rounded text-xs font-bold uppercase tracking-wider">
+                    Equipment
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedItem(null)}
+                className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full backdrop-blur-md transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="p-8">
+              <div className="flex items-center gap-3 mb-6 p-4 bg-stone-50 rounded-xl border border-stone-100">
+                <div className="w-10 h-10 bg-stone-200 rounded-full flex items-center justify-center text-stone-500">
+                  <User className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">Person In Charge</p>
+                  <p className="text-stone-900 font-medium">{selectedItem.inCharge}</p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Description</p>
+                <p className="text-stone-600 leading-relaxed font-light text-lg">
+                  {selectedItem.description}
+                </p>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-stone-100 flex justify-end">
+                <button
+                  onClick={() => setSelectedItem(null)}
+                  className="px-8 py-3 bg-stone-900 text-white rounded-full font-bold text-sm hover:bg-stone-800 transition-colors"
+                >
+                  CLOSE
                 </button>
               </div>
             </div>
-          ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
-  )
+  );
 }
 
-export default AvailableMachines
+export default AvailableMachines;

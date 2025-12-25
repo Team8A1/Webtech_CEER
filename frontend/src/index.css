@@ -14,3 +14,13 @@ html {
 
 .font-serif { font-family: 'Playfair Display', serif; }
 .font-sans { font-family: 'Inter', sans-serif; }
+
+/* Custom Scrollbar Hide Utility */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;    /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}

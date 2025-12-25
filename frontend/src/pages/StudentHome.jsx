@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -6,6 +6,9 @@ import {
   Leaf,
   Zap,
   ClipboardList,
+  Wrench,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import StudentNavbar from '../components/StudentNavbar';
 import StudentFooter from '../components/StudentFooter';
@@ -183,8 +186,21 @@ const StudentHome = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [materials, setMaterials] = useState([]);
+  const [equipments, setEquipments] = useState([]);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
+  const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const equipmentScrollRef = useRef(null);
+
+  const scrollEquipment = (direction) => {
+    if (equipmentScrollRef.current) {
+      const scrollAmount = 400; // Approximate card width + gap
+      equipmentScrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   useEffect(() => {
     // Check Auth
@@ -279,10 +295,23 @@ const StudentHome = () => {
       }
     };
 
+    // Fetch Equipments
+    const fetchEquipments = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/equipment/list');
+        if (response.data.success) {
+          setEquipments(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching equipments", error);
+      }
+    };
+
     // Small delay to simulate loading and ensure smooth transition
     setTimeout(() => {
       fetchTeam();
       fetchMaterials();
+      fetchEquipments();
     }, 500);
 
   }, [navigate]);
@@ -391,6 +420,88 @@ const StudentHome = () => {
           </div>
         </section>
 
+        {/* Equipment Section */}
+        <section className="py-24 bg-white" id="equipment">
+          <div className="container mx-auto px-6">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+              <div>
+                <span className="text-red-700 text-xs font-bold uppercase tracking-widest">Lab Resources</span>
+                <h2 className="text-4xl font-serif text-stone-900 mt-4">Available Equipment</h2>
+              </div>
+            </div>
+
+            {equipments.length === 0 ? (
+              <div className="text-center py-12 text-stone-500 bg-stone-50 rounded-3xl border border-stone-100">
+                No equipment currently listed.
+              </div>
+            ) : (
+              <div className="relative group/section">
+                {/* Scroll Buttons */}
+                <button
+                  onClick={() => scrollEquipment('left')}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 -ml-3 z-10 w-12 h-12 bg-white rounded-full shadow-lg border border-stone-100 flex items-center justify-center text-stone-600 hover:text-red-700 hover:scale-110 transition-all opacity-0 group-hover/section:opacity-100"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={() => scrollEquipment('right')}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 -mr-3 z-10 w-12 h-12 bg-white rounded-full shadow-lg border border-stone-100 flex items-center justify-center text-stone-600 hover:text-red-700 hover:scale-110 transition-all opacity-0 group-hover/section:opacity-100"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+
+                <div
+                  ref={equipmentScrollRef}
+                  className="flex overflow-x-auto pb-8 gap-6 snap-x scrollbar-hide -mx-6 px-6"
+                >
+                  {equipments.map((item) => (
+                    <div
+                      key={item._id}
+                      onClick={() => setSelectedEquipment(item)}
+                      className="flex-none w-[350px] snap-center group bg-stone-50 rounded-2xl overflow-hidden border border-stone-100 hover:shadow-xl hover:border-red-100 transition-all duration-300 cursor-pointer flex flex-col"
+                    >
+                      {/* Image */}
+                      <div className="h-56 relative overflow-hidden bg-stone-200">
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-6 flex flex-col flex-grow">
+                        <h3 className="text-xl font-serif text-stone-900 mb-2 group-hover:text-red-700 transition-colors">
+                          {item.name}
+                        </h3>
+
+                        {/* In Charge */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="p-1.5 bg-white rounded-full border border-stone-200">
+                            <Wrench className="w-3 h-3 text-stone-500" />
+                          </div>
+                          <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
+                            In Charge: <span className="text-stone-900 ml-1">{item.inCharge}</span>
+                          </span>
+                        </div>
+
+                        <p className="text-stone-600 text-sm leading-relaxed line-clamp-3 mb-4 flex-grow font-light">
+                          {item.description}
+                        </p>
+
+                        <div className="flex items-center text-red-700 text-sm font-bold tracking-wide group-hover:translate-x-1 transition-transform">
+                          VIEW DETAILS <ArrowRight className="w-4 h-4 ml-2" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
         <TeamSection team={team} loading={loading} />
       </main>
 
@@ -398,97 +509,98 @@ const StudentHome = () => {
 
       {/* Material Details Modal */}
       {/* Material Details Modal */}
-      {selectedMaterial && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
-          onClick={() => setSelectedMaterial(null)}
-        >
+      {
+        selectedMaterial && (
           <div
-            className="bg-white rounded-[2rem] max-w-3xl w-full h-[550px] flex flex-col md:flex-row overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 border border-white/20"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
+            onClick={() => setSelectedMaterial(null)}
           >
-            {/* Image Section */}
-            <div className="md:w-5/12 h-full relative bg-stone-200 group overflow-hidden">
-              <div className="absolute inset-0 bg-stone-300 animate-pulse" />
-              <img
-                src={selectedMaterial.imageUrl || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80'}
-                alt={selectedMaterial.name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                onLoad={(e) => e.target.previousSibling.style.display = 'none'}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
+            <div
+              className="bg-white rounded-[2rem] max-w-3xl w-full h-[550px] flex flex-col md:flex-row overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 border border-white/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Image Section */}
+              <div className="md:w-5/12 h-full relative bg-stone-200 group overflow-hidden">
+                <div className="absolute inset-0 bg-stone-300 animate-pulse" />
+                <img
+                  src={selectedMaterial.imageUrl || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80'}
+                  alt={selectedMaterial.name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  onLoad={(e) => e.target.previousSibling.style.display = 'none'}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
 
-              <div className="absolute bottom-6 left-6 text-white">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg border border-white/30">
-                    <Zap className="w-4 h-4 text-orange-300" />
-                  </span>
-                  <span className="text-xs font-medium uppercase tracking-wider text-orange-200">Energy Impact</span>
-                </div>
-                <p className="font-serif text-3xl">{selectedMaterial.embodiedEnergy} <span className="text-lg font-sans text-stone-300">MJ/kg</span></p>
-              </div>
-            </div>
-
-            {/* Content Section */}
-            <div className="md:w-7/12 p-6 md:p-8 flex flex-col bg-white h-full relative">
-              <div className="flex justify-between items-start mb-4 shrink-0">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className={`px-3 py-1 text-xs font-bold uppercase tracking-widest rounded-full border ${selectedMaterial.formType === 'sheet' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                      selectedMaterial.formType === 'rod' ? 'bg-orange-50 text-orange-700 border-orange-100' :
-                        'bg-stone-100 text-stone-600 border-stone-200'
-                      }`}>
-                      {selectedMaterial.formType || 'Material'}
+                <div className="absolute bottom-6 left-6 text-white">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg border border-white/30">
+                      <Zap className="w-4 h-4 text-orange-300" />
                     </span>
-                    <span className="text-xs font-medium text-stone-400">ID: {selectedMaterial._id.slice(-6).toUpperCase()}</span>
+                    <span className="text-xs font-medium uppercase tracking-wider text-orange-200">Energy Impact</span>
                   </div>
-                  <h3 className="text-3xl font-serif text-stone-900 leading-tight truncate pr-4">
-                    {selectedMaterial.name}
-                  </h3>
+                  <p className="font-serif text-3xl">{selectedMaterial.embodiedEnergy} <span className="text-lg font-sans text-stone-300">MJ/kg</span></p>
                 </div>
-                <button
-                  onClick={() => setSelectedMaterial(null)}
-                  className="p-2 -mr-2 -mt-2 text-stone-300 hover:text-stone-900 rounded-full hover:bg-stone-50 transition-all duration-300 group"
-                >
-                  <svg className="w-8 h-8 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
               </div>
 
-              <div className="flex-grow flex flex-col gap-4 overflow-hidden">
-                <div className="shrink-0 max-h-24 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-stone-200 scrollbar-track-transparent">
-                  <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 flex items-center gap-2 sticky top-0 bg-white pb-1">
-                    <span className="w-8 h-px bg-stone-200"></span> About
-                  </p>
-                  <p className="text-stone-600 text-sm leading-relaxed font-light">
-                    {selectedMaterial.description}
-                  </p>
+              {/* Content Section */}
+              <div className="md:w-7/12 p-6 md:p-8 flex flex-col bg-white h-full relative">
+                <div className="flex justify-between items-start mb-4 shrink-0">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className={`px-3 py-1 text-xs font-bold uppercase tracking-widest rounded-full border ${selectedMaterial.formType === 'sheet' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                        selectedMaterial.formType === 'rod' ? 'bg-orange-50 text-orange-700 border-orange-100' :
+                          'bg-stone-100 text-stone-600 border-stone-200'
+                        }`}>
+                        {selectedMaterial.formType || 'Material'}
+                      </span>
+                      <span className="text-xs font-medium text-stone-400">ID: {selectedMaterial._id.slice(-6).toUpperCase()}</span>
+                    </div>
+                    <h3 className="text-3xl font-serif text-stone-900 leading-tight truncate pr-4">
+                      {selectedMaterial.name}
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => setSelectedMaterial(null)}
+                    className="p-2 -mr-2 -mt-2 text-stone-300 hover:text-stone-900 rounded-full hover:bg-stone-50 transition-all duration-300 group"
+                  >
+                    <svg className="w-8 h-8 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 md:gap-4 overflow-y-auto scrollbar-hide pb-2">
-                  <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100 hover:border-red-100 transition-colors group">
-                    <div className="flex items-center gap-2 mb-1">
-                      <ArrowRight className="w-3 h-3 text-red-400 group-hover:translate-x-1 transition-transform" />
-                      <p className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Dimension Display</p>
-                    </div>
-                    <p className="text-stone-900 font-medium font-serif text-lg">{selectedMaterial.dimension}</p>
-                  </div>
-
-                  <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100 hover:border-red-100 transition-colors">
-                    <p className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold mb-1">
-                      {selectedMaterial.formType === 'sheet' ? 'Thickness (Calc)' : selectedMaterial.formType === 'rod' ? 'Diameter (Calc)' : 'Unit Weight'}
+                <div className="flex-grow flex flex-col gap-4 overflow-hidden">
+                  <div className="shrink-0 max-h-24 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-stone-200 scrollbar-track-transparent">
+                    <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 flex items-center gap-2 sticky top-0 bg-white pb-1">
+                      <span className="w-8 h-px bg-stone-200"></span> About
                     </p>
-                    <p className="text-stone-900 font-mono text-lg">
-                      {selectedMaterial.fixedDimension} <span className="text-sm text-stone-400">{selectedMaterial.formType === 'unit' ? 'kg' : 'mm'}</span>
+                    <p className="text-stone-600 text-sm leading-relaxed font-light">
+                      {selectedMaterial.description}
                     </p>
                   </div>
 
-                  <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100 hover:border-red-100 transition-colors col-span-2 flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold mb-1">Material Density</p>
-                      <p className="text-stone-900 font-mono">{selectedMaterial.density} <span className="text-stone-400">kg/m³</span></p>
+                  <div className="grid grid-cols-2 gap-3 md:gap-4 overflow-y-auto scrollbar-hide pb-2">
+                    <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100 hover:border-red-100 transition-colors group">
+                      <div className="flex items-center gap-2 mb-1">
+                        <ArrowRight className="w-3 h-3 text-red-400 group-hover:translate-x-1 transition-transform" />
+                        <p className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Dimension Display</p>
+                      </div>
+                      <p className="text-stone-900 font-medium font-serif text-lg">{selectedMaterial.dimension}</p>
                     </div>
-                    <div className="h-8 w-px bg-stone-200 mx-4"></div>
-                    {/* <div className="text-right">
+
+                    <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100 hover:border-red-100 transition-colors">
+                      <p className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold mb-1">
+                        {selectedMaterial.formType === 'sheet' ? 'Thickness (Calc)' : selectedMaterial.formType === 'rod' ? 'Diameter (Calc)' : 'Unit Weight'}
+                      </p>
+                      <p className="text-stone-900 font-mono text-lg">
+                        {selectedMaterial.fixedDimension} <span className="text-sm text-stone-400">{selectedMaterial.formType === 'unit' ? 'kg' : 'mm'}</span>
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100 hover:border-red-100 transition-colors col-span-2 flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold mb-1">Material Density</p>
+                        <p className="text-stone-900 font-mono">{selectedMaterial.density} <span className="text-stone-400">kg/m³</span></p>
+                      </div>
+                      <div className="h-8 w-px bg-stone-200 mx-4"></div>
+                      {/* <div className="text-right">
                       <p className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold mb-1">Sustainability Score</p>
                       <div className="flex gap-1 justify-end">
                         {[1, 2, 3, 4, 5].map(i => (
@@ -496,32 +608,99 @@ const StudentHome = () => {
                         ))}
                       </div>
                     </div> */}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="mt-10 pt-6 border-t border-stone-100 flex gap-4">
-                <button
-                  onClick={() => setSelectedMaterial(null)}
-                  className="px-8 py-3.5 rounded-full border border-stone-200 text-stone-500 font-bold text-sm tracking-wide hover:bg-stone-50 transition-colors"
-                >
-                  CLOSE
-                </button>
-                <button
-                  onClick={() => {
-                    navigate('/student/bom');
-                  }}
-                  className="flex-1 py-3.5 bg-stone-900 text-white rounded-full text-sm font-bold tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-stone-200 flex items-center justify-center gap-2 group"
-                >
-                  <span>REQUEST IN BOM</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
+                <div className="mt-10 pt-6 border-t border-stone-100 flex gap-4">
+                  <button
+                    onClick={() => setSelectedMaterial(null)}
+                    className="px-8 py-3.5 rounded-full border border-stone-200 text-stone-500 font-bold text-sm tracking-wide hover:bg-stone-50 transition-colors"
+                  >
+                    CLOSE
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/student/bom');
+                    }}
+                    className="flex-1 py-3.5 bg-stone-900 text-white rounded-full text-sm font-bold tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-stone-200 flex items-center justify-center gap-2 group"
+                  >
+                    <span>REQUEST IN BOM</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+
+      {/* Equipment Details Modal */}
+      {
+        selectedEquipment && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
+            onClick={() => setSelectedEquipment(null)}
+          >
+            <div
+              className="bg-white rounded-[2rem] max-w-2xl w-full flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 relative"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="h-72 relative">
+                <img
+                  src={selectedEquipment.imageUrl}
+                  alt={selectedEquipment.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute bottom-6 left-6 text-white max-w-lg">
+                  <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider mb-3 border border-white/20">
+                    Lab Equipment
+                  </span>
+                  <h2 className="text-4xl font-serif leading-tight">{selectedEquipment.name}</h2>
+                </div>
+                <button
+                  onClick={() => setSelectedEquipment(null)}
+                  className="absolute top-4 right-4 p-2 bg-black/30 hover:bg-black/50 text-white rounded-full backdrop-blur-md transition-colors border border-white/10"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+
+              <div className="p-8">
+                <div className="flex items-center gap-4 mb-8 p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-red-600 shadow-sm border border-stone-100">
+                    <Wrench className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Person In Charge</p>
+                    <p className="text-stone-900 font-serif text-lg">{selectedEquipment.inCharge}</p>
+                  </div>
+                </div>
+
+                <div className="mb-8">
+                  <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span className="w-8 h-px bg-stone-300"></span> Description
+                  </p>
+                  <p className="text-stone-600 leading-loose font-light text-lg">
+                    {selectedEquipment.description}
+                  </p>
+                </div>
+
+                <div className="pt-6 border-t border-stone-100 flex justify-end">
+                  <button
+                    onClick={() => setSelectedEquipment(null)}
+                    className="px-8 py-3 bg-stone-900 text-white rounded-full font-bold text-sm tracking-wide hover:bg-stone-800 transition-colors shadow-lg shadow-stone-200"
+                  >
+                    CLOSE DETAILS
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 };
 
