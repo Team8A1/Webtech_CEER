@@ -40,8 +40,9 @@ const registerStudent = async (req, res) => {
       email: email.toLowerCase(),
       name,
       division: division ? division.toUpperCase() : undefined,
-      password: password || undefined,
+      password: password || 'Student@123',
       role: 'student',
+      mustChangePassword: true,
       isActive: true,
     });
     await user.save();

@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Upload } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 function AdminUserManagement() {
+  const traverse = useNavigate()
+  // Note: 'navigate' was already defined as 'traverse' in some contexts or standard usage is 'navigate'
+  // But strictly replacing lines:
   const navigate = useNavigate()
+  const fileInputRef = useRef(null)
   const [users, setUsers] = useState([])
   const [filter, setFilter] = useState('all')
   const [showForm, setShowForm] = useState(false)
@@ -30,6 +35,84 @@ function AdminUserManagement() {
   }
 
   const filteredUsers = filter === 'all' ? users : users.filter(u => u.role === filter)
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const text = e.target.result
+      const lines = text.split('\n')
+      // headers: name,email,division
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
+
+      const students = []
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim()
+        if (!line) continue
+        const values = line.split(',').map(v => v.trim())
+
+        const student = {}
+        headers.forEach((header, index) => {
+          if (['name', 'email', 'division'].includes(header)) {
+            student[header] = values[index]
+          }
+        })
+
+        if (student.name && student.email) {
+          students.push(student)
+        }
+      }
+
+      if (students.length === 0) {
+        alert('No valid students found in CSV')
+        return
+      }
+
+      try {
+        const response = await axios.post('http://localhost:8000/api/admin/register/students', { students })
+
+        if (response.data.success) {
+          const results = response.data.results
+          const successCount = results.success.length
+          const failedCount = results.failed.length
+
+          let message = `Bulk upload complete.\nSuccess: ${successCount}\nFailed: ${failedCount}`
+          if (failedCount > 0) {
+            message += '\n\nFailed items:\n' + results.failed.map(f => `${f.email}: ${f.reason}`).join('\n')
+          }
+          alert(message)
+
+          // Update local list with successful entries
+          if (successCount > 0) {
+            const newUsers = students
+              .filter(s => results.success.includes(s.email))
+              .map((s, idx) => ({
+                id: users.length + idx + 100, // naive ID generation
+                name: s.name,
+                email: s.email,
+                role: 'student',
+                division: s.division || '',
+                status: 'active',
+                joinDate: new Date().toISOString().split('T')[0]
+              }))
+
+            const updatedUsers = [...users, ...newUsers]
+            setUsers(updatedUsers)
+            localStorage.setItem('users', JSON.stringify(updatedUsers))
+          }
+        }
+      } catch (error) {
+        console.error('Bulk upload error:', error)
+        alert('Failed to upload students: ' + (error.response?.data?.message || error.message))
+      }
+
+      // Reset input
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+    reader.readAsText(file)
+  }
 
   const handleAddUser = async () => {
     if (formData.name && formData.email) {
@@ -191,14 +274,31 @@ function AdminUserManagement() {
               Faculty ({users.filter(u => u.role === 'faculty').length})
             </button>
           </div>
-          {!showForm && (
+          <div className="flex items-center gap-3">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              accept=".csv"
+              className="hidden"
+            />
             <button
-              onClick={() => setShowForm(true)}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              onClick={() => fileInputRef.current.click()}
+              className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
             >
-              + Add User
+              <Upload className="w-5 h-5" />
+              Bulk Upload Students
             </button>
-          )}
+
+            {!showForm && (
+              <button
+                onClick={() => setShowForm(true)}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              >
+                + Add User
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Users Table */}

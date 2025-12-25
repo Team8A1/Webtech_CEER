@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import BOMForm from '../components/BOMForm'
 import axios from 'axios'
 import StudentNavbar from '../components/StudentNavbar'
@@ -8,6 +8,7 @@ import { ArrowLeft, FileText, Download, Trash2, Edit2 } from 'lucide-react'
 
 function StudentBOMPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [boms, setBoms] = useState([])
   const [editing, setEditing] = useState(null)
   const [user, setUser] = useState(null)
@@ -51,6 +52,9 @@ function StudentBOMPage() {
       }
       load();
       setEditing(null);
+      if (location.state?.autofill) {
+        navigate(location.pathname, { replace: true, state: {} });
+      }
     } catch (error) {
       console.error('Error saving BOM:', error);
       alert(error.response?.data?.message || 'Error saving BOM request');
@@ -223,6 +227,7 @@ function StudentBOMPage() {
                   initial={editing}
                   onCancel={() => setEditing(null)}
                   nextSlNo={boms.length + 1}
+                  autofill={location.state?.autofill}
                 />
               </div>
             </div>

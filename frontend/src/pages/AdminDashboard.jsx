@@ -530,7 +530,7 @@ const AdminDashboard = () => {
                               });
 
                               // Default password if missing
-                              if (!userObj.password) userObj.password = '123456';
+                              if (!userObj.password) userObj.password = 'Student@123';
 
                               try {
                                 await api.post('/student/register', userObj);

@@ -621,7 +621,14 @@ const StudentHome = () => {
                   </button>
                   <button
                     onClick={() => {
-                      navigate('/student/bom');
+                      navigate('/student/bom', {
+                        state: {
+                          autofill: {
+                            consumableName: selectedMaterial.name,
+                            specification: selectedMaterial.dimension
+                          }
+                        }
+                      });
                     }}
                     className="flex-1 py-3.5 bg-stone-900 text-white rounded-full text-sm font-bold tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-stone-200 flex items-center justify-center gap-2 group"
                   >

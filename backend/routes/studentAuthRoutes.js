@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { googleAuth, loginWithPassword, logout } = require('../controllers/authController');
+const { googleAuth, loginWithPassword, logout, changePassword } = require('../controllers/authController');
 
 /**
  * @route   POST /api/student/auth/login
@@ -22,5 +22,12 @@ router.post('/google', googleAuth);
  * @access  Public
  */
 router.post('/logout', logout);
+
+/**
+ * @route   POST /api/student/auth/change-password
+ * @desc    Change student password
+ * @access  Private
+ */
+router.post('/change-password', changePassword);
 
 module.exports = router;

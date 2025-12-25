@@ -84,7 +84,10 @@ const loginWithPassword = async (req, res) => {
           name: user.name,
           role: user.role,
           profilePicture: user.profilePicture,
+          role: user.role,
+          profilePicture: user.profilePicture,
           lastLogin: new Date(),
+          mustChangePassword: user.mustChangePassword
         },
       },
     });
@@ -148,8 +151,8 @@ const googleAuth = async (req, res) => {
     // Check 2: Verify user exists in MongoDB database
     let user = await User.findOne({ email: email.toLowerCase() });
     console.log("user:", user);
-    
-    
+
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -189,7 +192,7 @@ const googleAuth = async (req, res) => {
 
     // Generate JWT token
     const token = generateToken(user);
-    
+
     // Success response
     return res.status(200).json({
       success: true,
@@ -237,8 +240,62 @@ const logout = async (req, res) => {
   }
 };
 
+/**
+ * Change student password
+ * @route POST /api/student/auth/change-password
+ * @access Private (Protected by middleware in routes if applied, or check req.user here)
+ */
+const changePassword = async (req, res) => {
+  try {
+    const { email, oldPassword, newPassword } = req.body;
+
+    if (!email || !oldPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email, current password, and new password are required'
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Verify old password
+    const isMatch = await user.comparePassword(oldPassword);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Incorrect current password'
+      });
+    }
+
+    // Update password
+    user.password = newPassword;
+    user.mustChangePassword = false;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Change Password Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   loginWithPassword,
   googleAuth,
   logout,
+  changePassword
 };

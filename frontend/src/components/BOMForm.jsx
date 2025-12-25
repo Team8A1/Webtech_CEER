@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { Search, ChevronDown } from 'lucide-react'
 
-function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1 }) {
+function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1, autofill = null }) {
   const [form, setForm] = useState({
     slNo: initial ? initial.slNo : String(nextSlNo).padStart(3, '0'), // Auto-increment or use initial
     sprintNo: '1',
@@ -57,6 +57,13 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1 }) {
         qty: initial.qty || '',
         notifyGuide: true
       })
+    } else if (autofill) {
+      setForm(prev => ({
+        ...prev,
+        slNo: String(nextSlNo).padStart(3, '0'),
+        consumableName: autofill.consumableName || '',
+        specification: autofill.specification || ''
+      }))
     } else {
       // If not editing, update slNo when nextSlNo changes
       setForm(prev => ({
@@ -64,7 +71,17 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1 }) {
         slNo: String(nextSlNo).padStart(3, '0')
       }))
     }
-  }, [initial, nextSlNo])
+  }, [initial, nextSlNo, autofill])
+
+  // Sync selectedMaterial when autofill is used and materials are loaded
+  useEffect(() => {
+    if (autofill && materials.length > 0) {
+      const found = materials.find(m => m.name === autofill.consumableName)
+      if (found) {
+        setSelectedMaterial(found)
+      }
+    }
+  }, [autofill, materials])
 
   // Handle click outside to close suggestions
   useEffect(() => {

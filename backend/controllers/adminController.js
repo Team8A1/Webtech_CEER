@@ -62,7 +62,9 @@ const registerBulkStudents = async (req, res) => {
                     name: student.name,
                     email: student.email,
                     division: student.division ? student.division.toUpperCase() : undefined,
-                    role: 'student'
+                    role: 'student',
+                    password: 'Student@123', // Default password
+                    mustChangePassword: true
                 });
                 await newStudent.save();
                 results.success.push(student.email);
