@@ -183,6 +183,7 @@ const StudentHome = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [materials, setMaterials] = useState([]);
+  const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -352,7 +353,7 @@ const StudentHome = () => {
                       {materials
                         .filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()))
                         .map((material) => (
-                          <tr key={material._id} className="group hover:bg-stone-50/50 transition-colors">
+                          <tr key={material._id} onClick={() => setSelectedMaterial(material)} className="group hover:bg-stone-50/50 transition-colors cursor-pointer">
                             <td className="px-8 py-5">
                               <div className="w-16 h-16 rounded-lg bg-stone-100 overflow-hidden border border-stone-200">
                                 <img
@@ -394,6 +395,132 @@ const StudentHome = () => {
       </main>
 
       <StudentFooter />
+
+      {/* Material Details Modal */}
+      {/* Material Details Modal */}
+      {selectedMaterial && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
+          onClick={() => setSelectedMaterial(null)}
+        >
+          <div
+            className="bg-white rounded-[2rem] max-w-3xl w-full h-[550px] flex flex-col md:flex-row overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 border border-white/20"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Image Section */}
+            <div className="md:w-5/12 h-full relative bg-stone-200 group overflow-hidden">
+              <div className="absolute inset-0 bg-stone-300 animate-pulse" />
+              <img
+                src={selectedMaterial.imageUrl || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80'}
+                alt={selectedMaterial.name}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                onLoad={(e) => e.target.previousSibling.style.display = 'none'}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
+
+              <div className="absolute bottom-6 left-6 text-white">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg border border-white/30">
+                    <Zap className="w-4 h-4 text-orange-300" />
+                  </span>
+                  <span className="text-xs font-medium uppercase tracking-wider text-orange-200">Energy Impact</span>
+                </div>
+                <p className="font-serif text-3xl">{selectedMaterial.embodiedEnergy} <span className="text-lg font-sans text-stone-300">MJ/kg</span></p>
+              </div>
+            </div>
+
+            {/* Content Section */}
+            <div className="md:w-7/12 p-6 md:p-8 flex flex-col bg-white h-full relative">
+              <div className="flex justify-between items-start mb-4 shrink-0">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className={`px-3 py-1 text-xs font-bold uppercase tracking-widest rounded-full border ${selectedMaterial.formType === 'sheet' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                      selectedMaterial.formType === 'rod' ? 'bg-orange-50 text-orange-700 border-orange-100' :
+                        'bg-stone-100 text-stone-600 border-stone-200'
+                      }`}>
+                      {selectedMaterial.formType || 'Material'}
+                    </span>
+                    <span className="text-xs font-medium text-stone-400">ID: {selectedMaterial._id.slice(-6).toUpperCase()}</span>
+                  </div>
+                  <h3 className="text-3xl font-serif text-stone-900 leading-tight truncate pr-4">
+                    {selectedMaterial.name}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setSelectedMaterial(null)}
+                  className="p-2 -mr-2 -mt-2 text-stone-300 hover:text-stone-900 rounded-full hover:bg-stone-50 transition-all duration-300 group"
+                >
+                  <svg className="w-8 h-8 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+
+              <div className="flex-grow flex flex-col gap-4 overflow-hidden">
+                <div className="shrink-0 max-h-24 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-stone-200 scrollbar-track-transparent">
+                  <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1 flex items-center gap-2 sticky top-0 bg-white pb-1">
+                    <span className="w-8 h-px bg-stone-200"></span> About
+                  </p>
+                  <p className="text-stone-600 text-sm leading-relaxed font-light">
+                    {selectedMaterial.description}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 md:gap-4 overflow-y-auto scrollbar-hide pb-2">
+                  <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100 hover:border-red-100 transition-colors group">
+                    <div className="flex items-center gap-2 mb-1">
+                      <ArrowRight className="w-3 h-3 text-red-400 group-hover:translate-x-1 transition-transform" />
+                      <p className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold">Dimension Display</p>
+                    </div>
+                    <p className="text-stone-900 font-medium font-serif text-lg">{selectedMaterial.dimension}</p>
+                  </div>
+
+                  <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100 hover:border-red-100 transition-colors">
+                    <p className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold mb-1">
+                      {selectedMaterial.formType === 'sheet' ? 'Thickness (Calc)' : selectedMaterial.formType === 'rod' ? 'Diameter (Calc)' : 'Unit Weight'}
+                    </p>
+                    <p className="text-stone-900 font-mono text-lg">
+                      {selectedMaterial.fixedDimension} <span className="text-sm text-stone-400">{selectedMaterial.formType === 'unit' ? 'kg' : 'mm'}</span>
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100 hover:border-red-100 transition-colors col-span-2 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold mb-1">Material Density</p>
+                      <p className="text-stone-900 font-mono">{selectedMaterial.density} <span className="text-stone-400">kg/m³</span></p>
+                    </div>
+                    <div className="h-8 w-px bg-stone-200 mx-4"></div>
+                    {/* <div className="text-right">
+                      <p className="text-[10px] text-stone-500 uppercase tracking-wider font-semibold mb-1">Sustainability Score</p>
+                      <div className="flex gap-1 justify-end">
+                        {[1, 2, 3, 4, 5].map(i => (
+                          <div key={i} className={`w-2 h-2 rounded-full ${i <= 3 ? 'bg-green-400' : 'bg-stone-200'}`}></div>
+                        ))}
+                      </div>
+                    </div> */}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-10 pt-6 border-t border-stone-100 flex gap-4">
+                <button
+                  onClick={() => setSelectedMaterial(null)}
+                  className="px-8 py-3.5 rounded-full border border-stone-200 text-stone-500 font-bold text-sm tracking-wide hover:bg-stone-50 transition-colors"
+                >
+                  CLOSE
+                </button>
+                <button
+                  onClick={() => {
+                    navigate('/student/bom');
+                  }}
+                  className="flex-1 py-3.5 bg-stone-900 text-white rounded-full text-sm font-bold tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-stone-200 flex items-center justify-center gap-2 group"
+                >
+                  <span>REQUEST IN BOM</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
