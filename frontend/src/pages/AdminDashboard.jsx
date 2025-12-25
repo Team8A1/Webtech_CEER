@@ -38,7 +38,7 @@ const AdminDashboard = () => {
   // Forms States
   const [showMaterialModal, setShowMaterialModal] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState(null);
-  const [materialForm, setMaterialForm] = useState({ name: '', dimension: '', description: '', image: null });
+  const [materialForm, setMaterialForm] = useState({ name: '', dimension: '', description: '', image: null, density: 0, embodiedEnergy: 0, fixedDimension: 0, formType: 'unit' });
 
   const [showEventModal, setShowEventModal] = useState(false);
   const [eventForm, setEventForm] = useState({ title: '', date: '', category: '', image: null });
@@ -104,7 +104,7 @@ const AdminDashboard = () => {
       alert(`Material ${editingMaterial ? 'updated' : 'added'} successfully`);
       setShowMaterialModal(false);
       setEditingMaterial(null);
-      setMaterialForm({ name: '', dimension: '', description: '', image: null });
+      setMaterialForm({ name: '', dimension: '', description: '', image: null, density: 0, embodiedEnergy: 0, fixedDimension: 0, formType: 'unit' });
       fetchMaterials();
     } catch (error) {
       alert('Error saving material: ' + (error.response?.data?.message || error.message));
@@ -550,7 +550,7 @@ const AdminDashboard = () => {
                 <button
                   onClick={() => {
                     setEditingMaterial(null);
-                    setMaterialForm({ name: '', dimension: '', description: '', image: null });
+                    setMaterialForm({ name: '', dimension: '', description: '', image: null, density: 0, embodiedEnergy: 0, fixedDimension: 0, formType: 'unit' });
                     setShowMaterialModal(true);
                   }}
                   className="flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
@@ -659,9 +659,43 @@ const AdminDashboard = () => {
                   <button onClick={() => setShowMaterialModal(false)}><X className="text-gray-400 hover:text-black" /></button>
                 </div>
                 <form onSubmit={handleMaterialSubmit} className="space-y-4">
-                  <input type="text" placeholder="Name" required value={materialForm.name} onChange={e => setMaterialForm({ ...materialForm, name: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black" />
-                  <input type="text" placeholder="Dimension" required value={materialForm.dimension} onChange={e => setMaterialForm({ ...materialForm, dimension: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <input type="text" placeholder="Name" required value={materialForm.name} onChange={e => setMaterialForm({ ...materialForm, name: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black" />
+                    <select value={materialForm.formType || 'unit'} onChange={e => setMaterialForm({ ...materialForm, formType: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black">
+                      <option value="unit">Unit (Item)</option>
+                      <option value="sheet">Sheet</option>
+                      <option value="rod">Rod</option>
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Dynamic Fixed Dimension Input */}
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">
+                        {materialForm.formType === 'sheet' ? 'Thickness (mm)' :
+                          materialForm.formType === 'rod' ? 'Diameter (mm)' :
+                            'Weight (kg) [Optional]'}
+                      </label>
+                      <input type="number" step="any" placeholder="0" value={materialForm.fixedDimension || ''} onChange={e => setMaterialForm({ ...materialForm, fixedDimension: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black" />
+                    </div>
+
+                    {/* Embodied Energy */}
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Energy Coeff (MJ/kg)</label>
+                      <input type="number" step="any" required placeholder="MJ/kg" value={materialForm.embodiedEnergy || ''} onChange={e => setMaterialForm({ ...materialForm, embodiedEnergy: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black" />
+                    </div>
+                  </div>
+
+                  {(materialForm.formType === 'sheet' || materialForm.formType === 'rod') && (
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1 block">Density (kg/m³)</label>
+                      <input type="number" step="any" placeholder="Density" value={materialForm.density || ''} onChange={e => setMaterialForm({ ...materialForm, density: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black" />
+                    </div>
+                  )}
+
+                  <input type="text" placeholder="Display Dimension (e.g. '5mm' or '20x20cm')" required value={materialForm.dimension} onChange={e => setMaterialForm({ ...materialForm, dimension: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black" />
                   <textarea placeholder="Description" required value={materialForm.description} onChange={e => setMaterialForm({ ...materialForm, description: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black h-24 resize-none" />
+
                   <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors relative">
                     <input type="file" accept="image/*" onChange={e => setMaterialForm({ ...materialForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
                     <div className="flex flex-col items-center gap-2 text-gray-400">

@@ -9,7 +9,7 @@ const { sendEmail } = require('../utils/emailUtil');
 // @access  Private (Student)
 const createBOMRequest = async (req, res) => {
     try {
-        const { slNo, sprintNo, date, partName, consumableName, specification, qty, notifyGuide } = req.body;
+        const { slNo, sprintNo, date, partName, consumableName, specification, qty, length, width, weight, notifyGuide } = req.body;
         const studentId = req.user._id;
 
         // Get student details to find guide and team
@@ -34,6 +34,9 @@ const createBOMRequest = async (req, res) => {
             consumableName,
             specification,
             qty,
+            length: length || 0,
+            width: width || 0,
+            weight: weight || 0,
             status: 'pending'
         });
 
@@ -115,7 +118,7 @@ const getFacultyBOMRequests = async (req, res) => {
 const updateBOMRequest = async (req, res) => {
     try {
         const { id } = req.params;
-        const { slNo, sprintNo, date, partName, consumableName, specification, qty } = req.body;
+        const { slNo, sprintNo, date, partName, consumableName, specification, qty, length, width, weight } = req.body;
         const studentId = req.user._id;
 
         const bomRequest = await BOMRequest.findById(id);
@@ -139,6 +142,9 @@ const updateBOMRequest = async (req, res) => {
         bomRequest.consumableName = consumableName || bomRequest.consumableName;
         bomRequest.specification = specification || bomRequest.specification;
         bomRequest.qty = qty || bomRequest.qty;
+        if (length !== undefined) bomRequest.length = length;
+        if (width !== undefined) bomRequest.width = width;
+        if (weight !== undefined) bomRequest.weight = weight;
 
         await bomRequest.save();
 

@@ -44,6 +44,27 @@ const bomRequestSchema = new mongoose.Schema({
         required: true,
         min: 1
     },
+    // Dimensions for Energy Calculation
+    length: {
+        type: Number, // in meters
+        default: 0
+    },
+    width: {
+        type: Number, // in meters
+        default: 0
+    },
+    thickness: {
+        type: Number, // in millimeters (auto-populated snapshot)
+        default: 0
+    },
+    weight: {
+        type: Number, // Manual weight input in kg (for unit items override)
+        default: 0
+    },
+    calculatedWeight: {
+        type: Number, // in kg
+        default: 0
+    },
     guideApproved: {
         type: Boolean,
         default: false

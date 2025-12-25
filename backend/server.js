@@ -88,6 +88,7 @@ app.use("/api", bomRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/material", materialRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/energy", require("./routes/energyRoutes"));
 
 // -------------------------
 // Test Route

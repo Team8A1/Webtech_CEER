@@ -11,8 +11,13 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1 }) {
     consumableName: '',
     specification: '',
     qty: '1',
+    length: '',
+    width: '',
+    weight: '',
     notifyGuide: true
   })
+
+  const [selectedMaterial, setSelectedMaterial] = useState(null);
 
   // Searchable select state
   const [materials, setMaterials] = useState([]) // Store full material objects
@@ -101,8 +106,12 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1 }) {
     setForm(prev => ({
       ...prev,
       consumableName: item.name,
-      specification: item.dimension || prev.specification // Auto-populate specification
+      specification: item.dimension || prev.specification, // Auto-populate specification
+      length: '',
+      width: '',
+      weight: ''
     }))
+    setSelectedMaterial(item)
     setSuggestions([])
     setShowSuggestions(false)
   }
@@ -126,6 +135,9 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1 }) {
       consumableName: form.consumableName,
       specification: form.specification,
       qty: Number(form.qty) || 0,
+      length: Number(form.length) || 0,
+      width: Number(form.width) || 0,
+      weight: Number(form.weight) || 0,
       notifyGuide: form.notifyGuide
     }
 
@@ -212,6 +224,40 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1 }) {
           <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Quantity</label>
           <input name="qty" type="number" value={form.qty} onChange={handleChange} placeholder="1" min="1" required className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
         </div>
+
+        {/* Dynamic Dimension Inputs */}
+        {selectedMaterial && (selectedMaterial.formType === 'sheet' || selectedMaterial.formType === 'rod') && (
+          <div className="col-span-2 grid grid-cols-2 gap-4 bg-stone-50 p-3 rounded-xl border border-stone-100">
+            <div className="col-span-2 text-xs font-semibold text-stone-500 uppercase tracking-wider mb-1">
+              Material Dimensions ({selectedMaterial.formType === 'sheet' ? `Thickness: ${selectedMaterial.fixedDimension}mm` : `Diameter: ${selectedMaterial.fixedDimension}mm`})
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Length (meters)</label>
+              <input name="length" type="number" step="0.001" value={form.length} onChange={handleChange} placeholder="e.g. 0.5" required className="p-3 bg-white border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
+            </div>
+
+            {selectedMaterial.formType === 'sheet' && (
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Width (meters)</label>
+                <input name="width" type="number" step="0.001" value={form.width} onChange={handleChange} placeholder="e.g. 0.3" required className="p-3 bg-white border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Manual Weight Override (Optional for all or just unit?) - Let's keep it hidden unless strictly needed or for Unit if we want manual weight override */}
+        {/* For now, hiding manual weight to keep UX simple unless formType is 'unit' and we want to allow override? 
+            The plan said: "Weight (kg) - Critical: Allow students to enter weight directly for items like Nuts, Hinges... where dimensions don't calculate volume easily."
+            If formType is 'unit', maybe we show 'Weight (kg)' input if the material doesn't have a fixed weight? 
+            Or generally allow it? Let's add it as optional field.
+        */}
+        {selectedMaterial && selectedMaterial.formType === 'unit' && !selectedMaterial.fixedDimension && (
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Weight per Item (kg) [Optional]</label>
+            <input name="weight" type="number" step="0.001" value={form.weight} onChange={handleChange} placeholder="0.05" className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
+          </div>
+        )}
 
         <div className="flex items-center gap-3 pt-6 h-full">
           <label className="flex items-center gap-3 cursor-pointer group">
