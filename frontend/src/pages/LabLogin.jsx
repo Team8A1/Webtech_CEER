@@ -1,18 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google'
-import { useAuth } from '../hooks/useAuth';
-import BackToLoginButton from '../components/BackToLoginButton';
-import api from '../utils/api';
+import BackToLoginButton from '../components/BackToLoginButton'
 
 function LabLogin() {
   const [isVisible, setIsVisible] = useState(false)
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [password, setPassword] = useState('lab@123')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  const { login } = useAuth();
 
   useEffect(() => {
     setIsVisible(true)
@@ -24,12 +21,34 @@ function LabLogin() {
     setLoading(true)
 
     try {
-      const response = await api.post('/lab/auth/login', { email, password });
-      login(response.data.data.token, response.data.data.user);
-      navigate('/lab/approve');
-    } catch (error) {
+      const response = await fetch('http://localhost:8000/api/lab/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Lab login response structure might be slightly different based on previous files
+        // Backend labInchargeAuthController sends { data: { token, user } } or similar?
+        // Let's check the backend controller response.
+        // It returns data: { token: ..., user: ... }
+
+        const token = data.data?.token || data.token;
+        const user = data.data?.user || data.user;
+
+        localStorage.setItem('token', token)
+        localStorage.setItem('user', JSON.stringify(user))
+        navigate('/lab/approve')
+      } else {
+        setError(data.message || 'Login failed')
+      }
+    } catch (err) {
       setError('Login failed. Please try again.')
-      console.error('Login error:', error)
+      console.error('Login error:', err)
     } finally {
       setLoading(false)
     }
@@ -40,14 +59,31 @@ function LabLogin() {
     setLoading(true)
 
     try {
-      const response = await api.post('/lab/auth/google', {
-        idToken: credentialResponse.credential
-      });
-      login(response.data.data.token, response.data.data.user);
-      navigate('/lab/approve');
-    } catch (error) {
+      const response = await fetch('http://localhost:8000/api/lab/auth/google', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          idToken: credentialResponse.credential
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        const token = data.data?.token || data.token;
+        const user = data.data?.user || data.user;
+
+        localStorage.setItem('token', token)
+        localStorage.setItem('user', JSON.stringify(user))
+        navigate('/lab/approve')
+      } else {
+        setError(data.message || 'Google login failed')
+      }
+    } catch (err) {
       setError('Google login failed. Please try again.')
-      console.error('Google login error:', error)
+      console.error('Google login error:', err)
     } finally {
       setLoading(false)
     }
@@ -131,7 +167,7 @@ function LabLogin() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200"
-                placeholder="••••••••••"
+                placeholder="lab@123"
                 required
               />
             </div>

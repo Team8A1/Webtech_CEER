@@ -1,18 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google'
-import { useAuth } from '../hooks/useAuth';
-import BackToLoginButton from '../components/BackToLoginButton';
-import api from '../utils/api';
+import BackToLoginButton from '../components/BackToLoginButton'
 
 function FacultyLogin() {
   const [isVisible, setIsVisible] = useState(false)
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [password, setPassword] = useState('faculty@123')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  const { login } = useAuth();
 
   useEffect(() => {
     setIsVisible(true)
@@ -24,38 +21,64 @@ function FacultyLogin() {
     setLoading(true)
 
     try {
-      const response = await api.post('/faculty/auth/login', { email, password });
-      login(response.data.token, response.data.user);
-      navigate('/faculty');
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
-      setError(errorMessage);
-      console.error('Login error:', error);
+      const response = await fetch('http://localhost:8000/api/faculty/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) { // Check for HTTP success
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+        navigate('/faculty')
+      } else {
+        setError(data.message || 'Login failed')
+      }
+    } catch (err) {
+      setError('Login failed. Please try again.')
+      console.error('Login error:', err)
     } finally {
       setLoading(false)
     }
   }
 
   const handleGoogleSuccess = async (credentialResponse) => {
+    setError('')
+    setLoading(true)
+
     try {
-      const response = await api.post('/faculty/auth/google-login', {
-        credential: credentialResponse.credential,
-      });
+      const response = await fetch('http://localhost:8000/api/faculty/auth/google-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          credential: credentialResponse.credential,
+        }),
+      })
 
-      const { token, user } = response.data;
-      login(token, user);
-      navigate('/faculty');
-    } catch (error) {
-      console.error('Google login error:', error);
+      const data = await response.json()
 
-      const errorMessage = error.response?.data?.message || 'Google login failed. Please try again.';
-      setError(errorMessage);
-
-      console.log('Error details:', {
-        status: error.response?.status,
-        message: error.response?.data?.message,
-        data: error.response?.data
-      });
+      if (response.ok) {
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+        navigate('/faculty')
+      } else {
+        const errorMessage = data.message || 'Google login failed. Please try again.';
+        setError(errorMessage);
+        if (data.needsApproval) {
+          setError(errorMessage);
+        }
+      }
+    } catch (err) {
+      setError('Google login failed. Please try again.')
+      console.error('Google login error:', err)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -128,7 +151,7 @@ function FacultyLogin() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200"
-                placeholder="••••••••••"
+                placeholder="faculty@123"
                 required
               />
             </div>

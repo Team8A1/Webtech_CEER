@@ -419,13 +419,19 @@ const AdminDashboard = () => {
               <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
                 <div className="flex gap-4 mb-8 p-1 bg-gray-100 rounded-lg">
                   <button
-                    onClick={() => setUserType('student')}
+                    onClick={() => {
+                      setUserType('student');
+                      setUserForm(prev => ({ ...prev, password: 'student@123' }));
+                    }}
                     className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${userType === 'student' ? 'bg-white shadow text-black' : 'text-gray-500'}`}
                   >
                     Student
                   </button>
                   <button
-                    onClick={() => setUserType('faculty')}
+                    onClick={() => {
+                      setUserType('faculty');
+                      setUserForm(prev => ({ ...prev, password: 'faculty@123' }));
+                    }}
                     className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${userType === 'faculty' ? 'bg-white shadow text-black' : 'text-gray-500'}`}
                   >
                     Faculty
@@ -445,7 +451,7 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Password</label>
-                    <input type="password" required value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })}
+                    <input type="text" required value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })}
                       className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all" />
                   </div>
 
@@ -492,7 +498,7 @@ const AdminDashboard = () => {
                 {/* Bulk Upload Section for Students */}
                 {userType === 'student' && (
                   <div className="mt-8 pt-8 border-t border-gray-100">
-                    <h3 className="text-sm font-bold text-gray-900 mb-2">Bulk Registration</h3>
+                    <h3 className="text-sm font-bold text-gray-900 mb-2">Bulk Registration (Students)</h3>
                     <p className="text-xs text-gray-500 mb-4">Upload a CSV file with columns: Name, Email, Password, USN, Division, Batch</p>
 
                     <div className="flex gap-4">
@@ -509,10 +515,9 @@ const AdminDashboard = () => {
                             const lines = text.split('\n');
                             const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
 
-                            let successCount = 0;
-                            let failCount = 0;
+                            const students = [];
 
-                            // Simple CSV parsing (assuming no commas in fields for now)
+                            // Simple CSV parsing
                             for (let i = 1; i < lines.length; i++) {
                               if (!lines[i].trim()) continue;
 
@@ -520,34 +525,90 @@ const AdminDashboard = () => {
                               const userObj = {};
 
                               headers.forEach((h, index) => {
-                                // Map known headers to keys
                                 if (h.includes('name')) userObj.name = values[index];
                                 else if (h.includes('email')) userObj.email = values[index];
-                                else if (h.includes('pass')) userObj.password = values[index];
                                 else if (h.includes('usn')) userObj.usn = values[index];
-                                else if (h.includes('div')) userObj.div = values[index];
+                                else if (h.includes('div')) userObj.division = values[index];
                                 else if (h.includes('batch')) userObj.batch = values[index];
                               });
 
-                              // Default password if missing
-                              if (!userObj.password) userObj.password = 'Student@123';
-
-                              try {
-                                await api.post('/student/register', userObj);
-                                successCount++;
-                              } catch (err) {
-                                console.error(`Failed row ${i}:`, err);
-                                failCount++;
+                              if (userObj.email && userObj.name) {
+                                students.push(userObj);
                               }
                             }
 
-                            alert(`Bulk Registration Complete:\nSuccess: ${successCount}\nFailed: ${failCount}`);
+                            try {
+                              const response = await api.post('/admin/register/students', { students });
+                              const { success, results } = response.data;
+                              alert(`Bulk Registration Complete:\nSuccess: ${results.success.length}\nFailed: ${results.failed.length}`);
+                            } catch (err) {
+                              console.error('Bulk upload failed:', err);
+                              alert('Bulk upload failed: ' + (err.response?.data?.message || err.message));
+                            }
+
                             e.target.value = ''; // Reset input
                           }
                         }}
                       />
                     </div>
-                    <p className="text-[10px] text-gray-400 mt-2">Note: Existing emails will be skipped/fail.</p>
+                  </div>
+                )}
+
+                {/* Bulk Upload Section for Faculty */}
+                {userType === 'faculty' && (
+                  <div className="mt-8 pt-8 border-t border-gray-100">
+                    <h3 className="text-sm font-bold text-gray-900 mb-2">Bulk Registration (Faculty)</h3>
+                    <p className="text-xs text-gray-500 mb-4">Upload a CSV file with columns: Name, Email, Department</p>
+
+                    <div className="flex gap-4">
+                      <input
+                        type="file"
+                        accept=".csv"
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800"
+                        onChange={async (e) => {
+                          const file = e.target.files[0];
+                          if (!file) return;
+
+                          if (confirm(`Upload and register faculty from ${file.name}?`)) {
+                            const text = await file.text();
+                            const lines = text.split('\n');
+                            const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
+
+                            const faculties = [];
+
+                            // Simple CSV parsing
+                            for (let i = 1; i < lines.length; i++) {
+                              if (!lines[i].trim()) continue;
+
+                              const values = lines[i].split(',').map(v => v.trim());
+                              const userObj = {};
+
+                              headers.forEach((h, index) => {
+                                if (h.includes('name')) userObj.name = values[index];
+                                else if (h.includes('email')) userObj.email = values[index];
+                                else if (h.includes('dept') || h.includes('department')) userObj.department = values[index];
+                              });
+
+                              if (userObj.email && userObj.name) {
+                                faculties.push(userObj);
+                              }
+                            }
+
+                            try {
+                              const response = await api.post('/admin/register/faculty', { faculties });
+                              const { success, results } = response.data;
+                              alert(`Bulk Registration Complete:\nSuccess: ${results.success.length}\nFailed: ${results.failed.length}`);
+                              fetchDashboardData(); // Refresh list
+                            } catch (err) {
+                              console.error('Bulk upload failed:', err);
+                              alert('Bulk upload failed: ' + (err.response?.data?.message || err.message));
+                            }
+
+                            e.target.value = ''; // Reset input
+                          }
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>

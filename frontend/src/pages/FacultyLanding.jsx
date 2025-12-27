@@ -2,19 +2,40 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
+import { X, KeyRound } from 'lucide-react';
 
 function FacultyLanding() {
   const navigate = useNavigate()
   const { logout } = useAuth();
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [pendingBOMCount, setPendingBOMCount] = useState(0);
 
+  // Password Change State
+  const [user, setUser] = useState(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+    setUser(storedUser);
+
+    if (!token) {
+      navigate('/login/faculty');
+      return;
+    }
+
+    if (storedUser && storedUser.mustChangePassword) {
+      setShowPasswordModal(true);
+    }
+
     fetchTeams();
     fetchPendingBOMs();
-  }, []);
+  }, [navigate]);
+
 
   const fetchPendingBOMs = async () => {
     try {
@@ -52,6 +73,57 @@ function FacultyLanding() {
     navigate('/login/faculty');
   }
 
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post('http://localhost:8000/api/faculty/auth/change-password',
+        {
+          email: user.email,
+          oldPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.data.success) {
+        setPasswordSuccess('Password updated successfully');
+
+        // Update local storage
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        if (currentUser) {
+          currentUser.mustChangePassword = false;
+          localStorage.setItem('user', JSON.stringify(currentUser));
+        }
+
+        setTimeout(() => {
+          setShowPasswordModal(false);
+          setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+          setPasswordSuccess('');
+          // Reload to update state
+          window.location.reload();
+        }, 2000);
+      }
+    } catch (error) {
+      setPasswordError(error.response?.data?.message || 'Failed to update password');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <section className="relative overflow-hidden" style={{ height: 220 }}>
@@ -61,15 +133,24 @@ function FacultyLanding() {
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1">Faculty Tools</h1>
             <p className="text-sm text-slate-300">Approve BOMs and create project teams for your students.</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="px-5 py-2.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors shadow-lg hover:shadow-xl flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Logout
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowPasswordModal(true)}
+              className="px-4 py-2 bg-slate-700/50 backdrop-blur-sm text-white rounded-lg font-semibold hover:bg-slate-700 transition-colors border border-slate-600 flex items-center gap-2"
+            >
+              <KeyRound className="w-4 h-4" />
+              Change Password
+            </button>
+            <button
+              onClick={handleLogout}
+              className="px-5 py-2.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors shadow-lg hover:shadow-xl flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Logout
+            </button>
+          </div>
         </div>
       </section>
 
@@ -144,6 +225,85 @@ function FacultyLanding() {
           )}
         </div>
       </div>
+
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-md p-8 shadow-2xl relative">
+            {(!user || !user.mustChangePassword) && (
+              <button
+                onClick={() => setShowPasswordModal(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+              {user?.mustChangePassword ? 'Security Alert' : 'Update Password'}
+            </h2>
+            <p className="text-sm text-slate-500 mb-6">
+              {user?.mustChangePassword
+                ? 'You must change your default password to continue using the portal.'
+                : 'Set a new password for your account to enable manual login.'}
+            </p>
+
+            {passwordError && (
+              <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-100">
+                {passwordError}
+              </div>
+            )}
+
+            {passwordSuccess && (
+              <div className="mb-4 p-3 bg-green-50 text-green-700 text-sm rounded-lg border border-green-100">
+                {passwordSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Current Password</label>
+                <input
+                  type="password"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">New Password</label>
+                <input
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Confirm Password</label>
+                <input
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-3 bg-slate-900 text-white rounded-full font-bold text-sm tracking-widest hover:bg-slate-800 transition-colors shadow-lg"
+              >
+                UPDATE PASSWORD
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

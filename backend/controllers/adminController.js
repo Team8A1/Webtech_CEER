@@ -63,7 +63,7 @@ const registerBulkStudents = async (req, res) => {
                     email: student.email,
                     division: student.division ? student.division.toUpperCase() : undefined,
                     role: 'student',
-                    password: 'Student@123', // Default password
+                    password: student.password || 'student@123', // Default password
                     mustChangePassword: true
                 });
                 await newStudent.save();
@@ -107,6 +107,8 @@ const registerBulkFaculty = async (req, res) => {
                     email: faculty.email,
                     department: faculty.department || '',
                     role: 'faculty',
+                    password: faculty.password || 'faculty@123', // Default password if missing
+                    mustChangePassword: true,
                     isApproved: true
                 });
                 await newFaculty.save();

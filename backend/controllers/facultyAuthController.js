@@ -13,7 +13,7 @@ const facultyLogin = async (req, res) => {
     }
 
     // Find faculty by email
-    const faculty = await Faculty.findOne({ email });
+    const faculty = await Faculty.findOne({ email }).select('+password');
     if (!faculty) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -43,7 +43,8 @@ const facultyLogin = async (req, res) => {
         name: faculty.name,
         email: faculty.email,
         department: faculty.department,
-        role: 'faculty'
+        role: 'faculty',
+        mustChangePassword: faculty.mustChangePassword
       }
     });
   } catch (error) {
@@ -95,9 +96,9 @@ const facultyGoogleLogin = async (req, res) => {
       });
       await faculty.save();
 
-      return res.status(403).json({ 
+      return res.status(403).json({
         message: 'Account created. Please wait for admin approval.',
-        needsApproval: true 
+        needsApproval: true
       });
     }
 
@@ -126,22 +127,23 @@ const facultyGoogleLogin = async (req, res) => {
         name: faculty.name,
         email: faculty.email,
         department: faculty.department,
-        role: 'faculty'
+        role: 'faculty',
+        mustChangePassword: faculty.mustChangePassword
       }
     });
   } catch (error) {
     console.error('Faculty Google login error:', error);
-    
+
     // Provide more specific error messages
     if (error.message && error.message.includes('Invalid token')) {
       return res.status(401).json({ message: 'Invalid Google token. Please try again.' });
     }
-    
+
     if (error.message && error.message.includes('Token used too late')) {
       return res.status(401).json({ message: 'Google token expired. Please try again.' });
     }
 
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Server error during Google login',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
@@ -159,8 +161,57 @@ const facultyLogout = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  try {
+    const { email, oldPassword, newPassword } = req.body;
+
+    if (!email || !oldPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email, current password, and new password are required'
+      });
+    }
+
+    const faculty = await Faculty.findOne({ email }).select('+password');
+    if (!faculty) {
+      return res.status(404).json({
+        success: false,
+        message: 'Faculty not found'
+      });
+    }
+
+    // Verify old password
+    const isMatch = await faculty.comparePassword(oldPassword);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Incorrect current password'
+      });
+    }
+
+    // Update password
+    faculty.password = newPassword;
+    faculty.mustChangePassword = false;
+    await faculty.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Change Password Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   facultyLogin,
   facultyGoogleLogin,
-  facultyLogout
+  facultyLogout,
+  changePassword
 };

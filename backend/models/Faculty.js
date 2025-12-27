@@ -52,6 +52,10 @@ const facultySchema = new mongoose.Schema(
       type: String,
       default: 'faculty',
     },
+    mustChangePassword: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

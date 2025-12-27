@@ -38,7 +38,10 @@ const registerFaculty = async (req, res) => {
       password,
       department,
       designation,
+      department,
+      designation,
       isActive: true,
+      mustChangePassword: true,
     });
     await faculty.save();
 
