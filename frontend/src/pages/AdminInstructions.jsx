@@ -102,15 +102,15 @@ const AdminInstructions = () => {
 
     return (
         <div className="space-y-6 max-w-5xl mx-auto p-6">
-            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
+            <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm flex justify-between items-center">
                 <div>
                     <h2 className="text-xl font-bold mb-1">Student Instructions</h2>
-                    <p className="text-gray-500 text-sm">Update locker rules and lab policies for students.</p>
+                    <p className="text-stone-500 text-sm">Update locker rules and lab policies for students.</p>
                 </div>
                 <button
                     onClick={handleSave}
                     disabled={loading || fetching}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-colors disabled:opacity-50"
                 >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                     Save Changes
@@ -123,27 +123,27 @@ const AdminInstructions = () => {
                 </div>
             )}
 
-            <div className="flex gap-4 p-1 bg-gray-100 rounded-lg w-fit">
+            <div className="flex gap-4 p-1 bg-stone-100 rounded-lg w-fit">
                 <button
                     onClick={() => setActiveTab('locker')}
-                    className={`px-6 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'locker' ? 'bg-white shadow text-black' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`px-6 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'locker' ? 'bg-white shadow text-stone-900' : 'text-stone-500 hover:text-stone-700'}`}
                 >
                     <BookOpen className="w-4 h-4 inline mr-2" />
                     Locker Instructions
                 </button>
                 <button
                     onClick={() => setActiveTab('lab')}
-                    className={`px-6 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'lab' ? 'bg-white shadow text-black' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`px-6 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'lab' ? 'bg-white shadow text-stone-900' : 'text-stone-500 hover:text-stone-700'}`}
                 >
                     <ShieldCheck className="w-4 h-4 inline mr-2" />
                     Lab Policies
                 </button>
             </div>
 
-            <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm min-h-[500px]">
+            <div className="bg-white border border-stone-100 rounded-xl overflow-hidden shadow-sm min-h-[500px]">
                 {fetching && (
                     <div className="flex items-center justify-center h-64 absolute inset-0 bg-white/50 z-10">
-                        <Loader2 className="w-8 h-8 text-gray-300 animate-spin" />
+                        <Loader2 className="w-8 h-8 text-stone-300 animate-spin" />
                     </div>
                 )}
                 <div className="relative">
