@@ -19,7 +19,9 @@ import {
   Lock,
   Wrench,
   BookOpen,
-  Shield
+  Shield,
+  Activity,
+  ExternalLink
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminInstructions from './AdminInstructions';
@@ -310,6 +312,7 @@ const AdminDashboard = () => {
                 { id: 'materials', label: 'Materials', icon: <Package size={16} /> },
                 { id: 'equipment', label: 'Equipment', icon: <Wrench size={16} /> },
                 { id: 'instructions', label: 'Instructions', icon: <BookOpen size={16} /> },
+                { id: 'performance', label: 'Performance', icon: <Activity size={16} /> },
                 { id: 'settings', label: 'Settings', icon: <Settings size={16} /> },
               ].map((item) => (
                 <button
@@ -351,6 +354,8 @@ const AdminDashboard = () => {
               {activeTab === 'materials' && 'Material Management'}
               {activeTab === 'equipment' && 'Equipment Management'}
               {activeTab === 'instructions' && 'Student Instructions'}
+              {activeTab === 'performance' && 'System Analytics'}
+              {activeTab === 'settings' && 'Admin Settings'}
             </h1>
             <p className="text-stone-500 text-sm mt-1 font-medium">
 
@@ -360,6 +365,8 @@ const AdminDashboard = () => {
               {activeTab === 'materials' && 'Inventory control for lab resources'}
               {activeTab === 'equipment' && 'Track and manage lab machinery'}
               {activeTab === 'instructions' && 'Update guidelines for students'}
+              {activeTab === 'performance' && 'Monitor server health and activity logs'}
+              {activeTab === 'settings' && 'Configure system preferences'}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -479,57 +486,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* System Performance & Recent Activity - Added to push Quick Actions down */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white/40 backdrop-blur-md p-8 rounded-3xl border border-stone-200/50">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-serif text-stone-900">System Performance</h3>
-                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">Optimal</span>
-                  </div>
-                  <div className="space-y-6">
-                    {[
-                      { label: 'Server Uptime', value: '99.9%', width: 'w-[99.9%]' },
-                      { label: 'Database Load', value: '12%', width: 'w-[12%]' },
-                      { label: 'Storage Usage', value: '64%', width: 'w-[64%]' },
-                    ].map((stat, i) => (
-                      <div key={i}>
-                        <div className="flex justify-between text-sm mb-2">
-                          <span className="text-stone-500">{stat.label}</span>
-                          <span className="font-mono font-bold text-stone-900">{stat.value}</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
-                          <div className={`${stat.width} h-full bg-stone-800 rounded-full`}></div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="bg-white/40 backdrop-blur-md p-8 rounded-3xl border border-stone-200/50">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-serif text-stone-900">Recent Activity</h3>
-                    <button className="text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors uppercase tracking-widest">View All</button>
-                  </div>
-                  <div className="space-y-4">
-                    {[
-                      { msg: 'New equipment "3D Printer" added', time: '2 hours ago', icon: <Wrench size={14} /> },
-                      { msg: 'User "Dr. Smith" updated profile', time: '5 hours ago', icon: <Users size={14} /> },
-                      { msg: 'System backup completed successfully', time: 'Yesterday', icon: <Shield size={14} /> },
-                    ].map((activity, i) => (
-                      <div key={i} className="flex items-center gap-4 p-3 hover:bg-white/50 rounded-xl transition-colors cursor-default group">
-                        <div className="p-2 bg-stone-100 rounded-lg text-stone-500 group-hover:bg-white transition-colors">
-                          {activity.icon}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-stone-800">{activity.msg}</p>
-                          <p className="text-[10px] text-stone-400">{activity.time}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
               {/* Quick Actions */}
               <div>
                 <h3 className="text-lg font-serif text-stone-900 mb-4">Quick Actions</h3>
@@ -580,136 +536,190 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </div>
-          )}
+          )
+          }
 
           {/* Faculty Tab */}
-          {activeTab === 'faculty' && (
-            <div className="space-y-6 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+          {
+            activeTab === 'faculty' && (
+              <div className="space-y-6 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
 
-              {/* Search & Stats Header */}
-              <div className="flex flex-col md:flex-row justify-between items-end gap-4 bg-white/60 backdrop-blur-md p-6 rounded-2xl border border-white shadow-sm">
-                <div>
-                  <h2 className="text-xl font-serif mb-1 text-stone-800">Faculty Directory</h2>
-                  <p className="text-stone-500 text-sm">Manage guides and their assigned student teams.</p>
+                {/* Search & Stats Header */}
+                <div className="flex flex-col md:flex-row justify-between items-end gap-4 bg-white/60 backdrop-blur-md p-6 rounded-2xl border border-white shadow-sm">
+                  <div>
+                    <h2 className="text-xl font-serif mb-1 text-stone-800">Faculty Directory</h2>
+                    <p className="text-stone-500 text-sm">Manage guides and their assigned student teams.</p>
+                  </div>
+                  <div className="w-full md:w-80 relative">
+                    <input
+                      type="text"
+                      placeholder="Search faculty or department..."
+                      className="w-full pl-11 pr-4 py-3 bg-white border-0 ring-1 ring-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-maroon-700/20 focus:shadow-lg transition-all shadow-sm placeholder:text-stone-400"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <Search className="w-4 h-4 text-stone-400 absolute left-4 top-3.5" />
+                  </div>
                 </div>
-                <div className="w-full md:w-80 relative">
-                  <input
-                    type="text"
-                    placeholder="Search faculty or department..."
-                    className="w-full pl-11 pr-4 py-3 bg-white border-0 ring-1 ring-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-maroon-700/20 focus:shadow-lg transition-all shadow-sm placeholder:text-stone-400"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <Search className="w-4 h-4 text-stone-400 absolute left-4 top-3.5" />
-                </div>
-              </div>
 
-              {facultiesData
-                .filter(f =>
-                  f.faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  f.faculty.department.toLowerCase().includes(searchTerm.toLowerCase())
-                )
-                .map(({ faculty, teams }) => {
-                  const totalStudents = teams.reduce((acc, team) => acc + team.members.length, 0);
+                {facultiesData
+                  .filter(f =>
+                    f.faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    f.faculty.department.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map(({ faculty, teams }) => {
+                    const totalStudents = teams.reduce((acc, team) => acc + team.members.length, 0);
 
-                  return (
-                    <div key={faculty._id} className="bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
-                      <div
-                        onClick={() => setExpandedFaculty(expandedFaculty === faculty._id ? null : faculty._id)}
-                        className="flex items-center justify-between p-6 cursor-pointer hover:bg-stone-50/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-6">
-                          <div className="w-14 h-14 bg-gradient-to-br from-stone-100 to-stone-200 rounded-2xl flex items-center justify-center text-stone-500 font-serif text-xl group-hover:from-maroon-700 group-hover:to-maroon-900 group-hover:text-white transition-all shadow-inner">
-                            {faculty.name.charAt(0)}
+                    return (
+                      <div key={faculty._id} className="bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+                        <div
+                          onClick={() => setExpandedFaculty(expandedFaculty === faculty._id ? null : faculty._id)}
+                          className="flex items-center justify-between p-6 cursor-pointer hover:bg-stone-50/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-6">
+                            <div className="w-14 h-14 bg-gradient-to-br from-stone-100 to-stone-200 rounded-2xl flex items-center justify-center text-stone-500 font-serif text-xl group-hover:from-maroon-700 group-hover:to-maroon-900 group-hover:text-white transition-all shadow-inner">
+                              {faculty.name.charAt(0)}
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-bold text-stone-900 group-hover:text-maroon-700 transition-colors font-serif">{faculty.name}</h3>
+                              <p className="text-sm text-stone-500 flex items-center gap-2 font-medium">
+                                <span className="bg-stone-100 text-xs px-2.5 py-0.5 rounded-md text-stone-600 border border-stone-200">{faculty.department}</span>
+                                <span className="text-stone-300">•</span>
+                                {faculty.email}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-lg font-bold text-stone-900 group-hover:text-maroon-700 transition-colors font-serif">{faculty.name}</h3>
-                            <p className="text-sm text-stone-500 flex items-center gap-2 font-medium">
-                              <span className="bg-stone-100 text-xs px-2.5 py-0.5 rounded-md text-stone-600 border border-stone-200">{faculty.department}</span>
-                              <span className="text-stone-300">•</span>
-                              {faculty.email}
-                            </p>
+
+                          <div className="flex items-center gap-8">
+                            <div className="text-right hidden sm:block">
+                              <div className="text-[10px] text-stone-400 uppercase tracking-widest font-bold mb-0.5">Allocated</div>
+                              <div className="text-sm font-medium">
+                                <span className="text-stone-900 font-bold">{teams.length}</span> <span className="text-stone-500">Teams</span>
+                                <span className="mx-3 text-stone-300">|</span>
+                                <span className="text-stone-900 font-bold">{totalStudents}</span> <span className="text-stone-500">Students</span>
+                              </div>
+                            </div>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${expandedFaculty === faculty._id ? 'bg-maroon-700 text-white border-maroon-700 shadow-lg shadow-maroon-900/20' : 'border-stone-200 text-stone-400 group-hover:border-maroon-200 group-hover:text-maroon-400'}`}>
+                              {expandedFaculty === faculty._id ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                            </div>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-8">
-                          <div className="text-right hidden sm:block">
-                            <div className="text-[10px] text-stone-400 uppercase tracking-widest font-bold mb-0.5">Allocated</div>
-                            <div className="text-sm font-medium">
-                              <span className="text-stone-900 font-bold">{teams.length}</span> <span className="text-stone-500">Teams</span>
-                              <span className="mx-3 text-stone-300">|</span>
-                              <span className="text-stone-900 font-bold">{totalStudents}</span> <span className="text-stone-500">Students</span>
-                            </div>
-                          </div>
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${expandedFaculty === faculty._id ? 'bg-maroon-700 text-white border-maroon-700 shadow-lg shadow-maroon-900/20' : 'border-stone-200 text-stone-400 group-hover:border-maroon-200 group-hover:text-maroon-400'}`}>
-                            {expandedFaculty === faculty._id ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-                          </div>
-                        </div>
-                      </div>
+                        {expandedFaculty === faculty._id && (
+                          <div className="border-t border-stone-100 bg-stone-50/50 p-6 animate-in fade-in slide-in-from-top-1 duration-200">
+                            {teams.length === 0 ? (
+                              <div className="flex flex-col items-center justify-center py-10 text-stone-400 border-2 border-dashed border-stone-200 rounded-xl bg-white/50">
+                                <Package size={32} className="mb-3 opacity-30" />
+                                <p className="font-serif italic text-stone-500">No teams assigned yet.</p>
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                                {teams.map(team => (
+                                  <div key={team._id} className="bg-white border border-stone-100 rounded-xl p-6 hover:border-maroon-100 hover:shadow-lg hover:shadow-maroon-900/5 transition-all relative overflow-hidden group/team">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-stone-200 group-hover/team:bg-maroon-400 transition-colors"></div>
 
-                      {expandedFaculty === faculty._id && (
-                        <div className="border-t border-stone-100 bg-stone-50/50 p-6 animate-in fade-in slide-in-from-top-1 duration-200">
-                          {teams.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-10 text-stone-400 border-2 border-dashed border-stone-200 rounded-xl bg-white/50">
-                              <Package size={32} className="mb-3 opacity-30" />
-                              <p className="font-serif italic text-stone-500">No teams assigned yet.</p>
-                            </div>
-                          ) : (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                              {teams.map(team => (
-                                <div key={team._id} className="bg-white border border-stone-100 rounded-xl p-6 hover:border-maroon-100 hover:shadow-lg hover:shadow-maroon-900/5 transition-all relative overflow-hidden group/team">
-                                  <div className="absolute top-0 left-0 w-1 h-full bg-stone-200 group-hover/team:bg-maroon-400 transition-colors"></div>
+                                    <div className="flex justify-between items-start mb-4">
+                                      <h4 className="font-bold text-lg text-stone-900 line-clamp-1 font-serif group-hover/team:text-maroon-800 transition-colors">{team.teamName || 'Unnamed Team'}</h4>
+                                      <span className="text-[10px] text-stone-400 font-bold bg-stone-50 px-2 py-1 rounded border border-stone-100 uppercase tracking-wider">
+                                        {new Date(team.createdAt).toLocaleDateString()}
+                                      </span>
+                                    </div>
 
-                                  <div className="flex justify-between items-start mb-4">
-                                    <h4 className="font-bold text-lg text-stone-900 line-clamp-1 font-serif group-hover/team:text-maroon-800 transition-colors">{team.teamName || 'Unnamed Team'}</h4>
-                                    <span className="text-[10px] text-stone-400 font-bold bg-stone-50 px-2 py-1 rounded border border-stone-100 uppercase tracking-wider">
-                                      {new Date(team.createdAt).toLocaleDateString()}
-                                    </span>
-                                  </div>
+                                    <p className="text-sm text-stone-600 mb-5 leading-relaxed line-clamp-2 min-h-[3em]">{team.problemStatement}</p>
 
-                                  <p className="text-sm text-stone-600 mb-5 leading-relaxed line-clamp-2 min-h-[3em]">{team.problemStatement}</p>
-
-                                  <div className="space-y-3">
-                                    <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Members</div>
-                                    <div className="flex flex-wrap gap-2">
-                                      {team.members.map(m => (
-                                        <div key={m._id} className="inline-flex items-center px-2.5 py-1.5 bg-stone-50 border border-stone-100 rounded-md text-xs hover:bg-white hover:shadow-sm transition-all cursor-default">
-                                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
-                                          <span className="font-medium text-stone-700">{m.name}</span>
-                                          <span className="mx-2 text-stone-200">|</span>
-                                          <span className="text-stone-400 font-mono tracking-tight">{m.usn}</span>
-                                        </div>
-                                      ))}
+                                    <div className="space-y-3">
+                                      <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Members</div>
+                                      <div className="flex flex-wrap gap-2">
+                                        {team.members.map(m => (
+                                          <div key={m._id} className="inline-flex items-center px-2.5 py-1.5 bg-stone-50 border border-stone-100 rounded-md text-xs hover:bg-white hover:shadow-sm transition-all cursor-default">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
+                                            <span className="font-medium text-stone-700">{m.name}</span>
+                                            <span className="mx-2 text-stone-200">|</span>
+                                            <span className="text-stone-400 font-mono tracking-tight">{m.usn}</span>
+                                          </div>
+                                        ))}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
 
-              {/* Empty State */}
-              {facultiesData.filter(f =>
-                f.faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                f.faculty.department.toLowerCase().includes(searchTerm.toLowerCase())
-              ).length === 0 && (
-                  <div className="text-center py-20">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-                      <Search size={24} />
+                {/* Empty State */}
+                {facultiesData.filter(f =>
+                  f.faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  f.faculty.department.toLowerCase().includes(searchTerm.toLowerCase())
+                ).length === 0 && (
+                    <div className="text-center py-20">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                        <Search size={24} />
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900">No faculty found</h3>
+                      <p className="text-gray-500">Try adjusting your search terms</p>
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900">No faculty found</h3>
-                    <p className="text-gray-500">Try adjusting your search terms</p>
+                  )}
+              </div>
+            )}
+
+          {activeTab === 'performance' && (
+            <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-white/60 backdrop-blur-xl p-8 rounded-3xl border border-white/50 shadow-sm">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-serif text-stone-900">System Performance</h3>
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">Optimal</span>
                   </div>
-                )}
+                  <div className="space-y-6">
+                    {[
+                      { label: 'Server Uptime', value: '99.9%', width: 'w-[99.9%]' },
+                      { label: 'Database Load', value: '12%', width: 'w-[12%]' },
+                      { label: 'Storage Usage', value: '64%', width: 'w-[64%]' },
+                    ].map((stat, i) => (
+                      <div key={i}>
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-stone-500">{stat.label}</span>
+                          <span className="font-mono font-bold text-stone-900">{stat.value}</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
+                          <div className={`${stat.width} h-full bg-stone-800 rounded-full`}></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-white/60 backdrop-blur-xl p-8 rounded-3xl border border-white/50 shadow-sm">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-serif text-stone-900">Recent Activity</h3>
+                    <button className="text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors uppercase tracking-widest">View All</button>
+                  </div>
+                  <div className="space-y-4">
+                    {[
+                      { msg: 'New equipment "3D Printer" added', time: '2 hours ago', icon: <Wrench size={14} /> },
+                      { msg: 'User "Dr. Smith" updated profile', time: '5 hours ago', icon: <Users size={14} /> },
+                      { msg: 'System backup completed successfully', time: 'Yesterday', icon: <Shield size={14} /> },
+                    ].map((activity, i) => (
+                      <div key={i} className="flex items-center gap-4 p-3 hover:bg-stone-50 rounded-xl transition-colors cursor-default group">
+                        <div className="p-2 bg-stone-100 rounded-lg text-stone-500 group-hover:bg-white transition-colors">
+                          {activity.icon}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-stone-800">{activity.msg}</p>
+                          <p className="text-[10px] text-stone-400">{activity.time}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
-
-          {/* Users Tab */}
           {activeTab === 'users' && (
             <div className="max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
               <div className="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-white/50">
@@ -912,252 +922,259 @@ const AdminDashboard = () => {
           )}
 
           {/* Events Tab */}
-          {activeTab === 'events' && (
-            <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
-              <div className="flex justify-end mb-8">
-                <button onClick={() => setShowEventModal(true)} className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98] font-medium">
-                  <Plus size={20} /> Add New Event
-                </button>
-              </div>
+          {
+            activeTab === 'events' && (
+              <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+                <div className="flex justify-end mb-8">
+                  <button onClick={() => setShowEventModal(true)} className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98] font-medium">
+                    <Plus size={20} /> Add New Event
+                  </button>
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {eventsData.map(event => (
-                  <div key={event._id} className="group relative h-80 bg-stone-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500">
-                    {/* Background Image & Gradient */}
-                    <div className="absolute inset-0">
-                      <img
-                        src={event.image || event.imageUrl}
-                        alt={event.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/30 to-black/30 opacity-80 group-hover:opacity-90 transition-opacity" />
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {eventsData.map(event => (
+                    <div key={event._id} className="group relative h-80 bg-stone-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500">
+                      {/* Background Image & Gradient */}
+                      <div className="absolute inset-0">
+                        <img
+                          src={event.image || event.imageUrl}
+                          alt={event.title}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/30 to-black/30 opacity-80 group-hover:opacity-90 transition-opacity" />
+                      </div>
 
-                    {/* Actions (Top Right) */}
-                    <div className="absolute top-4 right-4 flex gap-2 translate-y-[-20px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
-                      <button onClick={() => handleDeleteEvent(event._id)} className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-red-600 hover:text-white transition-colors border border-white/20">
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
+                      {/* Actions (Top Right) */}
+                      <div className="absolute top-4 right-4 flex gap-2 translate-y-[-20px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
+                        <button onClick={() => handleDeleteEvent(event._id)} className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-red-600 hover:text-white transition-colors border border-white/20">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
 
-                    {/* Content (Bottom) */}
-                    <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 z-10">
-                      <span className="inline-block px-3 py-1 bg-red-600/90 backdrop-blur-md text-white text-[10px] font-bold rounded-full uppercase tracking-widest shadow-sm mb-3">
-                        {event.category}
-                      </span>
-                      <h3 className="font-serif text-2xl text-white mb-2 leading-tight">{event.title}</h3>
-                      <div className="flex items-center gap-2 text-stone-300 text-sm font-medium">
-                        <Calendar size={14} />
-                        {event.date}
+                      {/* Content (Bottom) */}
+                      <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 z-10">
+                        <span className="inline-block px-3 py-1 bg-red-600/90 backdrop-blur-md text-white text-[10px] font-bold rounded-full uppercase tracking-widest shadow-sm mb-3">
+                          {event.category}
+                        </span>
+                        <h3 className="font-serif text-2xl text-white mb-2 leading-tight">{event.title}</h3>
+                        <div className="flex items-center gap-2 text-stone-300 text-sm font-medium">
+                          <Calendar size={14} />
+                          {event.date}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          }
 
           {/* Materials Tab */}
-          {activeTab === 'materials' && (
-            <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
-              <div className="flex justify-end mb-8">
-                <button
-                  onClick={() => {
-                    setEditingMaterial(null);
-                    setMaterialForm({ name: '', dimension: '', description: '', image: null, density: 0, embodiedEnergy: 0, fixedDimension: 0, formType: 'unit' });
-                    setShowMaterialModal(true);
-                  }}
-                  className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98] font-medium"
-                >
-                  <Plus size={20} /> Add Material
-                </button>
-              </div>
+          {
+            activeTab === 'materials' && (
+              <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+                <div className="flex justify-end mb-8">
+                  <button
+                    onClick={() => {
+                      setEditingMaterial(null);
+                      setMaterialForm({ name: '', dimension: '', description: '', image: null, density: 0, embodiedEnergy: 0, fixedDimension: 0, formType: 'unit' });
+                      setShowMaterialModal(true);
+                    }}
+                    className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98] font-medium"
+                  >
+                    <Plus size={20} /> Add Material
+                  </button>
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {materialsData.map(material => (
-                  <div key={material._id} className="group relative h-72 bg-stone-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500">
-                    {/* Background */}
-                    <div className="absolute inset-0">
-                      <img src={material.imageUrl} alt={material.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/20 to-black/20 opacity-80 group-hover:opacity-90 transition-opacity" />
-                    </div>
-
-                    {/* Actions */}
-                    <div className="absolute top-4 right-4 flex gap-2 translate-y-[-20px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
-                      <button onClick={() => { setEditingMaterial(material); setMaterialForm(material); setShowMaterialModal(true); }} className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-blue-600 hover:text-white transition-colors border border-white/20">
-                        <Edit2 size={16} />
-                      </button>
-                      <button onClick={() => handleDeleteMaterial(material._id)} className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-red-600 hover:text-white transition-colors border border-white/20">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-
-                    {/* Content */}
-                    <div className="absolute bottom-0 left-0 w-full p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 z-10">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-serif text-xl text-white truncate pr-2">{material.name}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {materialsData.map(material => (
+                    <div key={material._id} className="group relative h-72 bg-stone-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500">
+                      {/* Background */}
+                      <div className="absolute inset-0">
+                        <img src={material.imageUrl} alt={material.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/20 to-black/20 opacity-80 group-hover:opacity-90 transition-opacity" />
                       </div>
-                      <p className="text-[10px] font-bold text-stone-300 bg-white/10 inline-block px-2.5 py-1 rounded-md mb-3 uppercase tracking-wider backdrop-blur-md border border-white/10">{material.dimension}</p>
-                      <p className="text-sm text-stone-400 line-clamp-2 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">{material.description}</p>
+
+                      {/* Actions */}
+                      <div className="absolute top-4 right-4 flex gap-2 translate-y-[-20px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
+                        <button onClick={() => { setEditingMaterial(material); setMaterialForm(material); setShowMaterialModal(true); }} className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-blue-600 hover:text-white transition-colors border border-white/20">
+                          <Edit2 size={16} />
+                        </button>
+                        <button onClick={() => handleDeleteMaterial(material._id)} className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-red-600 hover:text-white transition-colors border border-white/20">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+
+                      {/* Content */}
+                      <div className="absolute bottom-0 left-0 w-full p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 z-10">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-serif text-xl text-white truncate pr-2">{material.name}</h3>
+                        </div>
+                        <p className="text-[10px] font-bold text-stone-300 bg-white/10 inline-block px-2.5 py-1 rounded-md mb-3 uppercase tracking-wider backdrop-blur-md border border-white/10">{material.dimension}</p>
+                        <p className="text-sm text-stone-400 line-clamp-2 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">{material.description}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          }
 
           {/* Equipment Tab */}
-          {activeTab === 'equipment' && (
-            <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
-              {/* Drag & Drop Zone */}
-              <div
-                className={`mb-8 border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all duration-300 cursor-pointer group ${isDragging ? 'border-maroon-500 bg-maroon-50' : 'border-stone-200 bg-stone-50/50 hover:bg-stone-50 hover:border-maroon-200'}`}
-                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
-                onDrop={handleBulkUpload}
-                onClick={() => document.getElementById('bulk-upload-input').click()}
-              >
-                <input
-                  id="bulk-upload-input"
-                  type="file"
-                  accept=".pdf,.csv"
-                  className="hidden"
-                  onChange={handleBulkUpload}
-                />
-                <div className="p-4 bg-white rounded-full text-maroon-700 shadow-sm mb-3 group-hover:scale-110 transition-transform duration-300">
-                  <Upload size={32} />
-                </div>
-                <h3 className="font-serif text-lg text-stone-900 mb-1">Bulk Import Equipment</h3>
-                <p className="text-stone-500 text-sm mb-4">Drag & drop PDF/CSV or click to browse</p>
-                <div className="flex gap-2">
-                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-white px-2 py-1 rounded border border-stone-200">.PDF</span>
-                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-white px-2 py-1 rounded border border-stone-200">.CSV</span>
-                </div>
-              </div>
-
-              <div className="flex justify-end mb-8">
-                <button
-                  onClick={() => setShowEquipmentModal(true)}
-                  className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98] font-medium"
+          {
+            activeTab === 'equipment' && (
+              <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+                {/* Drag & Drop Zone */}
+                <div
+                  className={`mb-8 border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all duration-300 cursor-pointer group ${isDragging ? 'border-maroon-500 bg-maroon-50' : 'border-stone-200 bg-stone-50/50 hover:bg-stone-50 hover:border-maroon-200'}`}
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+                  onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+                  onDrop={handleBulkUpload}
+                  onClick={() => document.getElementById('bulk-upload-input').click()}
                 >
-                  <Plus size={20} /> Add Equipment
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {equipmentsData.map(item => (
-                  <div
-                    key={item._id}
-                    onClick={() => setSelectedEquipmentView(item)}
-                    className="group relative h-80 bg-stone-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer"
-                  >
-                    {/* Background */}
-                    <div className="absolute inset-0 bg-white">
-                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-110" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/40 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
-                    </div>
-
-                    {/* Actions */}
-                    <div className="absolute top-4 right-4 flex gap-2 translate-y-[-20px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingEquipment(item);
-                          setEquipmentForm({
-                            name: item.name,
-                            specification: item.specification || '',
-                            description: item.description,
-                            additionalInfo: item.additionalInfo || '',
-                            inCharge: item.inCharge,
-                            image: null
-                          });
-                          setShowEquipmentModal(true);
-                        }}
-                        className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:text-blue-400 border border-white/20"
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDeleteEquipment(item._id); }} className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:text-red-400 border border-white/20">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-
-                    {/* Content */}
-                    <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 z-10">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
-                        <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">In Charge: {item.inCharge}</p>
-                      </div>
-                      <h3 className="text-2xl font-serif text-white mb-2">{item.name}</h3>
-
-                      <div className="text-xs text-red-400 font-bold mt-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 uppercase tracking-wider">
-                        View details <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
+                  <input
+                    id="bulk-upload-input"
+                    type="file"
+                    accept=".pdf,.csv"
+                    className="hidden"
+                    onChange={handleBulkUpload}
+                  />
+                  <div className="p-4 bg-white rounded-full text-maroon-700 shadow-sm mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <Upload size={32} />
                   </div>
-                ))}
+                  <h3 className="font-serif text-lg text-stone-900 mb-1">Bulk Import Equipment</h3>
+                  <p className="text-stone-500 text-sm mb-4">Drag & drop PDF/CSV or click to browse</p>
+                  <div className="flex gap-2">
+                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-white px-2 py-1 rounded border border-stone-200">.PDF</span>
+                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-white px-2 py-1 rounded border border-stone-200">.CSV</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-end mb-8">
+                  <button
+                    onClick={() => setShowEquipmentModal(true)}
+                    className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98] font-medium"
+                  >
+                    <Plus size={20} /> Add Equipment
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {equipmentsData.map(item => (
+                    <div
+                      key={item._id}
+                      onClick={() => setSelectedEquipmentView(item)}
+                      className="group relative h-80 bg-stone-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer"
+                    >
+                      {/* Background */}
+                      <div className="absolute inset-0 bg-white">
+                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-110" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/40 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
+                      </div>
+
+                      {/* Actions */}
+                      <div className="absolute top-4 right-4 flex gap-2 translate-y-[-20px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingEquipment(item);
+                            setEquipmentForm({
+                              name: item.name,
+                              specification: item.specification || '',
+                              description: item.description,
+                              additionalInfo: item.additionalInfo || '',
+                              inCharge: item.inCharge,
+                              image: null
+                            });
+                            setShowEquipmentModal(true);
+                          }}
+                          className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:text-blue-400 border border-white/20"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); handleDeleteEquipment(item._id); }} className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:text-red-400 border border-white/20">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+
+                      {/* Content */}
+                      <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 z-10">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+                          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">In Charge: {item.inCharge}</p>
+                        </div>
+                        <h3 className="text-2xl font-serif text-white mb-2">{item.name}</h3>
+
+                        <div className="text-xs text-red-400 font-bold mt-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 uppercase tracking-wider">
+                          View details <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          }
 
           {/* Settings Tab */}
-          {activeTab === 'settings' && (
-            <div className="max-w-xl mx-auto">
-              <div className="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-white/50">
-                <div className="flex items-center gap-5 mb-8">
-                  <div className="w-14 h-14 bg-stone-100 rounded-2xl flex items-center justify-center text-stone-800 shadow-inner">
-                    <Lock size={28} />
+          {
+            activeTab === 'settings' && (
+              <div className="max-w-xl mx-auto">
+                <div className="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-white/50">
+                  <div className="flex items-center gap-5 mb-8">
+                    <div className="w-14 h-14 bg-stone-100 rounded-2xl flex items-center justify-center text-stone-800 shadow-inner">
+                      <Lock size={28} />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-serif text-stone-900">Security Settings</h2>
+                      <p className="text-sm text-stone-500 font-medium">Manage your password and security preferences</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-serif text-stone-900">Security Settings</h2>
-                    <p className="text-sm text-stone-500 font-medium">Manage your password and security preferences</p>
-                  </div>
-                </div>
 
-                <form onSubmit={async (e) => {
-                  e.preventDefault();
-                  const current = e.target.currentPassword.value;
-                  const newPass = e.target.newPassword.value;
-                  const confirmPass = e.target.confirmPassword.value;
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    const current = e.target.currentPassword.value;
+                    const newPass = e.target.newPassword.value;
+                    const confirmPass = e.target.confirmPassword.value;
 
-                  if (newPass !== confirmPass) {
-                    alert("New passwords do not match");
-                    return;
-                  }
-
-                  try {
-                    const response = await api.post('/admin/change-password', {
-                      currentPassword: current,
-                      newPassword: newPass
-                    });
-                    if (response.data.success) {
-                      alert('Password updated successfully');
-                      e.target.reset();
+                    if (newPass !== confirmPass) {
+                      alert("New passwords do not match");
+                      return;
                     }
-                  } catch (error) {
-                    alert(error.response?.data?.message || 'Failed to update password');
-                  }
-                }} className="space-y-6">
-                  <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Current Password</label>
-                    <input name="currentPassword" type="password" required className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">New Password</label>
-                    <input name="newPassword" type="password" required className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Confirm New Password</label>
-                    <input name="confirmPassword" type="password" required className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                  </div>
 
-                  <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">
-                    Update Password
-                  </button>
-                </form>
+                    try {
+                      const response = await api.post('/admin/change-password', {
+                        currentPassword: current,
+                        newPassword: newPass
+                      });
+                      if (response.data.success) {
+                        alert('Password updated successfully');
+                        e.target.reset();
+                      }
+                    } catch (error) {
+                      alert(error.response?.data?.message || 'Failed to update password');
+                    }
+                  }} className="space-y-6">
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Current Password</label>
+                      <input name="currentPassword" type="password" required className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">New Password</label>
+                      <input name="newPassword" type="password" required className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Confirm New Password</label>
+                      <input name="confirmPassword" type="password" required className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
+                    </div>
+
+                    <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">
+                      Update Password
+                    </button>
+                  </form>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {activeTab === 'instructions' && (
             <AdminInstructions />
@@ -1167,154 +1184,141 @@ const AdminDashboard = () => {
         {/* --- Modals --- */}
 
         {/* Material Modal */}
-        {
-          showMaterialModal && (
-            <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
-                <div className="flex justify-between items-center mb-8">
-                  <h2 className="text-2xl font-serif text-stone-900">{editingMaterial ? 'Edit Material' : 'Add Material'}</h2>
-                  <button onClick={() => setShowMaterialModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
-                </div>
-                <form onSubmit={handleMaterialSubmit} className="space-y-5">
-                  <div className="grid grid-cols-2 gap-4">
-                    <input type="text" placeholder="Name" required value={materialForm.name} onChange={e => setMaterialForm({ ...materialForm, name: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                    <select value={materialForm.formType || 'unit'} onChange={e => setMaterialForm({ ...materialForm, formType: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium text-stone-700">
-                      <option value="unit">Unit (Item)</option>
-                      <option value="sheet">Sheet</option>
-                      <option value="rod">Rod</option>
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Dynamic Fixed Dimension Input */}
-                    <div>
-                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">
-                        {materialForm.formType === 'sheet' ? 'Thickness (mm)' :
-                          materialForm.formType === 'rod' ? 'Diameter (mm)' :
-                            'Weight (kg) [Optional]'}
-                      </label>
-                      <input type="number" step="any" placeholder="0" value={materialForm.fixedDimension || ''} onChange={e => setMaterialForm({ ...materialForm, fixedDimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                    </div>
-
-                    {/* Embodied Energy */}
-                    <div>
-                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Energy Coeff (MJ/kg)</label>
-                      <input type="number" step="any" required placeholder="MJ/kg" value={materialForm.embodiedEnergy || ''} onChange={e => setMaterialForm({ ...materialForm, embodiedEnergy: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                    </div>
-                  </div>
-
-                  {(materialForm.formType === 'sheet' || materialForm.formType === 'rod') && (
-                    <div>
-                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Density (kg/m³)</label>
-                      <input type="number" step="any" placeholder="Density" value={materialForm.density || ''} onChange={e => setMaterialForm({ ...materialForm, density: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                    </div>
-                  )}
-
-                  <input type="text" placeholder="Display Dimension (e.g. '5mm' or '20x20cm')" required value={materialForm.dimension} onChange={e => setMaterialForm({ ...materialForm, dimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                  <textarea placeholder="Description" required value={materialForm.description} onChange={e => setMaterialForm({ ...materialForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none" />
-
-                  <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
-                    <input type="file" accept="image/*" onChange={e => setMaterialForm({ ...materialForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
-                    <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
-                      <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
-                        <Upload size={24} />
-                      </div>
-                      <span className="text-sm font-medium">{materialForm.image?.name || 'Click to Upload Image'}</span>
-                    </div>
-                  </div>
-                  <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">Save Material</button>
-                </form>
+        {showMaterialModal && (
+          <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-serif text-stone-900">{editingMaterial ? 'Edit Material' : 'Add Material'}</h2>
+                <button onClick={() => setShowMaterialModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
               </div>
+              <form onSubmit={handleMaterialSubmit} className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <input type="text" placeholder="Name" required value={materialForm.name} onChange={e => setMaterialForm({ ...materialForm, name: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                  <select value={materialForm.formType || 'unit'} onChange={e => setMaterialForm({ ...materialForm, formType: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium text-stone-700">
+                    <option value="unit">Unit (Item)</option>
+                    <option value="sheet">Sheet</option>
+                    <option value="rod">Rod</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">
+                      {materialForm.formType === 'sheet' ? 'Thickness (mm)' :
+                        materialForm.formType === 'rod' ? 'Diameter (mm)' :
+                          'Weight (kg) [Optional]'}
+                    </label>
+                    <input type="number" step="any" placeholder="0" value={materialForm.fixedDimension || ''} onChange={e => setMaterialForm({ ...materialForm, fixedDimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Energy Coeff (MJ/kg)</label>
+                    <input type="number" step="any" required placeholder="MJ/kg" value={materialForm.embodiedEnergy || ''} onChange={e => setMaterialForm({ ...materialForm, embodiedEnergy: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                  </div>
+                </div>
+                {(materialForm.formType === 'sheet' || materialForm.formType === 'rod') && (
+                  <div>
+                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Density (kg/m³)</label>
+                    <input type="number" step="any" placeholder="Density" value={materialForm.density || ''} onChange={e => setMaterialForm({ ...materialForm, density: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                  </div>
+                )}
+                <input type="text" placeholder="Display Dimension (e.g. '5mm' or '20x20cm')" required value={materialForm.dimension} onChange={e => setMaterialForm({ ...materialForm, dimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                <textarea placeholder="Description" required value={materialForm.description} onChange={e => setMaterialForm({ ...materialForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none" />
+                <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
+                  <input type="file" accept="image/*" onChange={e => setMaterialForm({ ...materialForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
+                  <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
+                    <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
+                      <Upload size={24} />
+                    </div>
+                    <span className="text-sm font-medium">{materialForm.image?.name || 'Click to Upload Image'}</span>
+                  </div>
+                </div>
+                <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">Save Material</button>
+              </form>
             </div>
-          )
-        }
+          </div>
+        )}
 
         {/* Event Modal */}
-        {
-          showEventModal && (
-            <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
-                <div className="flex justify-between items-center mb-8">
-                  <h2 className="text-2xl font-serif text-stone-900">Add New Event</h2>
-                  <button onClick={() => setShowEventModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
-                </div>
-                <form onSubmit={handleEventSubmit} className="space-y-5">
-                  <input type="text" placeholder="Event Title" required value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                  <input type="text" placeholder="Date (e.g. Dec 15, 2025)" required value={eventForm.date} onChange={e => setEventForm({ ...eventForm, date: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                  <input type="text" placeholder="Category (e.g. Conference)" required value={eventForm.category} onChange={e => setEventForm({ ...eventForm, category: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                  <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
-                    <input type="file" accept="image/*" onChange={e => setEventForm({ ...eventForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" required />
-                    <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
-                      <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
-                        <Upload size={24} />
-                      </div>
-                      <span className="text-sm font-medium">{eventForm.image?.name || 'Upload Event Image'}</span>
-                    </div>
-                  </div>
-                  <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">Create Event</button>
-                </form>
+        {showEventModal && (
+          <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-serif text-stone-900">Add New Event</h2>
+                <button onClick={() => setShowEventModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
               </div>
+              <form onSubmit={handleEventSubmit} className="space-y-5">
+                <input type="text" placeholder="Event Title" required value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                <input type="text" placeholder="Date (e.g. Dec 15, 2025)" required value={eventForm.date} onChange={e => setEventForm({ ...eventForm, date: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                <input type="text" placeholder="Category (e.g. Conference)" required value={eventForm.category} onChange={e => setEventForm({ ...eventForm, category: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
+                  <input type="file" accept="image/*" onChange={e => setEventForm({ ...eventForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" required />
+                  <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
+                    <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
+                      <Upload size={24} />
+                    </div>
+                    <span className="text-sm font-medium">{eventForm.image?.name || 'Upload Event Image'}</span>
+                  </div>
+                </div>
+                <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">Create Event</button>
+              </form>
             </div>
-          )
-        }
+          </div>
+        )}
 
         {/* Equipment Modal */}
-        {
-          showEquipmentModal && (
-            <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
-                <div className="flex justify-between items-center mb-8">
-                  <h2 className="text-2xl font-serif text-stone-900">{editingEquipment ? 'Edit Equipment' : 'Add New Equipment'}</h2>
-                  <button onClick={() => { setShowEquipmentModal(false); setEditingEquipment(null); }} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
-                </div>
-                <form onSubmit={handleEquipmentSubmit} className="space-y-5">
-                  <input type="text" placeholder="Equipment Name" required value={equipmentForm.name} onChange={e => setEquipmentForm({ ...equipmentForm, name: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                  <input type="text" placeholder="Person In Charge" required value={equipmentForm.inCharge} onChange={e => setEquipmentForm({ ...equipmentForm, inCharge: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                  <input type="text" placeholder="Specification" value={equipmentForm.specification} onChange={e => setEquipmentForm({ ...equipmentForm, specification: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                  <textarea placeholder="Description" required value={equipmentForm.description} onChange={e => setEquipmentForm({ ...equipmentForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
-                  <textarea placeholder="Additional Information (Optional)" value={equipmentForm.additionalInfo} onChange={e => setEquipmentForm({ ...equipmentForm, additionalInfo: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
-
-                  <div
-                    className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group"
-                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      const file = e.dataTransfer.files[0];
-                      if (file && file.type.startsWith('image/')) {
-                        setEquipmentForm({ ...equipmentForm, image: file });
-                      }
-                    }}
-                    onPaste={(e) => {
-                      const items = e.clipboardData.items;
-                      for (let i = 0; i < items.length; i++) {
-                        if (items[i].type.indexOf('image') !== -1) {
-                          const file = items[i].getAsFile();
-                          setEquipmentForm({ ...equipmentForm, image: file });
-                          break;
-                        }
-                      }
-                    }}
-                  >
-                    <input type="file" accept="image/*" onChange={e => setEquipmentForm({ ...equipmentForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
-                    <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
-                      <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
-                        <Upload size={24} />
-                      </div>
-                      <span className="text-sm font-medium">{equipmentForm.image ? equipmentForm.image.name : (editingEquipment ? 'Change Image' : 'Upload Equipment Image')}</span>
-                      <p className="text-[10px] opacity-60 font-medium tracking-wide">PASTE IMAGE OR DRAG & DROP</p>
-                    </div>
-                  </div>
-                  <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">
-                    {editingEquipment ? 'Update Changes' : 'Add Equipment'}
-                  </button>
-                </form>
+        {showEquipmentModal && (
+          <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-serif text-stone-900">{editingEquipment ? 'Edit Equipment' : 'Add New Equipment'}</h2>
+                <button onClick={() => { setShowEquipmentModal(false); setEditingEquipment(null); }} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
               </div>
-            </div>
-          )
-        }
+              <form onSubmit={handleEquipmentSubmit} className="space-y-5">
+                <input type="text" placeholder="Equipment Name" required value={equipmentForm.name} onChange={e => setEquipmentForm({ ...equipmentForm, name: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                <input type="text" placeholder="Person In Charge" required value={equipmentForm.inCharge} onChange={e => setEquipmentForm({ ...equipmentForm, inCharge: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                <input type="text" placeholder="Specification" value={equipmentForm.specification} onChange={e => setEquipmentForm({ ...equipmentForm, specification: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                <textarea placeholder="Description" required value={equipmentForm.description} onChange={e => setEquipmentForm({ ...equipmentForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
+                <textarea placeholder="Additional Information (Optional)" value={equipmentForm.additionalInfo} onChange={e => setEquipmentForm({ ...equipmentForm, additionalInfo: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
 
-        {/* Equipment Detail Modal (Selected View) */}
+                <div
+                  className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group"
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const file = e.dataTransfer.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                      setEquipmentForm({ ...equipmentForm, image: file });
+                    }
+                  }}
+                  onPaste={(e) => {
+                    const items = e.clipboardData.items;
+                    for (let i = 0; i < items.length; i++) {
+                      if (items[i].type.indexOf('image') !== -1) {
+                        const file = items[i].getAsFile();
+                        setEquipmentForm({ ...equipmentForm, image: file });
+                        break;
+                      }
+                    }
+                  }}
+                >
+                  <input type="file" accept="image/*" onChange={e => setEquipmentForm({ ...equipmentForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
+                  <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
+                    <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
+                      <Upload size={24} />
+                    </div>
+                    <span className="text-sm font-medium">{equipmentForm.image ? equipmentForm.image.name : (editingEquipment ? 'Change Image' : 'Upload Equipment Image')}</span>
+                    <p className="text-[10px] opacity-60 font-medium tracking-wide">PASTE IMAGE OR DRAG & DROP</p>
+                  </div>
+                </div>
+                <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">
+                  {editingEquipment ? 'Update Changes' : 'Add Equipment'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Equipment Detail Modal */}
         {selectedEquipmentView && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
@@ -1331,9 +1335,6 @@ const AdminDashboard = () => {
                   className="max-w-full max-h-full object-contain"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                <div className="absolute bottom-6 left-6 text-white max-w-lg">
-                  <h2 className="text-4xl font-serif leading-tight">{selectedEquipmentView.name}</h2>
-                </div>
                 <button
                   onClick={() => setSelectedEquipmentView(null)}
                   className="absolute top-4 right-4 p-2 bg-stone-900/30 hover:bg-stone-900/50 text-white rounded-full backdrop-blur-md transition-colors border border-white/10"
@@ -1344,6 +1345,8 @@ const AdminDashboard = () => {
 
               <div className="p-8">
                 <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 scrollbar-hide">
+                  <h2 className="text-3xl font-serif text-stone-900">{selectedEquipmentView.name}</h2>
+
                   {selectedEquipmentView.specification && (
                     <div>
                       <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 flex items-center gap-2">
@@ -1359,7 +1362,7 @@ const AdminDashboard = () => {
                     <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                       <span className="w-8 h-px bg-stone-200"></span> Description
                     </h4>
-                    <p className="text-stone-600 leading-relaxed font-light text-lg">
+                    <p className="text-stone-600 leading-relaxed font-light">
                       {selectedEquipmentView.description}
                     </p>
                   </div>
@@ -1373,9 +1376,9 @@ const AdminDashboard = () => {
                         href={selectedEquipmentView.additionalInfo.startsWith('http') ? selectedEquipmentView.additionalInfo : `https://${selectedEquipmentView.additionalInfo}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-maroon-700 hover:text-maroon-900 underline break-all"
+                        className="text-maroon-700 hover:text-maroon-900 underline break-all inline-flex items-center gap-2"
                       >
-                        {selectedEquipmentView.additionalInfo}
+                        {selectedEquipmentView.additionalInfo} <ExternalLink size={14} />
                       </a>
                     </div>
                   )}
@@ -1393,9 +1396,8 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
-
-      </main >
-    </div >
+      </main>
+    </div>
   );
 };
 
