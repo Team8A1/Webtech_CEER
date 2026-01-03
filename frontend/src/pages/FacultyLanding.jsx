@@ -10,6 +10,8 @@ function FacultyLanding() {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pendingBOMCount, setPendingBOMCount] = useState(0);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [allBOMs, setAllBOMs] = useState([]);
 
   // Password Change State
   const [user, setUser] = useState(null);
@@ -44,6 +46,7 @@ function FacultyLanding() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
+        setAllBOMs(response.data.data);
         const pending = response.data.data.filter(b => !b.guideApproved && b.status !== 'rejected').length;
         setPendingBOMCount(pending);
       }
@@ -126,11 +129,11 @@ function FacultyLanding() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <section className="relative overflow-hidden" style={{ height: 220 }}>
+      {/* <section className="relative overflow-hidden" style={{ height: 220 }}>
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-800" />
         <div className="relative h-full max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1">Faculty Tools</h1>
+            <h1 className="text-3xl sm:text-4xl font-serif font-bold text-white mb-1">Faculty Tools</h1>
             <p className="text-sm text-slate-300">Approve BOMs and create project teams for your students.</p>
           </div>
           <div className="flex items-center gap-4">
@@ -152,78 +155,249 @@ function FacultyLanding() {
             </button>
           </div>
         </div>
-      </section>
+      </section> */}
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
+      <div className="max-w-7xl mx-auto px-6 py-5">
+        <div className="flex flex-wrap justify-between items-center gap-3 mb-12">
           <button
-            onClick={() => navigate('/faculty/approve')}
-            className="bg-white p-8 rounded-lg shadow-lg text-left hover:shadow-xl transition relative group">
-            {pendingBOMCount > 0 && (
-              <div className="absolute top-4 right-4 w-4 h-4 bg-red-600 rounded-full animate-pulse shadow-sm border-2 border-white"></div>
-            )}
-            <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600 transition-colors">BOM Approval Queue</h3>
-            <p className="text-sm text-gray-600">Review and approve Bill of Materials submitted by students.</p>
+            onClick={() => navigate('/login/faculty')}
+            className="px-6 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-colors"
+          >
+            Back to Login
           </button>
-
-          <button
-            onClick={() => navigate('/faculty/team-create')}
-            className="bg-white p-8 rounded-lg shadow-lg text-left hover:shadow-xl transition">
-            <h3 className="text-xl font-bold mb-2">Create Team</h3>
-            <p className="text-sm text-gray-600">Create project teams by adding members and assigning a project title.</p>
-          </button>
-
-          <div className="bg-white p-8 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold mb-4">Team Overview</h3>
-            <div className="text-4xl font-bold text-blue-600">{teams.length}</div>
-            <p className="text-sm text-gray-500 mt-1">Total Teams Created</p>
+          <div className="flex flex-wrap gap-3">
+            <button onClick={() => setShowPasswordModal(true)} className="px-6 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-colors">
+              Change Password
+            </button>
+            <button onClick={handleLogout} className="px-6 py-2.5 text-sm font-medium text-red-600 border border-red-200 bg-red-50/10 rounded-full hover:bg-red-50 hover:border-red-300 transition-colors">
+              Logout
+            </button>
           </div>
         </div>
+        {/* Header Section */}
+        <div className="mb-16 md:mb-20 max-w-4xl">
+          <p className="text-sm font-bold tracking-widest text-gray-500 uppercase mb-4">
+            Faculty Dashboard
+          </p>
+          <h2 className="text-2xl md:text-4xl lg:text-6xl font-serif font-medium leading-[1.1] tracking-tight mb-8" style={{ color: 'rgb(139, 21, 56)' }}>
+            Teach in every way your students w<span className="italic font-light" style={{ color: 'rgb(139, 21, 56)' }}>a</span>nt to learn
+          </h2>
+          <p className="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-3xl font-light">
+            Approve BOMs and create project teams for your students.
+          </p>
+        </div>
 
-        {/* Teams List Section */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h3 className="text-lg font-bold text-gray-800">My Teams</h3>
+        {/* Grid Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12 mb-20">
+          {/* BOM Approval Queue Card */}
+          <button
+            onClick={() => navigate('/faculty/approve')}
+            className="group block w-full h-full text-left relative"
+          >
+            {pendingBOMCount > 0 && (
+              <div className="absolute top-4 right-4 z-10 w-8 h-8 bg-red-600 rounded-full animate-pulse shadow-lg border-2 border-white flex items-center justify-center">
+                <span className="text-white text-xs font-bold">{pendingBOMCount}</span>
+              </div>
+            )}
+
+            {/* Image Container */}
+            <div className="relative w-full aspect-[5/4] overflow-hidden rounded-2xl mb-6 bg-gray-100">
+              <img
+                src="/images/approve.jpg"
+                alt="BOM Approval Queue"
+                className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+              />
+            </div>
+
+            {/* Text Content */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-serif font-medium text-gray-900 transition-colors group-hover:[color:rgb(139,21,56)]">
+                  BOM Approval Queue
+                </h3>
+
+                {/* Arrow Icon */}
+                <div className="w-5 h-4 text-gray-900 transition-transform duration-300 group-hover:translate-x-1">
+                  <svg
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 16 9"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M0.546875 3.79455H10.5469V5.29455H0.546875V3.79455Z" fill="currentColor"></path>
+                    <path d="M15.4766 4.54474L10.4719 8.87756V0.211914L15.4766 4.54474Z" fill="currentColor"></path>
+                  </svg>
+                </div>
+              </div>
+
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Review and approve Bill of Materials submitted by students.
+              </p>
+            </div>
+          </button>
+
+          {/* Create Team Card */}
+          <button
+            onClick={() => navigate('/faculty/team-create')}
+            className="group block w-full h-full text-left"
+          >
+            {/* Image Container */}
+            <div className="relative w-full aspect-[5/4] overflow-hidden rounded-2xl mb-6 bg-gray-100">
+              <img
+                src="/images/team.jpg"
+                alt="Create Team"
+                className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+              />
+            </div>
+
+            {/* Text Content */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-serif font-medium text-gray-900 transition-colors group-hover:[color:rgb(139,21,56)]">
+                  Create Team
+                </h3>
+
+                {/* Arrow Icon */}
+                <div className="w-5 h-4 text-gray-900 transition-transform duration-300 group-hover:translate-x-1">
+                  <svg
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 16 9"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M0.546875 3.79455H10.5469V5.29455H0.546875V3.79455Z" fill="currentColor"></path>
+                    <path d="M15.4766 4.54474L10.4719 8.87756V0.211914L15.4766 4.54474Z" fill="currentColor"></path>
+                  </svg>
+                </div>
+              </div>
+
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Create project teams by adding members and assigning a project title.
+              </p>
+            </div>
+          </button>
+
+          {/* Team Overview Card - Clickable to scroll to My Teams */}
+          <button
+            onClick={() => {
+              const myTeamsSection = document.getElementById('my-teams-section');
+              if (myTeamsSection) {
+                myTeamsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }}
+            className="group block w-full h-full text-left"
+          >
+            {/* Image Container */}
+            <div className="relative w-full aspect-[5/4] overflow-hidden rounded-2xl mb-6 bg-gray-100">
+              <img
+                src="https://cdn.prod.website-files.com/687904fb2b26c434698c47e9/68e2fc0c8ae5b217815396ad_272dd01b1fa967d3f7374c715975249e_teachable-product-downloads.webp"
+                alt="Team Overview"
+                className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+              />
+              {/* Overlay with team count */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-center pb-8">
+                <div className="text-center">
+                  <div className="text-6xl font-serif font-bold text-white mb-2">{teams.length}</div>
+                  <p className="text-white text-lg font-medium">Teams Created</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Text Content */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-serif font-medium text-gray-900 transition-colors group-hover:[color:rgb(139,21,56)]">
+                  Team Overview
+                </h3>
+
+                {/* Arrow Icon */}
+                <div className="w-5 h-4 text-gray-900 transition-transform duration-300 group-hover:translate-x-1">
+                  <svg
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 16 9"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M0.546875 3.79455H10.5469V5.29455H0.546875V3.79455Z" fill="currentColor"></path>
+                    <path d="M15.4766 4.54474L10.4719 8.87756V0.211914L15.4766 4.54474Z" fill="currentColor"></path>
+                  </svg>
+                </div>
+              </div>
+
+              <p className="text-lg text-gray-600 leading-relaxed">
+                View all your teams below.
+              </p>
+            </div>
+          </button>
+        </div>
+
+        {/* My Teams Section */}
+        <section id="my-teams-section" className="w-full py-0 md:py-0 mb-16">
+          {/* Header Grid */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6 md:gap-12">
+            {/* Column 1 */}
+            <div className="max-w-xl">
+              <h2 className="font-serif font-medium leading-[1.1] tracking-tight text-4xl md:text-5xl font-bold tracking-tight leading-[1.1]" style={{ color: 'rgb(139, 21, 56)' }}>
+                <em className="font-serif italic text-gray-500 pr-2">My</em>
+                Teams
+              </h2>
+            </div>
+
+            {/* Column 2 */}
+            <div className="max-w-md">
+              <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
+                View and manage all your project teams and their members.
+              </p>
+            </div>
           </div>
 
+          {/* Teams Grid */}
           {loading ? (
-            <div className="p-8 text-center text-gray-500">Loading teams...</div>
+            <div className="text-center py-20">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+              <p className="mt-4 text-gray-500">Loading teams...</p>
+            </div>
           ) : teams.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              No teams created yet. Click "Create Team" to get started.
+            <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-300">
+              <p className="text-xl text-gray-500 mb-4">No teams created yet.</p>
+              <button
+                onClick={() => navigate('/faculty/team-create')}
+                className="px-6 py-3 bg-gray-900 text-white rounded-full font-medium hover:bg-gray-800 transition-colors"
+              >
+                Create Your First Team
+              </button>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
-              {teams.map((team) => (
-                <div key={team._id} className="p-6 hover:bg-gray-50 transition">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h4 className="text-lg font-bold text-gray-900">{team.problemStatement}</h4>
-                      <p className="text-sm text-gray-500">Created on {new Date(team.createdAt).toLocaleDateString()}</p>
-                    </div>
-                    <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
-                      {team.members.length} Members
-                    </span>
-                  </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {teams.map((team, index) => (
+                <div
+                  key={team._id}
+                  onClick={() => setSelectedTeam(team)}
+                  className={`flex flex-col h-full p-8 border border-transparent rounded-2xl transition-all duration-300 bg-[#F6F6F6] hover:bg-gray-100 cursor-pointer group ${index % 2 === 0 ? 'lg:mt-8' : ''
+                    }`}
+                >
+                  {/* Team Name */}
+                  <h3 className="text-2xl font-serif font-bold text-gray-900 mb-4 group-hover:text-[rgb(139,21,56)] transition-colors line-clamp-3">
+                    {team.problemStatement}
+                  </h3>
 
-                  <div className="mt-4">
-                    <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Team Members</h5>
-                    <div className="flex flex-wrap gap-2">
-                      {team.members.map((member) => (
-                        <div key={member._id} className="flex items-center bg-gray-100 rounded-full px-3 py-1">
-                          <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold mr-2">
-                            {member.name.charAt(0)}
-                          </div>
-                          <span className="text-sm text-gray-700">{member.name}</span>
-                        </div>
-                      ))}
-                    </div>
+                  {/* Team Info */}
+                  <div className="mt-auto space-y-2">
+                    <p className="text-[17px] text-gray-600 leading-relaxed">
+                      <span className="font-semibold text-gray-900">{team.members.length}</span> Team Members
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Created {new Date(team.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
 
       {/* Password Modal */}
@@ -304,8 +478,102 @@ function FacultyLanding() {
           </div>
         </div>
       )}
+
+      {/* Team Details Modal */}
+      {selectedTeam && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-4xl p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setSelectedTeam(null)}
+              className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <h2 className="text-3xl font-serif font-bold mb-2" style={{ color: 'rgb(139, 21, 56)' }}>Team Details</h2>
+            <p className="text-gray-500 mb-8">Complete information about this project team</p>
+
+            {/* Problem Statement */}
+            <div className="mb-8">
+              <h3 className="text-lg font-serif font-bold mb-3" style={{ color: 'rgb(139, 21, 56)' }}>Problem Statement</h3>
+              <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 text-slate-800 text-base leading-relaxed">
+                {selectedTeam.problemStatement}
+              </div>
+            </div>
+
+            {/* Team Members */}
+            <div className="mb-8">
+              <h3 className="text-lg font-serif font-bold mb-4" style={{ color: 'rgb(139, 21, 56)' }}>Team Members ({selectedTeam.members.length})</h3>
+              <div className="grid gap-3">
+                {selectedTeam.members.map((member, index) => (
+                  <div key={member._id} className="bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: 'rgb(139, 21, 56)' }}>
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900">{member.name}</p>
+                        <div className="flex gap-4 text-sm text-gray-600 mt-1">
+                          <span>USN: {member.usn || '-'}</span>
+                          <span>•</span>
+                          <span>{member.email}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bill of Materials */}
+            <div>
+              <h3 className="text-lg font-serif font-bold mb-4" style={{ color: 'rgb(139, 21, 56)' }}>Bill of Materials (BOM)</h3>
+              {allBOMs.filter(bom => bom.teamId?._id === selectedTeam._id || bom.teamId === selectedTeam._id).length > 0 ? (
+                <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 border-b border-slate-200">
+                      <tr>
+                        <th className="px-6 py-4 text-left font-semibold text-gray-700">Part Name</th>
+                        <th className="px-6 py-4 text-left font-semibold text-gray-700">Specification</th>
+                        <th className="px-6 py-4 text-left font-semibold text-gray-700">Qty</th>
+                        <th className="px-6 py-4 text-left font-semibold text-gray-700">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allBOMs
+                        .filter(bom => bom.teamId?._id === selectedTeam._id || bom.teamId === selectedTeam._id)
+                        .map((bom) => (
+                          <tr key={bom._id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                            <td className="px-6 py-4 font-medium text-gray-900">{bom.partName}</td>
+                            <td className="px-6 py-4 text-gray-600">{bom.specification}</td>
+                            <td className="px-6 py-4 text-gray-900 font-semibold">{bom.qty}</td>
+                            <td className="px-6 py-4">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${bom.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                  bom.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                    'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                {bom.status.charAt(0).toUpperCase() + bom.status.slice(1)}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-300">
+                  <div className="text-4xl mb-3">📦</div>
+                  <p className="text-gray-500 font-medium">No BOM requests found for this team.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
 
 export default FacultyLanding
+

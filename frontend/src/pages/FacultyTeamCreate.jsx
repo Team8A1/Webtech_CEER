@@ -112,20 +112,34 @@ function FacultyTeamCreate() {
   if (loading) return <div className="p-6">Loading...</div>
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 p-6">
-      {/* Hero Section */}
-      <div className="max-w-5xl mx-auto mb-12">
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-2xl blur-xl"></div>
-          <div className="relative bg-white/80 backdrop-blur-md border border-slate-200/50 rounded-2xl p-8 shadow-lg">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">Create Project Team</h1>
-            <p className="text-slate-600 text-lg">Assemble your team, define your project, and begin your journey</p>
-          </div>
+    <div className="min-h-screen bg-slate-50">
+      {/* Header Section */}
+      <div className="max-w-5xl mx-auto px-6 py-5">
+        <div className="flex flex-wrap justify-between items-center gap-3 mb-12">
+          <button
+            onClick={() => navigate('/faculty')}
+            className="px-6 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-colors"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+
+        {/* Page Title */}
+        <div className="mb-16 md:mb-20 max-w-4xl">
+          <p className="text-sm font-bold tracking-widest text-gray-500 uppercase mb-4">
+            Team Management
+          </p>
+          <h2 className="text-2xl md:text-4xl lg:text-6xl font-serif font-medium leading-[1.1] tracking-tight mb-8" style={{ color: 'rgb(139, 21, 56)' }}>
+            Create Project Team
+          </h2>
+          <p className="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-3xl font-light">
+            Assemble your team, define your project, and begin your journey.
+          </p>
         </div>
       </div>
 
       {/* Main Form Container */}
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-5xl mx-auto px-6">
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg">
             {error}
@@ -134,74 +148,66 @@ function FacultyTeamCreate() {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Project Info Section */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-300/30 to-cyan-300/30 rounded-xl blur"></div>
-            <div className="relative bg-white/80 backdrop-blur-md border border-slate-200/50 rounded-xl p-8 shadow-lg">
-              <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center">
-                <span className="w-1 h-7 bg-gradient-to-b from-blue-500 to-blue-600 rounded mr-3"></span>
-                Project Information
-              </h2>
+          <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+            <h3 className="text-xl font-serif font-bold mb-6" style={{ color: 'rgb(139, 21, 56)' }}>
+              Project Information
+            </h3>
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wide">Problem Statement / Project Title</label>
-                <input
-                  value={projectTitle}
-                  onChange={e => setProjectTitle(e.target.value)}
-                  placeholder="Enter problem statement"
-                  className="w-full bg-slate-50 border border-slate-300/50 rounded-lg px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  required
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wide">Problem Statement / Project Title</label>
+              <input
+                value={projectTitle}
+                onChange={e => setProjectTitle(e.target.value)}
+                placeholder="Enter problem statement"
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[rgb(139,21,56)] focus:border-transparent transition-all duration-200"
+                required
+              />
             </div>
           </div>
 
           {/* Members Section */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-300/30 to-pink-300/30 rounded-xl blur"></div>
-            <div className="relative bg-white/80 backdrop-blur-md border border-slate-200/50 rounded-xl p-8 shadow-lg">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-slate-900 flex items-center">
-                  <span className="w-1 h-7 bg-gradient-to-b from-purple-500 to-pink-600 rounded mr-3"></span>
-                  Team Members
-                </h2>
-                <button
-                  type="button"
-                  onClick={openSelectionModal}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                >
-                  + Add Members
-                </button>
-              </div>
-
-              {/* Members List */}
-              {selectedStudents.length > 0 ? (
-                <div className="space-y-2">
-                  <p className="text-sm text-slate-700 font-semibold mb-3">Selected Members ({selectedStudents.length})</p>
-                  {selectedStudents.map((m, idx) => (
-                    <div key={m._id} className="flex items-center justify-between bg-gradient-to-r from-slate-100 to-slate-50 border border-slate-300/50 p-4 rounded-lg hover:border-slate-400 transition-all duration-200 group">
-                      <div className="flex items-center gap-4">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white text-sm font-bold">{idx + 1}</span>
-                        <div>
-                          <p className="text-slate-900 font-semibold">{m.name}</p>
-                          <p className="text-xs text-slate-500">{m.email} {m.division && <span className="bg-slate-200 px-1 rounded text-[10px] ml-1">{m.division}</span>}</p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeMember(m._id)}
-                        className="text-red-500 hover:text-red-700 text-sm font-medium"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-slate-500 bg-slate-50 rounded-lg border border-dashed border-slate-300">
-                  No members selected. Click "Add Members" to start.
-                </div>
-              )}
+          <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-serif font-bold" style={{ color: 'rgb(139, 21, 56)' }}>
+                Team Members
+              </h3>
+              <button
+                type="button"
+                onClick={openSelectionModal}
+                className="px-6 py-2.5 text-sm font-medium text-white rounded-full transition-colors" style={{ backgroundColor: 'rgb(139, 21, 56)' }}
+              >
+                + Add Members
+              </button>
             </div>
+
+            {/* Members List */}
+            {selectedStudents.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-sm text-slate-700 font-semibold mb-3">Selected Members ({selectedStudents.length})</p>
+                {selectedStudents.map((m, idx) => (
+                  <div key={m._id} className="flex items-center justify-between bg-slate-50 border border-slate-200 p-4 rounded-lg hover:border-slate-300 transition-all duration-200 group">
+                    <div className="flex items-center gap-4">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white text-sm font-bold" style={{ backgroundColor: 'rgb(139, 21, 56)' }}>{idx + 1}</span>
+                      <div>
+                        <p className="text-slate-900 font-semibold">{m.name}</p>
+                        <p className="text-xs text-slate-500">{m.email} {m.division && <span className="bg-slate-200 px-1 rounded text-[10px] ml-1">{m.division}</span>}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeMember(m._id)}
+                      className="text-red-500 hover:text-red-700 text-sm font-medium"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-slate-500 bg-slate-50 rounded-lg border border-dashed border-slate-300">
+                No members selected. Click "Add Members" to start.
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -209,14 +215,15 @@ function FacultyTeamCreate() {
             <button
               type="submit"
               disabled={submitting}
-              className={`flex-1 md:flex-none bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold py-3 px-8 rounded-lg transition-all duration-200 shadow-lg hover:shadow-green-500/50 transform hover:scale-105 ${submitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`flex-1 md:flex-none text-white font-bold py-3 px-8 rounded-full transition-all duration-200 shadow-lg transform hover:scale-105 ${submitting ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}
+              style={{ backgroundColor: 'rgb(139, 21, 56)' }}
             >
               {submitting ? 'Creating...' : 'Create Team'}
             </button>
             <button
               type="button"
               onClick={() => navigate('/faculty')}
-              className="px-8 py-3 bg-white/60 border border-slate-300/50 text-slate-700 font-semibold rounded-lg hover:bg-white/80 transition-all duration-200 shadow-md"
+              className="px-8 py-3 bg-white border border-slate-300 text-slate-700 font-semibold rounded-full hover:bg-slate-50 transition-all duration-200 shadow-sm"
             >
               Cancel
             </button>
@@ -230,7 +237,7 @@ function FacultyTeamCreate() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-slate-200 bg-slate-50">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-slate-800">Select Team Members</h3>
+                <h3 className="text-xl font-serif font-bold" style={{ color: 'rgb(139, 21, 56)' }}>Select Team Members</h3>
                 <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>

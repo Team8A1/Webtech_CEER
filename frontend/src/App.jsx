@@ -13,6 +13,7 @@ import BOMDetailPage from './pages/BOMDetailPage'
 import StudentCarbonPage from './pages/StudentCarbonPage'
 import StudentEnergyPage from './pages/StudentEnergyPage'
 import FacultyLanding from './pages/FacultyLanding'
+import FacultyMyTeams from './pages/FacultyMyTeams'
 import FacultyTeamApproval from './pages/FacultyTeamApproval'
 import FacultyTeamCreate from './pages/FacultyTeamCreate'
 import FacultyApprove from './pages/FacultyApprove'
@@ -76,6 +77,11 @@ function App() {
             <FacultyLanding />
           </ProtectedRoute>
         } />
+        <Route path="/faculty/dashboard" element={
+          <ProtectedRoute allowedRoles={['faculty']}>
+            <FacultyLanding />
+          </ProtectedRoute>
+        } />
         <Route path="/faculty/teams" element={
           <ProtectedRoute allowedRoles={['faculty']}>
             <FacultyTeamApproval />
@@ -84,6 +90,11 @@ function App() {
         <Route path="/faculty/team-create" element={
           <ProtectedRoute allowedRoles={['faculty']}>
             <FacultyTeamCreate />
+          </ProtectedRoute>
+        } />
+        <Route path="/faculty/my-teams" element={
+          <ProtectedRoute allowedRoles={['faculty']}>
+            <FacultyMyTeams />
           </ProtectedRoute>
         } />
       </Routes>

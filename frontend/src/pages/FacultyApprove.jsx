@@ -133,44 +133,51 @@ function FacultyApprove() {
   const rejectedCount = boms.filter(b => b.status === 'rejected').length
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-slate-50">
       {/* Header Section */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">Guide Approval Queue</h1>
-              <p className="text-slate-300">Review and approve BOMs for your students</p>
-            </div>
-            <button
-              onClick={() => navigate('/faculty')}
-              className="px-6 py-2 bg-white text-slate-900 rounded-lg font-semibold hover:bg-slate-100 transition-colors"
-            >
-              ← Back to Faculty
-            </button>
-          </div>
+      <div className="max-w-7xl mx-auto px-6 py-5">
+        <div className="flex flex-wrap justify-between items-center gap-3 mb-12">
+          <button
+            onClick={() => navigate('/faculty')}
+            className="px-6 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-colors"
+          >
+            Back to Dashboard
+          </button>
+        </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-4 gap-4">
-            <div className="bg-white bg-opacity-10 backdrop-blur rounded-lg p-4 border border-white border-opacity-20">
-              <div className="text-3xl font-bold text-blue-300">{boms.length}</div>
-              <div className="text-sm text-gray-800 font-semibold">Total BOMs</div>
-            </div>
-            <div className="bg-white bg-opacity-10 backdrop-blur rounded-lg p-4 border border-white border-opacity-20">
-              <div className="text-3xl font-bold text-yellow-300">{pendingCount}</div>
-              <div className="text-sm text-gray-800 font-semibold">Pending Review</div>
-            </div>
-            <div className="bg-white bg-opacity-10 backdrop-blur rounded-lg p-4 border border-white border-opacity-20">
-              <div className="text-3xl font-bold text-green-300">{approvedCount}</div>
-              <div className="text-sm text-gray-800 font-semibold">Approved</div>
-            </div>
-            <div className="bg-white bg-opacity-10 backdrop-blur rounded-lg p-4 border border-white border-opacity-20">
-              <div className="text-3xl font-bold text-red-300">{rejectedCount}</div>
-              <div className="text-sm text-gray-800 font-semibold">Rejected</div>
-            </div>
+        {/* Page Title */}
+        <div className="mb-16 md:mb-20 max-w-4xl">
+          <p className="text-sm font-bold tracking-widest text-gray-500 uppercase mb-4">
+            BOM Management
+          </p>
+          <h2 className="text-2xl md:text-4xl lg:text-6xl font-serif font-medium leading-[1.1] tracking-tight mb-8" style={{ color: 'rgb(139, 21, 56)' }}>
+            Guide Approval Queue
+          </h2>
+          <p className="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-3xl font-light">
+            Review and approve Bill of Materials submitted by your students.
+          </p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+            <div className="text-4xl font-serif font-bold text-gray-900 mb-2">{boms.length}</div>
+            <div className="text-sm text-gray-600 font-medium">Total BOMs</div>
+          </div>
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+            <div className="text-4xl font-serif font-bold" style={{ color: 'rgb(139, 21, 56)' }}>{pendingCount}</div>
+            <div className="text-sm text-gray-600 font-medium">Pending Review</div>
+          </div>
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+            <div className="text-4xl font-serif font-bold text-green-600">{approvedCount}</div>
+            <div className="text-sm text-gray-600 font-medium">Approved</div>
+          </div>
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+            <div className="text-4xl font-serif font-bold text-red-600">{rejectedCount}</div>
+            <div className="text-sm text-gray-600 font-medium">Rejected</div>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Content Section */}
       <div className="max-w-7xl mx-auto px-6 py-12">
@@ -356,9 +363,9 @@ function FacultyApprove() {
       {/* Edit Modal */}
       {editingBOM && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h2 className="text-2xl font-bold mb-4">Edit BOM Request</h2>
+              <h2 className="text-2xl font-serif font-bold mb-4" style={{ color: 'rgb(139, 21, 56)' }}>Edit BOM Request</h2>
               <BOMForm
                 initial={editingBOM}
                 onSave={handleUpdate}
@@ -372,8 +379,8 @@ function FacultyApprove() {
       {/* Reject Modal */}
       {rejectingId && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold mb-4">Reject Request</h3>
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-xl font-serif font-bold mb-4" style={{ color: 'rgb(139, 21, 56)' }}>Reject Request</h3>
             <p className="text-gray-600 mb-4">Please provide a reason for rejecting this request (Optional).</p>
             <textarea
               className="w-full p-3 border border-gray-300 rounded mb-4 focus:ring-2 focus:ring-red-500 outline-none"
