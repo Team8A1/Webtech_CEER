@@ -18,7 +18,8 @@ import {
   Settings,
   Lock,
   Wrench,
-  BookOpen
+  BookOpen,
+  Shield
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminInstructions from './AdminInstructions';
@@ -289,12 +290,13 @@ const AdminDashboard = () => {
 
       {/* Top Navigation */}
       <header className="bg-[#0F172B] text-white flex-none z-50 shadow-lg border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center gap-3">
+              <Shield size={24} className="text-red-400" />
               <span className="font-serif text-2xl tracking-wide text-white">
-                Admin<span className="text-maroon-400">.</span>
+                Admin<span className="text-red-400">.</span>
               </span>
             </div>
 
@@ -473,6 +475,57 @@ const AdminDashboard = () => {
                     <div className="w-full bg-indigo-100/50 rounded-full h-1.5 overflow-hidden">
                       <div className="bg-indigo-500 h-full rounded-full transition-all duration-1000 group-hover:w-[65%]" style={{ width: '60%' }}></div>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* System Performance & Recent Activity - Added to push Quick Actions down */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-white/40 backdrop-blur-md p-8 rounded-3xl border border-stone-200/50">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-serif text-stone-900">System Performance</h3>
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">Optimal</span>
+                  </div>
+                  <div className="space-y-6">
+                    {[
+                      { label: 'Server Uptime', value: '99.9%', width: 'w-[99.9%]' },
+                      { label: 'Database Load', value: '12%', width: 'w-[12%]' },
+                      { label: 'Storage Usage', value: '64%', width: 'w-[64%]' },
+                    ].map((stat, i) => (
+                      <div key={i}>
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-stone-500">{stat.label}</span>
+                          <span className="font-mono font-bold text-stone-900">{stat.value}</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
+                          <div className={`${stat.width} h-full bg-stone-800 rounded-full`}></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-white/40 backdrop-blur-md p-8 rounded-3xl border border-stone-200/50">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-serif text-stone-900">Recent Activity</h3>
+                    <button className="text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors uppercase tracking-widest">View All</button>
+                  </div>
+                  <div className="space-y-4">
+                    {[
+                      { msg: 'New equipment "3D Printer" added', time: '2 hours ago', icon: <Wrench size={14} /> },
+                      { msg: 'User "Dr. Smith" updated profile', time: '5 hours ago', icon: <Users size={14} /> },
+                      { msg: 'System backup completed successfully', time: 'Yesterday', icon: <Shield size={14} /> },
+                    ].map((activity, i) => (
+                      <div key={i} className="flex items-center gap-4 p-3 hover:bg-white/50 rounded-xl transition-colors cursor-default group">
+                        <div className="p-2 bg-stone-100 rounded-lg text-stone-500 group-hover:bg-white transition-colors">
+                          {activity.icon}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-stone-800">{activity.msg}</p>
+                          <p className="text-[10px] text-stone-400">{activity.time}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
