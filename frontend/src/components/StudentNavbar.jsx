@@ -12,6 +12,32 @@ const StudentNavbar = ({ user }) => {
     const [passwordError, setPasswordError] = useState('');
     const [passwordSuccess, setPasswordSuccess] = useState('');
 
+    const [hasInstructionUpdate, setHasInstructionUpdate] = useState(false);
+
+    useEffect(() => {
+        const checkInstructions = async () => {
+            try {
+                const response = await axios.get('http://localhost:8000/api/instructions/latest/update-time');
+                if (response.data.success && response.data.updatedAt) {
+                    const lastSeen = localStorage.getItem('lastSeenInstructions');
+                    if (!lastSeen || new Date(response.data.updatedAt) > new Date(lastSeen)) {
+                        setHasInstructionUpdate(true);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking instructions update:', error);
+            }
+        };
+
+        checkInstructions();
+
+        // Listen for the custom event when instructions are seen
+        const handleInstructionsSeen = () => setHasInstructionUpdate(false);
+        window.addEventListener('instructionsSeen', handleInstructionsSeen);
+
+        return () => window.removeEventListener('instructionsSeen', handleInstructionsSeen);
+    }, []);
+
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
         window.addEventListener('scroll', handleScroll);
@@ -98,16 +124,21 @@ const StudentNavbar = ({ user }) => {
 
                 {/* Desktop Menu */}
                 <div className="hidden md:flex items-center space-x-12">
-                    {['Projects', 'Team', 'Resources'].map((item) => (
-                        <a
-                            key={item}
-                            href={`/student/dashboard#${item.toLowerCase()}`}
-                            className="text-sm uppercase tracking-widest transition-colors relative group text-stone-500 hover:text-stone-900"
-                        >
-                            {item}
-                            <span className="absolute -bottom-2 left-0 w-0 h-0.5 bg-red-700 transition-all duration-300 group-hover:w-full"></span>
-                        </a>
-                    ))}
+                    {['Projects', 'Team', 'Resources', 'Instructions'].map((item) => {
+                        const isUpdate = item === 'Instructions' && hasInstructionUpdate;
+                        return (
+                            <a
+                                key={item}
+                                href={item === 'Instructions' ? '/student/instructions' : `/student/dashboard#${item.toLowerCase()}`}
+                                className={`text-sm uppercase tracking-widest transition-colors relative group 
+                                    ${isUpdate ? 'text-yellow-500 font-black' : 'text-stone-500 hover:text-stone-900'}`}
+                            >
+                                {item}
+                                {isUpdate && <span className="absolute -top-1 -right-2 w-2 h-2 bg-yellow-400 rounded-full animate-ping"></span>}
+                                <span className={`absolute -bottom-2 left-0 w-0 h-0.5 bg-red-700 transition-all duration-300 group-hover:w-full ${isUpdate ? 'w-full bg-yellow-500' : ''}`}></span>
+                            </a>
+                        );
+                    })}
 
                     <div className="flex items-center gap-4">
                         {user && (
@@ -149,11 +180,18 @@ const StudentNavbar = ({ user }) => {
                             Signed in as {user.name.toUpperCase()}
                         </div>
                     )}
-                    {['Projects', 'Team', 'Resources'].map((item) => (
-                        <a key={item} href={`/student/dashboard#${item.toLowerCase()}`} className="text-stone-600 hover:text-red-700 text-lg font-serif">
-                            {item}
-                        </a>
-                    ))}
+                    {['Projects', 'Team', 'Resources', 'Instructions'].map((item) => {
+                        const isUpdate = item === 'Instructions' && hasInstructionUpdate;
+                        return (
+                            <a
+                                key={item}
+                                href={item === 'Instructions' ? '/student/instructions' : `/student/dashboard#${item.toLowerCase()}`}
+                                className={`text-lg font-serif ${isUpdate ? 'text-yellow-600 font-bold' : 'text-stone-600 hover:text-red-700'}`}
+                            >
+                                {item} {isUpdate && '•'}
+                            </a>
+                        );
+                    })}
                     <button onClick={handleLogout} className="text-red-700 font-serif text-lg flex items-center gap-2">
                         Logout
                     </button>

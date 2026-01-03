@@ -183,11 +183,11 @@ function RoleSelection() {
             </div>
           </div> */}
 
-          <div className="pt-6 border-t border-gray-200">
+          {/* <div className="pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-500">
               Need help? Contact us at <span className="text-gray-900 font-medium">support@ceer.edu</span>
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

@@ -21,6 +21,8 @@ import LabApprove from './pages/LabApprove'
 import AvailableMaterials from './pages/AvailableMaterials'
 import AvailableMachines from './pages/AvailableMachines'
 import AdminDashboard from './pages/AdminDashboard'
+import StudentInstructions from './pages/StudentInstructions'
+import AdminInstructions from './pages/AdminInstructions'
 
 function App() {
   return (
@@ -70,6 +72,11 @@ function App() {
         <Route path="/student/energy" element={
           <ProtectedRoute allowedRoles={['student']}>
             <StudentEnergyPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/student/instructions" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <StudentInstructions />
           </ProtectedRoute>
         } />
         <Route path="/faculty" element={

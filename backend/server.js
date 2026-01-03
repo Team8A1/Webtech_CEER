@@ -90,6 +90,7 @@ app.use("/api/material", materialRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/energy", require("./routes/energyRoutes"));
 app.use("/api/equipment", require("./routes/equipmentRoutes"));
+app.use("/api/instructions", require("./routes/instruction.routes"));
 
 // -------------------------
 // Test Route

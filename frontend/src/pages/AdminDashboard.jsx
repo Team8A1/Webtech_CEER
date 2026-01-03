@@ -16,11 +16,12 @@ import {
   LogOut,
   UserPlus,
   Settings,
-
   Lock,
-  Wrench
+  Wrench,
+  BookOpen
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import AdminInstructions from './AdminInstructions';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ const AdminDashboard = () => {
   // UI States
   const [expandedFaculty, setExpandedFaculty] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+
 
   // Forms States
   const [showMaterialModal, setShowMaterialModal] = useState(false);
@@ -247,6 +249,7 @@ const AdminDashboard = () => {
             { id: 'events', label: 'Recent Events', icon: <Calendar size={20} /> },
             { id: 'materials', label: 'Materials', icon: <Package size={20} /> },
             { id: 'equipment', label: 'Equipment', icon: <Wrench size={20} /> },
+            { id: 'instructions', label: 'Student Instructions', icon: <BookOpen size={20} /> },
             { id: 'settings', label: 'Settings', icon: <Settings size={20} /> },
           ].map((item) => (
             <button
@@ -278,6 +281,7 @@ const AdminDashboard = () => {
             {activeTab === 'events' && 'Event Management'}
             {activeTab === 'materials' && 'Material Management'}
             {activeTab === 'equipment' && 'Equipment Management'}
+            {activeTab === 'instructions' && 'Student Instructions Management'}
           </h1>
           <div className="flex items-center gap-4">
             <div className="w-8 h-8 bg-black rounded-full text-white flex items-center justify-center text-sm font-bold">A</div>
@@ -785,6 +789,10 @@ const AdminDashboard = () => {
                 </form>
               </div>
             </div>
+          )}
+
+          {activeTab === 'instructions' && (
+            <AdminInstructions />
           )}
         </div>
 
