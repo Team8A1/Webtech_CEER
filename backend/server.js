@@ -25,7 +25,7 @@ const app = express();
 connectDB();
 
 // -------------------------
-// ✅ FIX 1: Proper CORS (Mac + Google OAuth)
+// FIX 1: Proper CORS (Mac + Google OAuth)
 // -------------------------
 const allowedOrigins = [
   "http://localhost:5173",
