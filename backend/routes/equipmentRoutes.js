@@ -8,6 +8,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 router.post('/add', upload.single('image'), addEquipment);
+router.post('/import', upload.single('file'), require('../controllers/equipmentController').bulkImportEquipment);
 router.put('/update/:id', upload.single('image'), updateEquipment);
 router.get('/list', getEquipments);
 router.delete('/delete/:id', deleteEquipment);

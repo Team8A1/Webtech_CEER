@@ -171,6 +171,43 @@ const AdminDashboard = () => {
     } catch (error) { alert('Error deleting event'); }
   };
 
+
+
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleBulkUpload = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    if (file.type !== 'application/pdf' && file.type !== 'text/csv' && file.type !== 'application/vnd.ms-excel') {
+      alert('Please upload a PDF or CSV file');
+      return;
+    }
+
+    if (!confirm(`Import items from ${file.name}?`)) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      setLoading(true); // Show loading state
+      const response = await api.post('/equipment/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      alert(response.data.message);
+      fetchEquipments();
+    } catch (error) {
+      alert('Bulk import failed: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEquipmentSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -919,6 +956,32 @@ const AdminDashboard = () => {
           {/* Equipment Tab */}
           {activeTab === 'equipment' && (
             <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+              {/* Drag & Drop Zone */}
+              <div
+                className={`mb-8 border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all duration-300 cursor-pointer group ${isDragging ? 'border-maroon-500 bg-maroon-50' : 'border-stone-200 bg-stone-50/50 hover:bg-stone-50 hover:border-maroon-200'}`}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+                onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+                onDrop={handleBulkUpload}
+                onClick={() => document.getElementById('bulk-upload-input').click()}
+              >
+                <input
+                  id="bulk-upload-input"
+                  type="file"
+                  accept=".pdf,.csv"
+                  className="hidden"
+                  onChange={handleBulkUpload}
+                />
+                <div className="p-4 bg-white rounded-full text-maroon-700 shadow-sm mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <Upload size={32} />
+                </div>
+                <h3 className="font-serif text-lg text-stone-900 mb-1">Bulk Import Equipment</h3>
+                <p className="text-stone-500 text-sm mb-4">Drag & drop PDF/CSV or click to browse</p>
+                <div className="flex gap-2">
+                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-white px-2 py-1 rounded border border-stone-200">.PDF</span>
+                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-white px-2 py-1 rounded border border-stone-200">.CSV</span>
+                </div>
+              </div>
+
               <div className="flex justify-end mb-8">
                 <button
                   onClick={() => setShowEquipmentModal(true)}
