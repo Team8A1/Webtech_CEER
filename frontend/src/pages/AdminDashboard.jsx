@@ -25,6 +25,18 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminInstructions from './AdminInstructions';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -63,6 +75,15 @@ const AdminDashboard = () => {
     department: '', designation: '', password: '' // Faculty fields (password for both)
   });
 
+  // Stats Tab States
+  const [selectedStatMaterials, setSelectedStatMaterials] = useState([]);
+  const [statSearchTerm, setStatSearchTerm] = useState('');
+  const [showStatDropdown, setShowStatDropdown] = useState(false);
+  const [selectedStatTimeline, setSelectedStatTimeline] = useState('thisweek');
+  const [statsData, setStatsData] = useState([]);
+  const [impactData, setImpactData] = useState([]);
+  const [statsLoading, setStatsLoading] = useState(false);
+
   useEffect(() => {
     fetchInitialData();
   }, []);
@@ -100,6 +121,49 @@ const AdminDashboard = () => {
       if (response.data.success) setEquipmentsData(response.data.data);
     } catch (error) { console.error('Error fetching equipments:', error); }
   };
+
+  const fetchMaterialStats = async () => {
+    if (selectedStatMaterials.length === 0) {
+      setStatsData([]);
+      return;
+    }
+    setStatsLoading(true);
+    try {
+      const mats = selectedStatMaterials.join(',');
+      const response = await api.get(`/admin/material-stats?materials=${encodeURIComponent(mats)}&timeline=${selectedStatTimeline}`);
+      if (response.data.success) {
+        setStatsData(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching material stats:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  const fetchImpactStats = async () => {
+    try {
+      const response = await api.get(`/admin/impact-stats?timeline=${selectedStatTimeline}`);
+      if (response.data.success) {
+        setImpactData(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching impact stats:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'stats') {
+      fetchMaterialStats();
+      fetchImpactStats();
+    }
+  }, [selectedStatMaterials, selectedStatTimeline, activeTab]);
+
+  useEffect(() => {
+    if (materialsData.length > 0 && selectedStatMaterials.length === 0) {
+      setSelectedStatMaterials([materialsData[0].name]);
+    }
+  }, [materialsData]);
 
   // --- Handlers ---
 
@@ -312,6 +376,7 @@ const AdminDashboard = () => {
                 { id: 'materials', label: 'Materials', icon: <Package size={16} /> },
                 { id: 'equipment', label: 'Equipment', icon: <Wrench size={16} /> },
                 { id: 'instructions', label: 'Instructions', icon: <BookOpen size={16} /> },
+                { id: 'stats', label: 'Stats', icon: <Activity size={16} /> },
                 { id: 'performance', label: 'Performance', icon: <Activity size={16} /> },
                 { id: 'settings', label: 'Settings', icon: <Settings size={16} /> },
               ].map((item) => (
@@ -354,6 +419,7 @@ const AdminDashboard = () => {
               {activeTab === 'materials' && 'Material Management'}
               {activeTab === 'equipment' && 'Equipment Management'}
               {activeTab === 'instructions' && 'Student Instructions'}
+              {activeTab === 'stats' && 'Material Consumption Stats'}
               {activeTab === 'performance' && 'System Analytics'}
               {activeTab === 'settings' && 'Admin Settings'}
             </h1>
@@ -365,6 +431,7 @@ const AdminDashboard = () => {
               {activeTab === 'materials' && 'Inventory control for lab resources'}
               {activeTab === 'equipment' && 'Track and manage lab machinery'}
               {activeTab === 'instructions' && 'Update guidelines for students'}
+              {activeTab === 'stats' && 'Track material usage across approved BOM requests'}
               {activeTab === 'performance' && 'Monitor server health and activity logs'}
               {activeTab === 'settings' && 'Configure system preferences'}
             </p>
@@ -714,6 +781,206 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'stats' && (
+            <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+              <div className="bg-white/60 backdrop-blur-xl p-8 rounded-3xl border border-white/50 shadow-sm">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                  <h3 className="text-xl font-serif text-stone-900">Material Provisioning Statistics</h3>
+
+                  <div className="flex flex-wrap gap-4 w-full md:w-auto">
+                    {/* Searchable Multi-Select Dropdown */}
+                    <div className="flex flex-col gap-1.5 min-w-[300px] relative">
+                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider ml-1">Select Materials</label>
+                      <div
+                        className="w-full p-2.5 bg-white border border-stone-200 rounded-xl text-sm font-medium focus-within:ring-2 focus-within:ring-maroon-500/20 cursor-pointer flex justify-between items-center"
+                        onClick={() => setShowStatDropdown(!showStatDropdown)}
+                      >
+                        <span className="truncate max-w-[200px]">
+                          {selectedStatMaterials.length > 0 ? selectedStatMaterials.join(', ') : 'Select materials...'}
+                        </span>
+                        <ChevronDown size={16} className={`transition-transform ${showStatDropdown ? 'rotate-180' : ''}`} />
+                      </div>
+
+                      {showStatDropdown && (
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-stone-200 rounded-xl shadow-2xl z-[100] p-3 animate-in fade-in zoom-in-95 duration-200">
+                          <div className="flex items-center gap-2 mb-3 bg-stone-50 p-2 rounded-lg border border-stone-100">
+                            <Search size={14} className="text-stone-400" />
+                            <input
+                              placeholder="Search materials..."
+                              className="bg-transparent border-none outline-none text-xs w-full"
+                              value={statSearchTerm}
+                              onChange={(e) => setStatSearchTerm(e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                          <div className="max-h-48 overflow-y-auto space-y-1 custom-scrollbar">
+                            {materialsData.filter(m => m.name.toLowerCase().includes(statSearchTerm.toLowerCase())).map(m => (
+                              <label key={m._id} className="flex items-center gap-2 p-2 hover:bg-stone-50 rounded-lg cursor-pointer transition-colors group">
+                                <input
+                                  type="checkbox"
+                                  className="accent-maroon-700 h-4 w-4 rounded"
+                                  checked={selectedStatMaterials.includes(m.name)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedStatMaterials([...selectedStatMaterials, m.name]);
+                                    } else {
+                                      setSelectedStatMaterials(selectedStatMaterials.filter(name => name !== m.name));
+                                    }
+                                  }}
+                                />
+                                <span className="text-xs font-medium text-stone-700 group-hover:text-stone-900">{m.name}</span>
+                              </label>
+                            ))}
+                            {materialsData.filter(m => m.name.toLowerCase().includes(statSearchTerm.toLowerCase())).length === 0 && (
+                              <div className="text-center py-4 text-xs text-stone-400">No materials found</div>
+                            )}
+                          </div>
+                          <div className="mt-3 pt-3 border-t border-stone-100 flex justify-end">
+                            <button
+                              onClick={() => setShowStatDropdown(false)}
+                              className="text-[10px] font-bold text-maroon-700 uppercase tracking-widest hover:text-maroon-800 transition-colors"
+                            >
+                              Done
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Timeline Dropdown */}
+                    <div className="flex flex-col gap-1.5 min-w-[150px]">
+                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider ml-1">Timeline</label>
+                      <select
+                        value={selectedStatTimeline}
+                        onChange={(e) => setSelectedStatTimeline(e.target.value)}
+                        className="w-full p-2.5 bg-white border border-stone-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-maroon-500/20 outline-none transition-all"
+                      >
+                        <option value="today">Today</option>
+                        <option value="thisweek">This Week</option>
+                        <option value="thismonth">This Month</option>
+                        <option value="thisyear">This Year</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Main Graph Container */}
+                <div className="overflow-x-auto pb-4 custom-scrollbar">
+                  <div className={`min-w-full ${selectedStatMaterials.length > 5 ? 'w-[1500px]' : 'w-full'} h-[450px] bg-stone-50/50 rounded-2xl p-6 border border-stone-100`}>
+                    {statsLoading ? (
+                      <div className="h-full w-full flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-maroon-700"></div>
+                      </div>
+                    ) : statsData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={statsData} margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                          <XAxis
+                            dataKey="time"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: '#78716c', fontSize: 11 }}
+                            dy={15}
+                          />
+                          <YAxis
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: '#78716c', fontSize: 11 }}
+                          />
+                          <Tooltip
+                            shared={false}
+                            cursor={{ fill: '#f5f5f4' }}
+                            contentStyle={{
+                              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                              borderRadius: '12px',
+                              border: 'none',
+                              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                              fontSize: '12px'
+                            }}
+                          />
+                          <Legend
+                            iconType="circle"
+                            verticalAlign="top"
+                            height={36}
+                            wrapperStyle={{ fontSize: '12px', paddingBottom: '20px' }}
+                          />
+                          {selectedStatMaterials.map((material, idx) => (
+                            <Bar
+                              key={material}
+                              dataKey={material}
+                              fill={[
+                                '#881337', '#e11d48', '#fb7185', '#be123c', '#9b1c31',
+                                '#1e293b', '#334155', '#475569', '#64748b'
+                              ][idx % 9]}
+                              radius={[4, 4, 0, 0]}
+                              barSize={30}
+                            />
+                          ))}
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full w-full flex flex-col items-center justify-center text-stone-400">
+                        <Package size={48} className="mb-4 opacity-20" />
+                        <p className="text-sm font-medium">No consumption data found for this period</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Environmental Impact Graph */}
+                <div className="bg-white/60 backdrop-blur-xl p-8 rounded-3xl border border-white/50 shadow-sm mt-8">
+                  <div className="flex justify-between items-center mb-8">
+                    <div>
+                      <h3 className="text-xl font-serif text-stone-900">Environmental Tracking</h3>
+                      <p className="text-xs text-stone-500 mt-1 uppercase tracking-widest font-bold">Total Embodied Energy Usage (MJ)</p>
+                    </div>
+                  </div>
+
+                  <div className="h-[300px] w-full">
+                    {impactData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={impactData}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                          <XAxis
+                            dataKey="date"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: '#94a3b8', fontSize: 10 }}
+                          />
+                          <YAxis
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: '#94a3b8', fontSize: 10 }}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: 'white',
+                              borderRadius: '12px',
+                              border: 'none',
+                              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                            }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="totalEnergy"
+                            stroke="#881337"
+                            strokeWidth={3}
+                            dot={{ fill: '#881337', strokeWidth: 2, r: 4, stroke: '#fff' }}
+                            activeDot={{ r: 6, strokeWidth: 0 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-stone-400 text-sm italic">
+                        Insufficient data to generate impact report
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

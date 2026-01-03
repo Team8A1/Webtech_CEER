@@ -3,6 +3,8 @@ const { generateToken } = require('../utils/tokenUtils');
 const Faculty = require('../models/Faculty');
 const Team = require('../models/Team');
 const User = require('../models/User');
+const BOMRequest = require('../models/BOMRequest');
+const Material = require('../models/Material');
 
 const getDashboardData = async (req, res) => {
     try {
@@ -224,11 +226,177 @@ const changePassword = async (req, res) => {
     }
 };
 
+const getMaterialStats = async (req, res) => {
+    try {
+        const { materials, timeline } = req.query;
+        if (!materials) {
+            return res.status(400).json({ success: false, message: 'Material identifiers are required' });
+        }
+
+        const materialList = materials.split(',').map(m => m.trim());
+
+        let startDate;
+        const now = new Date();
+        const dateCopy = new Date(now);
+
+        switch (timeline) {
+            case 'today':
+                startDate = new Date(dateCopy.setHours(0, 0, 0, 0));
+                break;
+            case 'thisweek':
+                startDate = new Date(dateCopy.setDate(dateCopy.getDate() - dateCopy.getDay()));
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case 'thismonth':
+                startDate = new Date(dateCopy.getFullYear(), dateCopy.getMonth(), 1);
+                break;
+            case 'thisyear':
+                startDate = new Date(dateCopy.getFullYear(), 0, 1);
+                break;
+            default:
+                startDate = new Date(0); // All time
+        }
+
+        const stats = await BOMRequest.aggregate([
+            {
+                $match: {
+                    consumableName: { $in: materialList },
+                    labApproved: true,
+                    labApprovedAt: { $gte: startDate }
+                }
+            },
+            {
+                $project: {
+                    qty: 1,
+                    consumableName: 1,
+                    date: {
+                        $dateToString: {
+                            format: timeline === 'today' ? "%H:00" : (timeline === 'thisyear' ? "%m-%Y" : "%d-%m-%Y"),
+                            date: "$labApprovedAt"
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        time: "$date",
+                        material: "$consumableName"
+                    },
+                    totalQuantity: { $sum: "$qty" }
+                }
+            },
+            {
+                $sort: { "_id.time": 1 }
+            }
+        ]);
+
+        // Transform results into a format Recharts handles easily:
+        // [{ time: '...', material1: qty, material2: qty }]
+        const timeMap = {};
+        stats.forEach(item => {
+            const { time, material } = item._id;
+            if (!timeMap[time]) {
+                timeMap[time] = { time };
+            }
+            timeMap[time][material] = item.totalQuantity;
+        });
+
+        const formattedStats = Object.values(timeMap).sort((a, b) => a.time.localeCompare(b.time));
+
+        res.status(200).json({ success: true, data: formattedStats, materials: materialList });
+    } catch (error) {
+        console.error('Error fetching material stats:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+const getImpactStats = async (req, res) => {
+    try {
+        const { timeline } = req.query;
+        let startDate;
+        const now = new Date();
+        const dateCopy = new Date(now);
+
+        switch (timeline) {
+            case 'today':
+                startDate = new Date(dateCopy.setHours(0, 0, 0, 0));
+                break;
+            case 'thisweek':
+                startDate = new Date(dateCopy.setDate(dateCopy.getDate() - dateCopy.getDay()));
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case 'thismonth':
+                startDate = new Date(dateCopy.getFullYear(), dateCopy.getMonth(), 1);
+                break;
+            case 'thisyear':
+                startDate = new Date(dateCopy.getFullYear(), 0, 1);
+                break;
+            default:
+                startDate = new Date(0);
+        }
+
+        const impactData = await BOMRequest.aggregate([
+            {
+                $match: {
+                    labApproved: true,
+                    labApprovedAt: { $gte: startDate }
+                }
+            },
+            {
+                $project: {
+                    calculatedWeight: 1,
+                    consumableName: 1,
+                    date: {
+                        $dateToString: {
+                            format: "%Y-%m-%d",
+                            date: "$labApprovedAt"
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        date: "$date",
+                        material: "$consumableName"
+                    },
+                    totalWeight: { $sum: "$calculatedWeight" }
+                }
+            }
+        ]);
+
+        // We need material energy coefficients. Fetch them all.
+        const materials = await Material.find({});
+        const energyMap = {};
+        materials.forEach(m => energyMap[m.name] = m.embodiedEnergy);
+
+        // Process in JS to multiply weight by energy coefficient
+        const dateMap = {};
+        impactData.forEach(item => {
+            const date = item._id.date;
+            const energy = (energyMap[item._id.material] || 0) * item.totalWeight;
+
+            if (!dateMap[date]) dateMap[date] = { date, totalEnergy: 0 };
+            dateMap[date].totalEnergy += energy;
+        });
+
+        const formattedStats = Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
+
+        res.status(200).json({ success: true, data: formattedStats });
+    } catch (error) {
+        console.error('Error fetching impact stats:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
 module.exports = {
     getDashboardData,
     registerBulkStudents,
     registerBulkFaculty,
     createAdmin,
     loginAdmin,
-    changePassword
+    changePassword,
+    getMaterialStats,
+    getImpactStats
 };

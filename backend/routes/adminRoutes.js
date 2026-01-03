@@ -6,7 +6,9 @@ const {
     registerBulkFaculty,
     createAdmin,
     loginAdmin,
-    changePassword
+    changePassword,
+    getMaterialStats,
+    getImpactStats
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -22,5 +24,7 @@ router.get('/dashboard', getDashboardData);
 router.post('/register/students', registerBulkStudents);
 router.post('/register/faculty', registerBulkFaculty);
 router.post('/change-password', changePassword);
+router.get('/material-stats', getMaterialStats);
+router.get('/impact-stats', getImpactStats);
 
 module.exports = router;

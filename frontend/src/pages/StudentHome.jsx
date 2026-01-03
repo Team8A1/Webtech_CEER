@@ -8,7 +8,9 @@ import {
   ClipboardList,
   Wrench,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import StudentNavbar from '../components/StudentNavbar';
 import StudentFooter from '../components/StudentFooter';
@@ -190,6 +192,7 @@ const StudentHome = () => {
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showAllMaterials, setShowAllMaterials] = useState(false);
   const equipmentScrollRef = useRef(null);
 
   const scrollEquipment = (direction) => {
@@ -381,6 +384,7 @@ const StudentHome = () => {
                     <tbody className="divide-y divide-stone-100">
                       {materials
                         .filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                        .slice(0, showAllMaterials || searchTerm ? materials.length : 6)
                         .map((material) => (
                           <tr key={material._id} onClick={() => setSelectedMaterial(material)} className="group hover:bg-stone-50/50 transition-colors cursor-pointer">
                             <td className="px-8 py-5">
@@ -409,6 +413,22 @@ const StudentHome = () => {
                         ))}
                     </tbody>
                   </table>
+
+                  {materials.length > 6 && !searchTerm && (
+                    <div className="p-4 border-t border-stone-100 flex justify-center bg-stone-50/30">
+                      <button
+                        onClick={() => setShowAllMaterials(!showAllMaterials)}
+                        className="flex items-center gap-2 px-6 py-2 rounded-full border border-stone-200 bg-white text-stone-600 text-sm font-bold tracking-wide hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-all shadow-sm"
+                      >
+                        {showAllMaterials ? (
+                          <>SHOW LESS <ChevronUp size={16} /></>
+                        ) : (
+                          <>VIEW ALL MATERIALS <ChevronDown size={16} /></>
+                        )}
+                      </button>
+                    </div>
+                  )}
+
                   {materials.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
                     <div className="p-12 text-center text-stone-400 text-sm">
                       No materials found matching "{searchTerm}"
