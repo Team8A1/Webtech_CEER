@@ -6,9 +6,17 @@ const equipmentSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    specification: {
+        type: String,
+        trim: true
+    },
     description: {
         type: String,
         required: true,
+        trim: true
+    },
+    additionalInfo: {
+        type: String,
         trim: true
     },
     imageUrl: {

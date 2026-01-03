@@ -80,13 +80,13 @@ function AvailableMachines() {
                 className="group bg-white rounded-2xl overflow-hidden border border-stone-200 hover:shadow-xl hover:border-stone-300 transition-all duration-300 cursor-pointer flex flex-col h-full"
               >
                 {/* Image */}
-                <div className="h-56 relative overflow-hidden bg-stone-100">
+                <div className="h-56 relative overflow-hidden bg-white flex items-center justify-center p-2">
                   <img
                     src={item.imageUrl}
                     alt={item.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
 
                 {/* Content */}
@@ -105,9 +105,9 @@ function AvailableMachines() {
                     </span>
                   </div>
 
-                  <p className="text-stone-600 text-sm leading-relaxed line-clamp-3 mb-4 flex-grow">
-                    {item.description}
-                  </p>
+                  <div className="text-xs text-red-700 font-medium mt-auto flex items-center gap-1">
+                    View details <Search className="w-3 h-3" />
+                  </div>
                 </div>
               </div>
             ))}
@@ -125,20 +125,15 @@ function AvailableMachines() {
             className="bg-white rounded-[2rem] max-w-2xl w-full flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
             onClick={e => e.stopPropagation()}
           >
-            <div className="h-72 relative">
+            <div className="h-72 relative bg-stone-50 flex items-center justify-center p-4">
               <img
                 src={selectedItem.imageUrl}
                 alt={selectedItem.name}
-                className="w-full h-full object-cover"
+                className="max-w-full max-h-full object-contain"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
               <div className="absolute bottom-6 left-6 text-white">
                 <h2 className="text-3xl font-serif mb-2">{selectedItem.name}</h2>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 bg-white/20 backdrop-blur-md rounded text-xs font-bold uppercase tracking-wider">
-                    Equipment
-                  </span>
-                </div>
               </div>
               <button
                 onClick={() => setSelectedItem(null)}
@@ -149,21 +144,37 @@ function AvailableMachines() {
             </div>
 
             <div className="p-8">
-              <div className="flex items-center gap-3 mb-6 p-4 bg-stone-50 rounded-xl border border-stone-100">
-                <div className="w-10 h-10 bg-stone-200 rounded-full flex items-center justify-center text-stone-500">
-                  <User className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">Person In Charge</p>
-                  <p className="text-stone-900 font-medium">{selectedItem.inCharge}</p>
-                </div>
-              </div>
 
-              <div>
-                <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Description</p>
-                <p className="text-stone-600 leading-relaxed font-light text-lg">
-                  {selectedItem.description}
-                </p>
+              <div className="space-y-6">
+                {selectedItem.specification && (
+                  <div>
+                    <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2 font-mono">Specification</p>
+                    <p className="text-stone-700 bg-stone-50 p-2 rounded border border-stone-100 font-mono text-sm">
+                      {selectedItem.specification}
+                    </p>
+                  </div>
+                )}
+
+                <div>
+                  <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Description</p>
+                  <p className="text-stone-600 leading-relaxed font-light text-lg">
+                    {selectedItem.description}
+                  </p>
+                </div>
+
+                {selectedItem.additionalInfo && (
+                  <div>
+                    <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Additional Information</p>
+                    <a
+                      href={selectedItem.additionalInfo.startsWith('http') ? selectedItem.additionalInfo : `https://${selectedItem.additionalInfo}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-red-700 hover:text-red-900 underline break-all text-sm"
+                    >
+                      {selectedItem.additionalInfo}
+                    </a>
+                  </div>
+                )}
               </div>
 
               <div className="mt-8 pt-6 border-t border-stone-100 flex justify-end">

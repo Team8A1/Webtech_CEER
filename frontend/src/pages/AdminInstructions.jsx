@@ -13,6 +13,15 @@ const AdminInstructions = () => {
     const editorRef = useRef(null);
     const quillInstance = useRef(null);
 
+    // Register Sizes and Fonts
+    const Size = Quill.import('attributors/style/size');
+    Size.whitelist = ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '32px', '48px'];
+    Quill.register(Size, true);
+
+    const Font = Quill.import('attributors/style/font');
+    Font.whitelist = ['serif', 'monospace', 'arial', 'inter', 'georgia', 'courier'];
+    Quill.register(Font, true);
+
     // Initialize Quill
     useEffect(() => {
         if (editorRef.current && !quillInstance.current) {
@@ -20,6 +29,8 @@ const AdminInstructions = () => {
                 theme: 'snow',
                 modules: {
                     toolbar: [
+                        [{ 'font': ['serif', 'monospace', 'arial', 'inter', 'georgia', 'courier'] }],
+                        [{ 'size': ['10px', '12px', '14px', '16px', '18px', '20px', '24px', '32px', '48px'] }],
                         [{ 'header': [1, 2, 3, false] }],
                         ['bold', 'italic', 'underline', 'strike'],
                         [{ 'list': 'ordered' }, { 'list': 'bullet' }],
@@ -139,6 +150,32 @@ const AdminInstructions = () => {
                     <div ref={editorRef} style={{ height: '400px' }} />
                 </div>
             </div>
+            <style>{`
+                .ql-picker.ql-size .ql-picker-label::before,
+                .ql-picker.ql-size .ql-picker-item::before {
+                    content: attr(data-value) !important;
+                }
+                .ql-picker.ql-font[data-value="arial"] .ql-picker-label::before,
+                .ql-picker.ql-font[data-value="arial"] .ql-picker-item::before {
+                    content: "Arial" !important;
+                    font-family: "Arial";
+                }
+                .ql-picker.ql-font[data-value="inter"] .ql-picker-label::before,
+                .ql-picker.ql-font[data-value="inter"] .ql-picker-item::before {
+                    content: "Inter" !important;
+                    font-family: "Inter";
+                }
+                .ql-picker.ql-font[data-value="georgia"] .ql-picker-label::before,
+                .ql-picker.ql-font[data-value="georgia"] .ql-picker-item::before {
+                    content: "Georgia" !important;
+                    font-family: "Georgia";
+                }
+                .ql-picker.ql-font[data-value="courier"] .ql-picker-label::before,
+                .ql-picker.ql-font[data-value="courier"] .ql-picker-item::before {
+                    content: "Courier" !important;
+                    font-family: "Courier";
+                }
+            `}</style>
         </div>
     );
 };

@@ -37,6 +37,7 @@ const AdminDashboard = () => {
 
   // UI States
   const [expandedFaculty, setExpandedFaculty] = useState(null);
+  const [selectedEquipmentView, setSelectedEquipmentView] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
 
@@ -49,7 +50,8 @@ const AdminDashboard = () => {
   const [eventForm, setEventForm] = useState({ title: '', date: '', category: '', image: null });
 
   const [showEquipmentModal, setShowEquipmentModal] = useState(false);
-  const [equipmentForm, setEquipmentForm] = useState({ name: '', description: '', inCharge: '', image: null });
+  const [editingEquipment, setEditingEquipment] = useState(null);
+  const [equipmentForm, setEquipmentForm] = useState({ name: '', specification: '', description: '', additionalInfo: '', inCharge: '', image: null });
 
   const [showUserModal, setShowUserModal] = useState(false);
   const [userType, setUserType] = useState('student'); // 'student' or 'faculty'
@@ -173,19 +175,34 @@ const AdminDashboard = () => {
     e.preventDefault();
     const formData = new FormData();
     formData.append('name', equipmentForm.name);
+    formData.append('specification', equipmentForm.specification);
     formData.append('description', equipmentForm.description);
+    formData.append('additionalInfo', equipmentForm.additionalInfo);
     formData.append('inCharge', equipmentForm.inCharge);
     if (equipmentForm.image) {
       formData.append('image', equipmentForm.image);
     }
 
     try {
-      await api.post('/equipment/add', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      alert('Equipment added successfully');
+      if (!editingEquipment && !equipmentForm.image) {
+        alert('Please upload an image for the equipment');
+        return;
+      }
+
+      if (editingEquipment) {
+        await api.put(`/equipment/update/${editingEquipment._id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        alert('Equipment updated successfully');
+      } else {
+        await api.post('/equipment/add', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        alert('Equipment added successfully');
+      }
       setShowEquipmentModal(false);
-      setEquipmentForm({ name: '', description: '', inCharge: '', image: null });
+      setEditingEquipment(null);
+      setEquipmentForm({ name: '', specification: '', description: '', additionalInfo: '', inCharge: '', image: null });
       fetchEquipments();
     } catch (error) {
       alert('Error saving equipment: ' + (error.response?.data?.message || error.message));
@@ -712,19 +729,45 @@ const AdminDashboard = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {equipmentsData.map(item => (
-                  <div key={item._id} className="group relative bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all">
-                    <div className="aspect-video bg-gray-100 overflow-hidden relative">
-                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                  <div
+                    key={item._id}
+                    onClick={() => setSelectedEquipmentView(item)}
+                    className="group relative bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all cursor-pointer flex flex-col"
+                  >
+                    <div className="aspect-video bg-white overflow-hidden relative">
+                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain p-2 transition-transform duration-700 group-hover:scale-105" />
                       <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => handleDeleteEquipment(item._id)} className="p-2 bg-white rounded-full shadow hover:text-red-600">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingEquipment(item);
+                            setEquipmentForm({
+                              name: item.name,
+                              specification: item.specification || '',
+                              description: item.description,
+                              additionalInfo: item.additionalInfo || '',
+                              inCharge: item.inCharge,
+                              image: null
+                            });
+                            setShowEquipmentModal(true);
+                          }}
+                          className="p-2 bg-white rounded-full shadow hover:text-blue-600"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); handleDeleteEquipment(item._id); }} className="p-2 bg-white rounded-full shadow hover:text-red-600">
                           <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-1">{item.name}</h3>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">In Charge: {item.inCharge}</p>
-                      <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
+
+                    <div className="p-4 flex flex-col flex-grow">
+                      <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-black transition-colors">{item.name}</h3>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">In Charge: {item.inCharge}</p>
+
+                      <div className="text-xs text-black font-medium mt-auto flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        View details <Search className="w-3 h-3" />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -892,27 +935,133 @@ const AdminDashboard = () => {
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
               <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold">Add New Equipment</h2>
-                  <button onClick={() => setShowEquipmentModal(false)}><X className="text-gray-400 hover:text-black" /></button>
+                  <h2 className="text-xl font-bold">{editingEquipment ? 'Edit Equipment' : 'Add New Equipment'}</h2>
+                  <button onClick={() => { setShowEquipmentModal(false); setEditingEquipment(null); }}><X className="text-gray-400 hover:text-black" /></button>
                 </div>
                 <form onSubmit={handleEquipmentSubmit} className="space-y-4">
                   <input type="text" placeholder="Equipment Name" required value={equipmentForm.name} onChange={e => setEquipmentForm({ ...equipmentForm, name: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black" />
                   <input type="text" placeholder="Person In Charge" required value={equipmentForm.inCharge} onChange={e => setEquipmentForm({ ...equipmentForm, inCharge: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black" />
+                  <input type="text" placeholder="Specification" value={equipmentForm.specification} onChange={e => setEquipmentForm({ ...equipmentForm, specification: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black" />
                   <textarea placeholder="Description" required value={equipmentForm.description} onChange={e => setEquipmentForm({ ...equipmentForm, description: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black h-24 resize-none" />
+                  <textarea placeholder="Additional Information (Optional)" value={equipmentForm.additionalInfo} onChange={e => setEquipmentForm({ ...equipmentForm, additionalInfo: e.target.value })} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-1 focus:ring-black h-24 resize-none" />
 
-                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors relative">
-                    <input type="file" accept="image/*" onChange={e => setEquipmentForm({ ...equipmentForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" required />
+                  <div
+                    className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors relative"
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const file = e.dataTransfer.files[0];
+                      if (file && file.type.startsWith('image/')) {
+                        setEquipmentForm({ ...equipmentForm, image: file });
+                      }
+                    }}
+                    onPaste={(e) => {
+                      const items = e.clipboardData.items;
+                      for (let i = 0; i < items.length; i++) {
+                        if (items[i].type.indexOf('image') !== -1) {
+                          const file = items[i].getAsFile();
+                          setEquipmentForm({ ...equipmentForm, image: file });
+                          break;
+                        }
+                      }
+                    }}
+                  >
+                    <input type="file" accept="image/*" onChange={e => setEquipmentForm({ ...equipmentForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
                     <div className="flex flex-col items-center gap-2 text-gray-400">
                       <Upload size={24} />
-                      <span className="text-sm">{equipmentForm.image?.name || 'Upload Equipment Image'}</span>
+                      <span className="text-sm">{equipmentForm.image ? equipmentForm.image.name : (editingEquipment ? 'Change Image' : 'Upload Equipment Image')}</span>
+                      <p className="text-[10px] opacity-60">Paste image or Drag & Drop</p>
                     </div>
                   </div>
-                  <button type="submit" className="w-full py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800">Add Equipment</button>
+                  <button type="submit" className="w-full py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800">
+                    {editingEquipment ? 'Update Changes' : 'Add Equipment'}
+                  </button>
                 </form>
               </div>
             </div>
           )
         }
+
+        {/* Equipment Detail Modal (Selected View) */}
+        {selectedEquipmentView && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
+            onClick={() => setSelectedEquipmentView(null)}
+          >
+            <div
+              className="bg-white rounded-[2rem] max-w-2xl w-full flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 relative"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="h-72 relative bg-gray-50 flex items-center justify-center p-4">
+                <img
+                  src={selectedEquipmentView.imageUrl}
+                  alt={selectedEquipmentView.name}
+                  className="max-w-full max-h-full object-contain"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                <div className="absolute bottom-6 left-6 text-white max-w-lg">
+                  <h2 className="text-4xl font-serif leading-tight">{selectedEquipmentView.name}</h2>
+                </div>
+                <button
+                  onClick={() => setSelectedEquipmentView(null)}
+                  className="absolute top-4 right-4 p-2 bg-black/30 hover:bg-black/50 text-white rounded-full backdrop-blur-md transition-colors border border-white/10"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="p-8">
+                <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 scrollbar-hide">
+                  {selectedEquipmentView.specification && (
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <span className="w-8 h-px bg-gray-200"></span> Specifications
+                      </h4>
+                      <p className="text-sm text-gray-700 font-mono bg-gray-50 p-3 rounded-lg border border-gray-100">
+                        {selectedEquipmentView.specification}
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                      <span className="w-8 h-px bg-gray-200"></span> Description
+                    </h4>
+                    <p className="text-gray-600 leading-relaxed font-light text-lg">
+                      {selectedEquipmentView.description}
+                    </p>
+                  </div>
+
+                  {selectedEquipmentView.additionalInfo && (
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <span className="w-8 h-px bg-gray-200"></span> Additional Information
+                      </h4>
+                      <a
+                        href={selectedEquipmentView.additionalInfo.startsWith('http') ? selectedEquipmentView.additionalInfo : `https://${selectedEquipmentView.additionalInfo}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 underline break-all"
+                      >
+                        {selectedEquipmentView.additionalInfo}
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-6 border-t border-gray-100 flex justify-end mt-4">
+                  <button
+                    onClick={() => setSelectedEquipmentView(null)}
+                    className="px-8 py-3 bg-black text-white rounded-full font-bold text-sm tracking-wide hover:bg-gray-800 transition-colors shadow-lg"
+                  >
+                    CLOSE DETAILS
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
       </main >
     </div >

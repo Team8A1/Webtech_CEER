@@ -23,7 +23,7 @@ const uploadFromBuffer = (buffer) => {
 
 const addEquipment = async (req, res) => {
     try {
-        const { name, description, inCharge } = req.body;
+        const { name, description, inCharge, specification, additionalInfo } = req.body;
 
         if (!req.file) {
             return res.status(400).json({ success: false, message: 'Image is required' });
@@ -33,7 +33,9 @@ const addEquipment = async (req, res) => {
 
         const newEquipment = new Equipment({
             name,
+            specification,
             description,
+            additionalInfo,
             imageUrl: result.secure_url,
             imageId: result.public_id,
             inCharge: inCharge || 'Lab Incharge'
@@ -44,6 +46,50 @@ const addEquipment = async (req, res) => {
         res.status(201).json({ success: true, data: newEquipment, message: 'Equipment added successfully' });
     } catch (error) {
         console.error('Error adding equipment:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+const updateEquipment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, inCharge, specification, additionalInfo } = req.body;
+
+        const equipment = await Equipment.findById(id);
+        if (!equipment) {
+            return res.status(404).json({ success: false, message: 'Equipment not found' });
+        }
+
+        const updateData = {
+            name,
+            specification,
+            description,
+            additionalInfo,
+            inCharge: inCharge || 'Lab Incharge'
+        };
+
+        // Handle image update if a new file is uploaded
+        if (req.file) {
+            // Delete old image from Cloudinary
+            if (equipment.imageId) {
+                await cloudinary.uploader.destroy(equipment.imageId);
+            }
+
+            // Upload new image
+            const result = await uploadFromBuffer(req.file.buffer);
+            updateData.imageUrl = result.secure_url;
+            updateData.imageId = result.public_id;
+        }
+
+        const updatedEquipment = await Equipment.findByIdAndUpdate(
+            id,
+            updateData,
+            { new: true }
+        );
+
+        res.status(200).json({ success: true, data: updatedEquipment, message: 'Equipment updated successfully' });
+    } catch (error) {
+        console.error('Error updating equipment:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
@@ -81,6 +127,7 @@ const deleteEquipment = async (req, res) => {
 
 module.exports = {
     addEquipment,
+    updateEquipment,
     getEquipments,
     deleteEquipment
 };

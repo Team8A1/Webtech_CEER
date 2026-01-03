@@ -461,13 +461,13 @@ const StudentHome = () => {
                       className="flex-none w-[350px] snap-center group bg-stone-50 rounded-2xl overflow-hidden border border-stone-100 hover:shadow-xl hover:border-red-100 transition-all duration-300 cursor-pointer flex flex-col"
                     >
                       {/* Image */}
-                      <div className="h-56 relative overflow-hidden bg-stone-200">
+                      <div className="h-56 relative overflow-hidden bg-white flex items-center justify-center p-2">
                         <img
                           src={item.imageUrl}
                           alt={item.name}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </div>
 
                       {/* Content */}
@@ -653,17 +653,14 @@ const StudentHome = () => {
               className="bg-white rounded-[2rem] max-w-2xl w-full flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 relative"
               onClick={e => e.stopPropagation()}
             >
-              <div className="h-72 relative">
+              <div className="h-72 relative bg-stone-50 flex items-center justify-center p-4 text-center">
                 <img
                   src={selectedEquipment.imageUrl}
                   alt={selectedEquipment.name}
-                  className="w-full h-full object-cover"
+                  className="max-w-full max-h-full object-contain"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute bottom-6 left-6 text-white max-w-lg">
-                  <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider mb-3 border border-white/20">
-                    Lab Equipment
-                  </span>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                <div className="absolute bottom-6 left-6 text-white text-left">
                   <h2 className="text-4xl font-serif leading-tight">{selectedEquipment.name}</h2>
                 </div>
                 <button
@@ -675,15 +672,17 @@ const StudentHome = () => {
               </div>
 
               <div className="p-8">
-                <div className="flex items-center gap-4 mb-8 p-4 bg-stone-50 rounded-2xl border border-stone-100">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-red-600 shadow-sm border border-stone-100">
-                    <Wrench className="w-6 h-6" />
+
+                {selectedEquipment.specification && (
+                  <div className="mb-8">
+                    <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <span className="w-8 h-px bg-stone-300"></span> Specification
+                    </p>
+                    <p className="text-stone-700 bg-stone-50 p-2 rounded border border-stone-100 font-mono text-sm leading-relaxed">
+                      {selectedEquipment.specification}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-1">Person In Charge</p>
-                    <p className="text-stone-900 font-serif text-lg">{selectedEquipment.inCharge}</p>
-                  </div>
-                </div>
+                )}
 
                 <div className="mb-8">
                   <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -694,10 +693,26 @@ const StudentHome = () => {
                   </p>
                 </div>
 
+                {selectedEquipment.additionalInfo && (
+                  <div className="mb-8">
+                    <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <span className="w-8 h-px bg-stone-300"></span> Additional Information
+                    </p>
+                    <a
+                      href={selectedEquipment.additionalInfo.startsWith('http') ? selectedEquipment.additionalInfo : `https://${selectedEquipment.additionalInfo}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-red-700 hover:text-red-900 underline break-all text-sm block"
+                    >
+                      {selectedEquipment.additionalInfo}
+                    </a>
+                  </div>
+                )}
+
                 <div className="pt-6 border-t border-stone-100 flex justify-end">
                   <button
                     onClick={() => setSelectedEquipment(null)}
-                    className="px-8 py-3 bg-stone-900 text-white rounded-full font-bold text-sm tracking-wide hover:bg-stone-800 transition-colors shadow-lg shadow-stone-200"
+                    className="px-8 py-3 bg-stone-900 text-white rounded-full font-bold text-sm tracking-wide hover:bg-stone-800 transition-colors shadow-lg"
                   >
                     CLOSE DETAILS
                   </button>
