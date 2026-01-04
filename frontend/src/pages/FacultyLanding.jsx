@@ -129,34 +129,6 @@ function FacultyLanding() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* <section className="relative overflow-hidden" style={{ height: 220 }}>
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-800" />
-        <div className="relative h-full max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-serif font-bold text-white mb-1">Faculty Tools</h1>
-            <p className="text-sm text-slate-300">Approve BOMs and create project teams for your students.</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setShowPasswordModal(true)}
-              className="px-4 py-2 bg-slate-700/50 backdrop-blur-sm text-white rounded-lg font-semibold hover:bg-slate-700 transition-colors border border-slate-600 flex items-center gap-2"
-            >
-              <KeyRound className="w-4 h-4" />
-              Change Password
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-5 py-2.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors shadow-lg hover:shadow-xl flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Logout
-            </button>
-          </div>
-        </div>
-      </section> */}
-
       <div className="max-w-7xl mx-auto px-6 py-5">
         <div className="flex flex-wrap justify-between items-center gap-3 mb-12">
           <button
@@ -201,7 +173,7 @@ function FacultyLanding() {
             )}
 
             {/* Image Container */}
-            <div className="relative w-full aspect-[5/4] overflow-hidden rounded-2xl mb-6 bg-gray-100">
+            <div className="relative w-full aspect-[5/4] overflow-hidden rounded-xl mb-6 bg-gray-100">
               <img
                 src="/images/approve.jpg"
                 alt="BOM Approval Queue"
@@ -243,7 +215,7 @@ function FacultyLanding() {
             className="group block w-full h-full text-left"
           >
             {/* Image Container */}
-            <div className="relative w-full aspect-[5/4] overflow-hidden rounded-2xl mb-6 bg-gray-100">
+            <div className="relative w-full aspect-[5/4] overflow-hidden rounded-xl mb-6 bg-gray-100">
               <img
                 src="/images/team.jpg"
                 alt="Create Team"
@@ -290,7 +262,7 @@ function FacultyLanding() {
             className="group block w-full h-full text-left"
           >
             {/* Image Container */}
-            <div className="relative w-full aspect-[5/4] overflow-hidden rounded-2xl mb-6 bg-gray-100">
+            <div className="relative w-full aspect-[5/4] overflow-hidden rounded-xl mb-6 bg-gray-100">
               <img
                 src="https://cdn.prod.website-files.com/687904fb2b26c434698c47e9/68e2fc0c8ae5b217815396ad_272dd01b1fa967d3f7374c715975249e_teachable-product-downloads.webp"
                 alt="Team Overview"
@@ -361,7 +333,7 @@ function FacultyLanding() {
               <p className="mt-4 text-gray-500">Loading teams...</p>
             </div>
           ) : teams.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-300">
+            <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed border-gray-300">
               <p className="text-xl text-gray-500 mb-4">No teams created yet.</p>
               <button
                 onClick={() => navigate('/faculty/team-create')}
@@ -376,7 +348,7 @@ function FacultyLanding() {
                 <div
                   key={team._id}
                   onClick={() => setSelectedTeam(team)}
-                  className={`flex flex-col h-full p-8 border border-transparent rounded-2xl transition-all duration-300 bg-[#F6F6F6] hover:bg-gray-100 cursor-pointer group ${index % 2 === 0 ? 'lg:mt-8' : ''
+                  className={`flex flex-col h-full p-8 border border-transparent rounded-xl transition-all duration-300 bg-[#F6F6F6] hover:bg-gray-100 cursor-pointer group ${index % 2 === 0 ? 'lg:mt-8' : ''
                     }`}
                 >
                   {/* Team Name */}
@@ -482,7 +454,7 @@ function FacultyLanding() {
       {/* Team Details Modal */}
       {selectedTeam && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-4xl p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl w-full max-w-4xl p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedTeam(null)}
               className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors"
@@ -549,8 +521,8 @@ function FacultyLanding() {
                             <td className="px-6 py-4 text-gray-900 font-semibold">{bom.qty}</td>
                             <td className="px-6 py-4">
                               <span className={`px-3 py-1 rounded-full text-xs font-semibold ${bom.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                  bom.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                    'bg-yellow-100 text-yellow-800'
+                                bom.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                  'bg-yellow-100 text-yellow-800'
                                 }`}>
                                 {bom.status.charAt(0).toUpperCase() + bom.status.slice(1)}
                               </span>

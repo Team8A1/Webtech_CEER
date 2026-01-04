@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
+import { X } from 'lucide-react';
 
 function LabApprove() {
   const [boms, setBoms] = useState([])
@@ -10,6 +11,13 @@ function LabApprove() {
   const previousPendingCountRef = useRef(0)
   const [rejectingId, setRejectingId] = useState(null)
   const [rejectionReason, setRejectionReason] = useState('')
+
+  // Password Change State
+  const [user, setUser] = useState(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
 
   // Predefined rejection reasons
   const predefinedReasons = [
@@ -40,6 +48,11 @@ function LabApprove() {
   }
 
   useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+    setUser(storedUser);
+    if (storedUser && storedUser.mustChangePassword) {
+      setShowPasswordModal(true);
+    }
     load();
   }, [])
 
@@ -111,6 +124,57 @@ function LabApprove() {
       alert('Error rejecting request');
     }
   }
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post('http://localhost:8000/api/lab/auth/change-password',
+        {
+          email: user.email,
+          oldPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.data.success) {
+        setPasswordSuccess('Password updated successfully');
+
+        // Update local storage
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        if (currentUser) {
+          currentUser.mustChangePassword = false;
+          localStorage.setItem('user', JSON.stringify(currentUser));
+        }
+
+        setTimeout(() => {
+          setShowPasswordModal(false);
+          setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+          setPasswordSuccess('');
+          // Reload to update state
+          window.location.reload();
+        }, 2000);
+      }
+    } catch (error) {
+      setPasswordError(error.response?.data?.message || 'Failed to update password');
+    }
+  };
 
   const getFilteredBOMs = () => {
     if (filter === 'pending') return boms.filter(b => !b.labApproved && b.status !== 'rejected')
@@ -354,7 +418,7 @@ function LabApprove() {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold mb-4">Reject Request</h3>
             <p className="text-gray-600 mb-4">Please select or provide a reason for rejection.</p>
-            
+
             {/* Dropdown for predefined reasons */}
             <select
               className="w-full p-3 border border-gray-300 rounded mb-4 focus:ring-2 focus:ring-red-500 outline-none bg-white"
@@ -398,7 +462,85 @@ function LabApprove() {
           </div>
         </div>
       )}
-    </div >
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-md p-8 shadow-2xl relative">
+            {(!user || !user.mustChangePassword) && (
+              <button
+                onClick={() => setShowPasswordModal(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+              {user?.mustChangePassword ? 'Security Alert' : 'Update Password'}
+            </h2>
+            <p className="text-sm text-slate-500 mb-6">
+              {user?.mustChangePassword
+                ? 'You must change your default password to continue using the portal.'
+                : 'Set a new password for your account to enable manual login.'}
+            </p>
+
+            {passwordError && (
+              <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-100">
+                {passwordError}
+              </div>
+            )}
+
+            {passwordSuccess && (
+              <div className="mb-4 p-3 bg-green-50 text-green-700 text-sm rounded-lg border border-green-100">
+                {passwordSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Current Password</label>
+                <input
+                  type="password"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">New Password</label>
+                <input
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Confirm Password</label>
+                <input
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-3 bg-slate-900 text-white rounded-full font-bold text-sm tracking-widest hover:bg-slate-800 transition-colors shadow-lg"
+              >
+                UPDATE PASSWORD
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

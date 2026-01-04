@@ -56,12 +56,12 @@ function RoleSelection() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-between p-20 relative">
+    <div className="min-h-screen bg-stone-50 flex items-center justify-between p-20 relative">
       {/* Back to Home button (top-right) */}
       <div className="absolute top-6 left-6 z-20">
         <button
           onClick={() => navigate('/')}
-          className="px-4 py-2 bg-white text-slate-900 rounded-md shadow-sm hover:bg-slate-100 transition-colors"
+          className="px-4 py-2 bg-white text-stone-900 rounded-lg shadow-sm hover:bg-stone-100 transition-colors border border-stone-300"
         >
           Back to Home
         </button>
@@ -79,13 +79,13 @@ function RoleSelection() {
       <div className="relative z-10 w-full max-w-2xl">
         {/* Title Section */}
         <div className="mb-12">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-5xl font-serif text-stone-900 mb-4">
             Welcome to CEER Portal
           </h1>
-          <p className="text-lg text-gray-600 mb-2">
+          <p className="text-lg text-stone-600 mb-2 font-light">
             Select your role to continue
           </p>
-          <p className="text-sm text-gray-500 tracking-wider">
+          <p className="text-sm text-stone-500 tracking-wider">
             CENTER FOR ENGINEERING EDUCATION RESEARCH
           </p>
         </div>
@@ -101,7 +101,7 @@ function RoleSelection() {
                 transition-all duration-300 ease-out
                 shadow-lg hover:shadow-xl
                 hover:scale-105 hover:-translate-y-1
-                border border-gray-200 hover:border-gray-900
+                border border-stone-200 hover:border-stone-900
                 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}
               `}
               style={{
@@ -109,10 +109,10 @@ function RoleSelection() {
               }}
             >
               <div className="flex flex-col items-center space-y-4">
-                <div className="text-gray-900 transition-transform duration-300">
+                <div className="text-stone-900 transition-transform duration-300">
                   {role.icon}
                 </div>
-                <h2 className="text-2xl font-semibold text-gray-900">
+                <h2 className="text-2xl font-serif text-stone-900">
                   {role.title}
                 </h2>
               </div>
@@ -125,10 +125,10 @@ function RoleSelection() {
       <div className="hidden lg:block w-full max-w-lg relative z-10 ml-20">
         <div className="space-y-8">
           <div className="space-y-4">
-            <h2 className="text-5xl font-bold text-gray-900">
+            <h2 className="text-5xl font-serif text-stone-900">
               Portal<br />Access
             </h2>
-            <p className="text-lg text-gray-600 leading-relaxed">
+            <p className="text-lg text-stone-600 leading-relaxed font-light">
               Choose your role to access the appropriate portal with specialized tools and resources.
             </p>
           </div>

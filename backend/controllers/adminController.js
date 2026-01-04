@@ -47,31 +47,60 @@ const registerBulkStudents = async (req, res) => {
 
         const results = { success: [], failed: [] };
 
-        for (const student of students) {
+        for (let i = 0; i < students.length; i++) {
+            const student = students[i];
+            const rowIndex = i + 2; // +2 because: +1 for 0-index, +1 for header row
+
             try {
                 if (!student.email || !student.name) {
-                    results.failed.push({ email: student.email, reason: 'Missing name or email' });
+                    results.failed.push({
+                        rowIndex,
+                        data: student,
+                        reason: 'Missing required fields (name or email)'
+                    });
+                    continue;
+                }
+
+                // Check email domain if needed
+                const allowedDomain = process.env.ALLOWED_EMAIL_DOMAIN || '@kletech.ac.in';
+                if (!student.email.endsWith(allowedDomain)) {
+                    results.failed.push({
+                        rowIndex,
+                        data: student,
+                        reason: `Email domain not allowed. Only ${allowedDomain} emails are accepted`
+                    });
                     continue;
                 }
 
                 const exists = await User.findOne({ email: student.email });
                 if (exists) {
-                    results.failed.push({ email: student.email, reason: 'Already exists' });
+                    results.failed.push({
+                        rowIndex,
+                        data: student,
+                        reason: 'User with this email already exists'
+                    });
                     continue;
                 }
 
                 const newStudent = new User({
                     name: student.name,
                     email: student.email,
+                    usn: student.usn,
                     division: student.division ? student.division.toUpperCase() : undefined,
+                    batch: student.batch,
                     role: 'student',
                     password: student.password || 'student@123', // Default password
-                    mustChangePassword: true
+                    mustChangePassword: true,
+                    isActive: true
                 });
                 await newStudent.save();
-                results.success.push(student.email);
+                results.success.push({ email: student.email, name: student.name });
             } catch (err) {
-                results.failed.push({ email: student.email, reason: err.message });
+                results.failed.push({
+                    rowIndex,
+                    data: student,
+                    reason: err.message || 'Unknown error occurred'
+                });
             }
         }
 
@@ -91,16 +120,38 @@ const registerBulkFaculty = async (req, res) => {
 
         const results = { success: [], failed: [] };
 
-        for (const faculty of faculties) {
+        for (let i = 0; i < faculties.length; i++) {
+            const faculty = faculties[i];
+            const rowIndex = i + 2; // +2 because: +1 for 0-index, +1 for header row
+
             try {
                 if (!faculty.email || !faculty.name) {
-                    results.failed.push({ email: faculty.email, reason: 'Missing name or email' });
+                    results.failed.push({
+                        rowIndex,
+                        data: faculty,
+                        reason: 'Missing required fields (name or email)'
+                    });
+                    continue;
+                }
+
+                // Check email domain if needed
+                const allowedDomain = process.env.ALLOWED_EMAIL_DOMAIN || '@kletech.ac.in';
+                if (!faculty.email.endsWith(allowedDomain)) {
+                    results.failed.push({
+                        rowIndex,
+                        data: faculty,
+                        reason: `Email domain not allowed. Only ${allowedDomain} emails are accepted`
+                    });
                     continue;
                 }
 
                 const exists = await Faculty.findOne({ email: faculty.email });
                 if (exists) {
-                    results.failed.push({ email: faculty.email, reason: 'Already exists' });
+                    results.failed.push({
+                        rowIndex,
+                        data: faculty,
+                        reason: 'Faculty with this email already exists'
+                    });
                     continue;
                 }
 
@@ -114,9 +165,13 @@ const registerBulkFaculty = async (req, res) => {
                     isApproved: true
                 });
                 await newFaculty.save();
-                results.success.push(faculty.email);
+                results.success.push({ email: faculty.email, name: faculty.name });
             } catch (err) {
-                results.failed.push({ email: faculty.email, reason: err.message });
+                results.failed.push({
+                    rowIndex,
+                    data: faculty,
+                    reason: err.message || 'Unknown error occurred'
+                });
             }
         }
         res.status(200).json({ success: true, results });

@@ -9,6 +9,7 @@ function StudentLogin() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -86,7 +87,7 @@ function StudentLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-between p-20 relative">
+    <div className="min-h-screen bg-stone-50 flex items-center justify-between p-20 relative">
       <BackToLoginButton />
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
@@ -111,7 +112,7 @@ function StudentLogin() {
 
           {/* Title */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-serif text-gray-900">
               Student Login
             </h1>
             <p className="text-sm text-gray-600 mt-2">
@@ -153,25 +154,44 @@ function StudentLogin() {
               >
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200"
-                placeholder="••••••••••"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 pr-12 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all duration-200"
+                  placeholder="••••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-900 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
-            <div className="text-right">
+            {/* <div className="text-right">
               <a
                 href="#"
                 className="text-sm font-medium text-gray-900 hover:text-gray-700 underline underline-offset-2 transition-colors duration-200"
               >
                 Forgot password?
               </a>
-            </div>
+            </div> */}
 
             <button
               type="submit"
@@ -208,12 +228,13 @@ function StudentLogin() {
 
           {/* Footer */}
           <div className="text-center mt-6">
-            <span className="text-sm text-gray-600">Are you new? </span>
+            <span className="text-sm text-stone-600">Need access? </span>
             <a
               href="#"
-              className="text-sm font-medium text-gray-900 hover:text-gray-700 underline underline-offset-2 transition-colors duration-200"
+              onClick={(e) => { e.preventDefault(); alert('Please contact the admin to request student access.'); }}
+              className="text-sm font-medium text-stone-900 hover:text-stone-700 underline underline-offset-2 transition-colors duration-200"
             >
-              Create an Account
+              Contact Admin
             </a>
           </div>
         </div>
@@ -223,10 +244,10 @@ function StudentLogin() {
       <div className="hidden lg:block w-full max-w-lg relative z-10 ml-20">
         <div className="space-y-8">
           <div className="space-y-4">
-            <h2 className="text-5xl font-bold text-gray-900">
+            <h2 className="text-5xl font-serif text-gray-900">
               Welcome to<br />CEER Portal
             </h2>
-            <p className="text-lg text-gray-600 leading-relaxed">
+            <p className="text-lg text-gray-600 leading-relaxed font-light">
               Access your courses, resources, and academic information all in one place.
             </p>
             <p className="text-sm text-gray-500 tracking-wider">

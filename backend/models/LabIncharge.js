@@ -44,6 +44,10 @@ const labInchargeSchema = new mongoose.Schema(
       type: String,
       default: 'labIncharge',
     },
+    mustChangePassword: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

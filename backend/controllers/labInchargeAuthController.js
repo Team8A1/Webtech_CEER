@@ -71,6 +71,7 @@ const loginWithPassword = async (req, res) => {
           profilePicture: labIncharge.profilePicture,
           labName: labIncharge.labName,
           lastLogin: new Date(),
+          mustChangePassword: labIncharge.mustChangePassword,
         },
       },
     });
@@ -172,6 +173,7 @@ const googleAuth = async (req, res) => {
           profilePicture: labIncharge.profilePicture,
           labName: labIncharge.labName,
           lastLogin: labIncharge.lastLogin,
+          mustChangePassword: labIncharge.mustChangePassword,
         },
       },
     });
@@ -201,8 +203,38 @@ const logout = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  try {
+    const { email, oldPassword, newPassword } = req.body;
+
+    if (!email || !oldPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+
+    const labIncharge = await LabIncharge.findOne({ email }).select('+password');
+    if (!labIncharge) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const isMatch = await labIncharge.comparePassword(oldPassword);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Incorrect current password' });
+    }
+
+    labIncharge.password = newPassword;
+    labIncharge.mustChangePassword = false;
+    await labIncharge.save();
+
+    res.status(200).json({ success: true, message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Change Password Error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 module.exports = {
   loginWithPassword,
   googleAuth,
   logout,
+  changePassword,
 };

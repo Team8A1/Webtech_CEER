@@ -73,8 +73,15 @@ const AdminDashboard = () => {
   const [userType, setUserType] = useState('student'); // 'student' or 'faculty'
   const [userForm, setUserForm] = useState({
     name: '', email: '', usn: '', div: '', batch: '', // Student fields
-    department: '', designation: '', password: '' // Faculty fields (password for both)
+    department: '', designation: '', password: '', // Faculty fields (password for both)
+    labName: '' // Lab In-Charge fields
   });
+
+  // Bulk Registration Results Modal States
+  const [showBulkResultsModal, setShowBulkResultsModal] = useState(false);
+  const [bulkResults, setBulkResults] = useState(null);
+  const [bulkType, setBulkType] = useState(''); // 'student' or 'faculty'
+
 
   // Stats Tab States
   const [selectedStatMaterials, setSelectedStatMaterials] = useState([]);
@@ -343,16 +350,26 @@ const AdminDashboard = () => {
 
   const handleUserRegister = async (e) => {
     e.preventDefault();
-    const endpoint = userType === 'student' ? '/student/register' : '/faculty/register';
-    const payload = userType === 'student'
-      ? { name: userForm.name, email: userForm.email, password: userForm.password, usn: userForm.usn, div: userForm.div, batch: userForm.batch }
-      : { name: userForm.name, email: userForm.email, password: userForm.password, department: userForm.department, designation: userForm.designation };
+
+    let endpoint = '';
+    let payload = {};
+
+    if (userType === 'student') {
+      endpoint = '/student/register';
+      payload = { name: userForm.name, email: userForm.email, password: userForm.password, usn: userForm.usn, div: userForm.div, batch: userForm.batch };
+    } else if (userType === 'faculty') {
+      endpoint = '/faculty/register';
+      payload = { name: userForm.name, email: userForm.email, password: userForm.password, department: userForm.department, designation: userForm.designation };
+    } else if (userType === 'labIncharge') {
+      endpoint = '/lab/register';
+      payload = { name: userForm.name, email: userForm.email, password: userForm.password, labName: userForm.labName };
+    }
 
     try {
       await api.post(`${endpoint}`, payload);
-      alert(`${userType === 'student' ? 'Student' : 'Faculty'} registered successfully`);
+      alert(`${userType === 'student' ? 'Student' : userType === 'faculty' ? 'Faculty' : 'Lab In-Charge'} registered successfully`);
       setShowUserModal(false);
-      setUserForm({ name: '', email: '', usn: '', div: '', batch: '', department: '', designation: '', password: '' });
+      setUserForm({ name: '', email: '', usn: '', div: '', batch: '', department: '', designation: '', password: '', labName: '' });
       if (userType === 'faculty') fetchDashboardData(); // Refresh faculty list
     } catch (error) {
       alert('Registration failed: ' + (error.response?.data?.message || 'Check console for details'));
@@ -1029,6 +1046,15 @@ const AdminDashboard = () => {
                   >
                     Faculty
                   </button>
+                  <button
+                    onClick={() => {
+                      setUserType('labIncharge');
+                      setUserForm(prev => ({ ...prev, password: 'lab@123' }));
+                    }}
+                    className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all shadow-sm ${userType === 'labIncharge' ? 'bg-white text-maroon-700 shadow-md' : 'text-stone-400 hover:text-stone-600'}`}
+                  >
+                    Lab In-Charge
+                  </button>
                 </div>
 
                 <form onSubmit={handleUserRegister} className="space-y-6">
@@ -1068,7 +1094,7 @@ const AdminDashboard = () => {
                           className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
                       </div>
                     </>
-                  ) : (
+                  ) : userType === 'faculty' ? (
                     <>
                       <div>
                         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Department</label>
@@ -1081,10 +1107,18 @@ const AdminDashboard = () => {
                           className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
                       </div>
                     </>
+                  ) : (
+                    <>
+                      <div>
+                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Lab Name</label>
+                        <input type="text" required value={userForm.labName} onChange={e => setUserForm({ ...userForm, labName: e.target.value })}
+                          className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
+                      </div>
+                    </>
                   )}
 
                   <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">
-                    Register {userType === 'student' ? 'Student' : 'Faculty'}
+                    Register {userType === 'student' ? 'Student' : userType === 'faculty' ? 'Faculty' : 'Lab In-Charge'}
                   </button>
                 </form>
 
@@ -1133,7 +1167,9 @@ const AdminDashboard = () => {
                             try {
                               const response = await api.post('/admin/register/students', { students });
                               const { success, results } = response.data;
-                              alert(`Bulk Registration Complete:\nSuccess: ${results.success.length}\nFailed: ${results.failed.length}`);
+                              setBulkResults(results);
+                              setBulkType('student');
+                              setShowBulkResultsModal(true);
                             } catch (err) {
                               console.error('Bulk upload failed:', err);
                               alert('Bulk upload failed: ' + (err.response?.data?.message || err.message));
@@ -1190,7 +1226,9 @@ const AdminDashboard = () => {
                             try {
                               const response = await api.post('/admin/register/faculty', { faculties });
                               const { success, results } = response.data;
-                              alert(`Bulk Registration Complete:\nSuccess: ${results.success.length}\nFailed: ${results.failed.length}`);
+                              setBulkResults(results);
+                              setBulkType('faculty');
+                              setShowBulkResultsModal(true);
                               fetchDashboardData(); // Refresh list
                             } catch (err) {
                               console.error('Bulk upload failed:', err);
@@ -1205,7 +1243,7 @@ const AdminDashboard = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </div >
           )}
 
           {/* Events Tab */}
@@ -1474,230 +1512,389 @@ const AdminDashboard = () => {
                   </form>
                 </div>
               </div>
-            )}
+            )
+          }
 
-          {activeTab === 'instructions' && (
-            <AdminInstructions />
-          )}
-        </div>
+          {
+            activeTab === 'instructions' && (
+              <AdminInstructions />
+            )
+          }
+        </div >
 
         {/* --- Modals --- */}
 
         {/* Material Modal */}
-        {showMaterialModal && (
-          <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-serif text-stone-900">{editingMaterial ? 'Edit Material' : 'Add Material'}</h2>
-                <button onClick={() => setShowMaterialModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
-              </div>
-              <form onSubmit={handleMaterialSubmit} className="space-y-5">
-                <div className="grid grid-cols-2 gap-4">
-                  <input type="text" placeholder="Name" required value={materialForm.name} onChange={e => setMaterialForm({ ...materialForm, name: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                  <select value={materialForm.formType || 'unit'} onChange={e => setMaterialForm({ ...materialForm, formType: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium text-stone-700">
-                    <option value="unit">Unit (Item)</option>
-                    <option value="sheet">Sheet</option>
-                    <option value="rod">Rod</option>
-                  </select>
+        {
+          showMaterialModal && (
+            <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-2xl font-serif text-stone-900">{editingMaterial ? 'Edit Material' : 'Add Material'}</h2>
+                  <button onClick={() => setShowMaterialModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">
-                      {materialForm.formType === 'sheet' ? 'Thickness (mm)' :
-                        materialForm.formType === 'rod' ? 'Diameter (mm)' :
-                          'Weight (kg) [Optional]'}
-                    </label>
-                    <input type="number" step="any" placeholder="0" value={materialForm.fixedDimension || ''} onChange={e => setMaterialForm({ ...materialForm, fixedDimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                <form onSubmit={handleMaterialSubmit} className="space-y-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <input type="text" placeholder="Name" required value={materialForm.name} onChange={e => setMaterialForm({ ...materialForm, name: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                    <select value={materialForm.formType || 'unit'} onChange={e => setMaterialForm({ ...materialForm, formType: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium text-stone-700">
+                      <option value="unit">Unit (Item)</option>
+                      <option value="sheet">Sheet</option>
+                      <option value="rod">Rod</option>
+                    </select>
                   </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Energy Coeff (MJ/kg)</label>
-                    <input type="number" step="any" required placeholder="MJ/kg" value={materialForm.embodiedEnergy || ''} onChange={e => setMaterialForm({ ...materialForm, embodiedEnergy: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                  </div>
-                </div>
-                {(materialForm.formType === 'sheet' || materialForm.formType === 'rod') && (
-                  <div>
-                    <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Density (kg/m³)</label>
-                    <input type="number" step="any" placeholder="Density" value={materialForm.density || ''} onChange={e => setMaterialForm({ ...materialForm, density: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                  </div>
-                )}
-                <input type="text" placeholder="Display Dimension (e.g. '5mm' or '20x20cm')" required value={materialForm.dimension} onChange={e => setMaterialForm({ ...materialForm, dimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                <textarea placeholder="Description" required value={materialForm.description} onChange={e => setMaterialForm({ ...materialForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none" />
-                <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
-                  <input type="file" accept="image/*" onChange={e => setMaterialForm({ ...materialForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
-                  <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
-                    <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
-                      <Upload size={24} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">
+                        {materialForm.formType === 'sheet' ? 'Thickness (mm)' :
+                          materialForm.formType === 'rod' ? 'Diameter (mm)' :
+                            'Weight (kg) [Optional]'}
+                      </label>
+                      <input type="number" step="any" placeholder="0" value={materialForm.fixedDimension || ''} onChange={e => setMaterialForm({ ...materialForm, fixedDimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
                     </div>
-                    <span className="text-sm font-medium">{materialForm.image?.name || 'Click to Upload Image'}</span>
+                    <div>
+                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Energy Coeff (MJ/kg)</label>
+                      <input type="number" step="any" required placeholder="MJ/kg" value={materialForm.embodiedEnergy || ''} onChange={e => setMaterialForm({ ...materialForm, embodiedEnergy: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                    </div>
                   </div>
-                </div>
-                <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">Save Material</button>
-              </form>
+                  {(materialForm.formType === 'sheet' || materialForm.formType === 'rod') && (
+                    <div>
+                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Density (kg/m³)</label>
+                      <input type="number" step="any" placeholder="Density" value={materialForm.density || ''} onChange={e => setMaterialForm({ ...materialForm, density: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                    </div>
+                  )}
+                  <input type="text" placeholder="Display Dimension (e.g. '5mm' or '20x20cm')" required value={materialForm.dimension} onChange={e => setMaterialForm({ ...materialForm, dimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                  <textarea placeholder="Description" required value={materialForm.description} onChange={e => setMaterialForm({ ...materialForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none" />
+                  <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
+                    <input type="file" accept="image/*" onChange={e => setMaterialForm({ ...materialForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
+                    <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
+                      <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
+                        <Upload size={24} />
+                      </div>
+                      <span className="text-sm font-medium">{materialForm.image?.name || 'Click to Upload Image'}</span>
+                    </div>
+                  </div>
+                  <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">Save Material</button>
+                </form>
+              </div>
             </div>
-          </div>
-        )}
+          )
+        }
 
         {/* Event Modal */}
-        {showEventModal && (
-          <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-serif text-stone-900">{editingEvent ? 'Edit Event' : 'Add New Event'}</h2>
-                <button onClick={() => { setShowEventModal(false); setEditingEvent(null); }} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
-              </div>
-              <form onSubmit={handleEventSubmit} className="space-y-5">
-                <input type="text" placeholder="Event Title" required value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                <input type="text" placeholder="Date (e.g. Dec 15, 2025)" required value={eventForm.date} onChange={e => setEventForm({ ...eventForm, date: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                <input type="text" placeholder="Category (e.g. Conference)" required value={eventForm.category} onChange={e => setEventForm({ ...eventForm, category: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
-                  <input type="file" accept="image/*" onChange={e => setEventForm({ ...eventForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" required={!editingEvent} />
-                  <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
-                    <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
-                      <Upload size={24} />
-                    </div>
-                    <span className="text-sm font-medium">{eventForm.image?.name || (editingEvent ? 'Change Event Image (Optional)' : 'Upload Event Image')}</span>
-                  </div>
+        {
+          showEventModal && (
+            <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-2xl font-serif text-stone-900">{editingEvent ? 'Edit Event' : 'Add New Event'}</h2>
+                  <button onClick={() => { setShowEventModal(false); setEditingEvent(null); }} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
                 </div>
-                <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">{editingEvent ? 'Update Event' : 'Create Event'}</button>
-              </form>
+                <form onSubmit={handleEventSubmit} className="space-y-5">
+                  <input type="text" placeholder="Event Title" required value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                  <input type="text" placeholder="Date (e.g. Dec 15, 2025)" required value={eventForm.date} onChange={e => setEventForm({ ...eventForm, date: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                  <input type="text" placeholder="Category (e.g. Conference)" required value={eventForm.category} onChange={e => setEventForm({ ...eventForm, category: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                  <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
+                    <input type="file" accept="image/*" onChange={e => setEventForm({ ...eventForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" required={!editingEvent} />
+                    <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
+                      <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
+                        <Upload size={24} />
+                      </div>
+                      <span className="text-sm font-medium">{eventForm.image?.name || (editingEvent ? 'Change Event Image (Optional)' : 'Upload Event Image')}</span>
+                    </div>
+                  </div>
+                  <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">{editingEvent ? 'Update Event' : 'Create Event'}</button>
+                </form>
+              </div>
             </div>
-          </div>
-        )}
+          )
+        }
 
         {/* Equipment Modal */}
-        {showEquipmentModal && (
-          <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-serif text-stone-900">{editingEquipment ? 'Edit Equipment' : 'Add New Equipment'}</h2>
-                <button onClick={() => { setShowEquipmentModal(false); setEditingEquipment(null); }} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
-              </div>
-              <form onSubmit={handleEquipmentSubmit} className="space-y-5">
-                <input type="text" placeholder="Equipment Name" required value={equipmentForm.name} onChange={e => setEquipmentForm({ ...equipmentForm, name: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                <input type="text" placeholder="Person In Charge" required value={equipmentForm.inCharge} onChange={e => setEquipmentForm({ ...equipmentForm, inCharge: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                <input type="text" placeholder="Specification" value={equipmentForm.specification} onChange={e => setEquipmentForm({ ...equipmentForm, specification: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                <textarea placeholder="Description" required value={equipmentForm.description} onChange={e => setEquipmentForm({ ...equipmentForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
-                <textarea placeholder="Additional Information (Optional)" value={equipmentForm.additionalInfo} onChange={e => setEquipmentForm({ ...equipmentForm, additionalInfo: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
-
-                <div
-                  className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group"
-                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const file = e.dataTransfer.files[0];
-                    if (file && file.type.startsWith('image/')) {
-                      setEquipmentForm({ ...equipmentForm, image: file });
-                    }
-                  }}
-                  onPaste={(e) => {
-                    const items = e.clipboardData.items;
-                    for (let i = 0; i < items.length; i++) {
-                      if (items[i].type.indexOf('image') !== -1) {
-                        const file = items[i].getAsFile();
-                        setEquipmentForm({ ...equipmentForm, image: file });
-                        break;
-                      }
-                    }
-                  }}
-                >
-                  <input type="file" accept="image/*" onChange={e => setEquipmentForm({ ...equipmentForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
-                  <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
-                    <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
-                      <Upload size={24} />
-                    </div>
-                    <span className="text-sm font-medium">{equipmentForm.image ? equipmentForm.image.name : (editingEquipment ? 'Change Image' : 'Upload Equipment Image')}</span>
-                    <p className="text-[10px] opacity-60 font-medium tracking-wide">PASTE IMAGE OR DRAG & DROP</p>
-                  </div>
+        {
+          showEquipmentModal && (
+            <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-2xl font-serif text-stone-900">{editingEquipment ? 'Edit Equipment' : 'Add New Equipment'}</h2>
+                  <button onClick={() => { setShowEquipmentModal(false); setEditingEquipment(null); }} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
                 </div>
-                <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">
-                  {editingEquipment ? 'Update Changes' : 'Add Equipment'}
-                </button>
-              </form>
+                <form onSubmit={handleEquipmentSubmit} className="space-y-5">
+                  <input type="text" placeholder="Equipment Name" required value={equipmentForm.name} onChange={e => setEquipmentForm({ ...equipmentForm, name: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                  <input type="text" placeholder="Person In Charge" required value={equipmentForm.inCharge} onChange={e => setEquipmentForm({ ...equipmentForm, inCharge: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                  <input type="text" placeholder="Specification" value={equipmentForm.specification} onChange={e => setEquipmentForm({ ...equipmentForm, specification: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                  <textarea placeholder="Description" required value={equipmentForm.description} onChange={e => setEquipmentForm({ ...equipmentForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
+                  <textarea placeholder="Additional Information (Optional)" value={equipmentForm.additionalInfo} onChange={e => setEquipmentForm({ ...equipmentForm, additionalInfo: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
+
+                  <div
+                    className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group"
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const file = e.dataTransfer.files[0];
+                      if (file && file.type.startsWith('image/')) {
+                        setEquipmentForm({ ...equipmentForm, image: file });
+                      }
+                    }}
+                    onPaste={(e) => {
+                      const items = e.clipboardData.items;
+                      for (let i = 0; i < items.length; i++) {
+                        if (items[i].type.indexOf('image') !== -1) {
+                          const file = items[i].getAsFile();
+                          setEquipmentForm({ ...equipmentForm, image: file });
+                          break;
+                        }
+                      }
+                    }}
+                  >
+                    <input type="file" accept="image/*" onChange={e => setEquipmentForm({ ...equipmentForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
+                    <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
+                      <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
+                        <Upload size={24} />
+                      </div>
+                      <span className="text-sm font-medium">{equipmentForm.image ? equipmentForm.image.name : (editingEquipment ? 'Change Image' : 'Upload Equipment Image')}</span>
+                      <p className="text-[10px] opacity-60 font-medium tracking-wide">PASTE IMAGE OR DRAG & DROP</p>
+                    </div>
+                  </div>
+                  <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">
+                    {editingEquipment ? 'Update Changes' : 'Add Equipment'}
+                  </button>
+                </form>
+              </div>
             </div>
-          </div>
-        )}
+          )
+        }
 
         {/* Equipment Detail Modal */}
-        {selectedEquipmentView && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
-            onClick={() => setSelectedEquipmentView(null)}
-          >
+        {
+          selectedEquipmentView && (
             <div
-              className="bg-white rounded-[2rem] max-w-2xl w-full flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 relative"
-              onClick={e => e.stopPropagation()}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
+              onClick={() => setSelectedEquipmentView(null)}
             >
-              <div className="h-72 relative bg-stone-50 flex items-center justify-center p-4">
-                <img
-                  src={selectedEquipmentView.imageUrl}
-                  alt={selectedEquipmentView.name}
-                  className="max-w-full max-h-full object-contain"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                <button
-                  onClick={() => setSelectedEquipmentView(null)}
-                  className="absolute top-4 right-4 p-2 bg-stone-900/30 hover:bg-stone-900/50 text-white rounded-full backdrop-blur-md transition-colors border border-white/10"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="p-8">
-                <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 scrollbar-hide">
-                  <h2 className="text-3xl font-serif text-stone-900">{selectedEquipmentView.name}</h2>
-
-                  {selectedEquipmentView.specification && (
-                    <div>
-                      <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                        <span className="w-8 h-px bg-stone-200"></span> Specifications
-                      </h4>
-                      <p className="text-sm text-stone-700 font-mono bg-stone-50 p-3 rounded-lg border border-stone-100">
-                        {selectedEquipmentView.specification}
-                      </p>
-                    </div>
-                  )}
-
-                  <div>
-                    <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                      <span className="w-8 h-px bg-stone-200"></span> Description
-                    </h4>
-                    <p className="text-stone-600 leading-relaxed font-light">
-                      {selectedEquipmentView.description}
-                    </p>
-                  </div>
-
-                  {selectedEquipmentView.additionalInfo && (
-                    <div>
-                      <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                        <span className="w-8 h-px bg-stone-200"></span> Additional Information
-                      </h4>
-                      <a
-                        href={selectedEquipmentView.additionalInfo.startsWith('http') ? selectedEquipmentView.additionalInfo : `https://${selectedEquipmentView.additionalInfo}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-maroon-700 hover:text-maroon-900 underline break-all inline-flex items-center gap-2"
-                      >
-                        {selectedEquipmentView.additionalInfo} <ExternalLink size={14} />
-                      </a>
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-6 border-t border-stone-100 flex justify-end mt-4">
+              <div
+                className="bg-white rounded-[2rem] max-w-2xl w-full flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 relative"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="h-72 relative bg-stone-50 flex items-center justify-center p-4">
+                  <img
+                    src={selectedEquipmentView.imageUrl}
+                    alt={selectedEquipmentView.name}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                   <button
                     onClick={() => setSelectedEquipmentView(null)}
-                    className="px-8 py-3 bg-stone-900 text-white rounded-full font-bold text-sm tracking-wide hover:bg-stone-800 transition-colors shadow-lg"
+                    className="absolute top-4 right-4 p-2 bg-stone-900/30 hover:bg-stone-900/50 text-white rounded-full backdrop-blur-md transition-colors border border-white/10"
                   >
-                    CLOSE DETAILS
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="p-8">
+                  <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 scrollbar-hide">
+                    <h2 className="text-3xl font-serif text-stone-900">{selectedEquipmentView.name}</h2>
+
+                    {selectedEquipmentView.specification && (
+                      <div>
+                        <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                          <span className="w-8 h-px bg-stone-200"></span> Specifications
+                        </h4>
+                        <p className="text-sm text-stone-700 font-mono bg-stone-50 p-3 rounded-lg border border-stone-100">
+                          {selectedEquipmentView.specification}
+                        </p>
+                      </div>
+                    )}
+
+                    <div>
+                      <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <span className="w-8 h-px bg-stone-200"></span> Description
+                      </h4>
+                      <p className="text-stone-600 leading-relaxed font-light">
+                        {selectedEquipmentView.description}
+                      </p>
+                    </div>
+
+                    {selectedEquipmentView.additionalInfo && (
+                      <div>
+                        <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                          <span className="w-8 h-px bg-stone-200"></span> Additional Information
+                        </h4>
+                        <a
+                          href={selectedEquipmentView.additionalInfo.startsWith('http') ? selectedEquipmentView.additionalInfo : `https://${selectedEquipmentView.additionalInfo}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-maroon-700 hover:text-maroon-900 underline break-all inline-flex items-center gap-2"
+                        >
+                          {selectedEquipmentView.additionalInfo} <ExternalLink size={14} />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-6 border-t border-stone-100 flex justify-end mt-4">
+                    <button
+                      onClick={() => setSelectedEquipmentView(null)}
+                      className="px-8 py-3 bg-stone-900 text-white rounded-full font-bold text-sm tracking-wide hover:bg-stone-800 transition-colors shadow-lg"
+                    >
+                      CLOSE DETAILS
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        }
+
+        {/* Bulk Registration Results Modal */}
+        {
+          showBulkResultsModal && bulkResults && (
+            <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-[2rem] max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+                {/* Header */}
+                <div className="flex justify-between items-center p-8 border-b border-stone-100">
+                  <div>
+                    <h2 className="text-2xl font-serif text-stone-900">Bulk Registration Results</h2>
+                    <p className="text-sm text-stone-500 mt-1">
+                      {bulkType === 'student' ? 'Student' : 'Faculty'} Registration Summary
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowBulkResultsModal(false)}
+                    className="p-2 hover:bg-stone-100 rounded-full transition-colors"
+                  >
+                    <X className="text-stone-400 hover:text-stone-900" />
+                  </button>
+                </div>
+
+                {/* Summary Stats */}
+                <div className="px-8 py-6 bg-stone-50 border-b border-stone-100">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="bg-white p-6 rounded-2xl border border-emerald-100 shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                          <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-stone-500 uppercase tracking-widest">Successful</p>
+                          <p className="text-3xl font-serif text-emerald-600">{bulkResults.success.length}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl border border-red-100 shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                          <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-stone-500 uppercase tracking-widest">Failed</p>
+                          <p className="text-3xl font-serif text-red-600">{bulkResults.failed.length}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Failed Entries Table */}
+                {bulkResults.failed.length > 0 && (
+                  <div className="flex-1 overflow-hidden flex flex-col">
+                    <div className="px-8 py-4 border-b border-stone-100">
+                      <h3 className="text-lg font-serif text-stone-900">Failed Entries</h3>
+                      <p className="text-xs text-stone-500 mt-1">Review and correct these entries before re-uploading</p>
+                    </div>
+                    <div className="flex-1 overflow-y-auto px-8 py-0">
+                      <table className="w-full">
+                        <thead className="sticky top-0 bg-white">
+                          <tr className="border-b border-stone-200">
+                            <th className="px-4 py-3 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Row</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Name</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Email</th>
+                            <th className="px-4 py-3 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Reason</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-stone-100">
+                          {bulkResults.failed.map((failure, index) => (
+                            <tr key={index} className="hover:bg-stone-50 transition-colors">
+                              <td className="px-4 py-3 text-sm font-mono text-stone-600">{failure.rowIndex}</td>
+                              <td className="px-4 py-3 text-sm text-stone-900">{failure.data?.name || '-'}</td>
+                              <td className="px-4 py-3 text-sm text-stone-600 font-mono">{failure.data?.email || '-'}</td>
+                              <td className="px-4 py-3 text-sm text-red-600">{failure.reason}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="px-8 py-6 border-t border-stone-100 flex gap-4">
+                  {bulkResults.failed.length > 0 && (
+                    <button
+                      onClick={() => {
+                        // Create CSV content from failed entries
+                        const headers = bulkType === 'student'
+                          ? ['Name', 'Email', 'USN', 'Division', 'Batch', 'Reason']
+                          : ['Name', 'Email', 'Department', 'Reason'];
+
+                        const rows = bulkResults.failed.map(f => {
+                          if (bulkType === 'student') {
+                            return [
+                              f.data?.name || '',
+                              f.data?.email || '',
+                              f.data?.usn || '',
+                              f.data?.division || '',
+                              f.data?.batch || '',
+                              f.reason
+                            ];
+                          } else {
+                            return [
+                              f.data?.name || '',
+                              f.data?.email || '',
+                              f.data?.department || '',
+                              f.reason
+                            ];
+                          }
+                        });
+
+                        const csvContent = [
+                          headers.join(','),
+                          ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+                        ].join('\n');
+
+                        const blob = new Blob([csvContent], { type: 'text/csv' });
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `failed_${bulkType}_registrations.csv`;
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                      }}
+                      className="flex-1 py-3.5 bg-stone-100 text-stone-700 rounded-full text-sm font-bold tracking-widest hover:bg-stone-200 transition-all flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      DOWNLOAD FAILED ENTRIES
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowBulkResultsModal(false)}
+                    className="px-8 py-3.5 bg-maroon-700 text-white rounded-full text-sm font-bold tracking-widest hover:bg-maroon-800 transition-all shadow-lg"
+                  >
+                    CLOSE
                   </button>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </main>
-    </div>
+          )
+        }
+      </main >
+    </div >
   );
 };
 

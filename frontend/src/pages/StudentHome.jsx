@@ -8,9 +8,7 @@ import {
   ClipboardList,
   Wrench,
   ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  ChevronUp
+  ChevronRight
 } from 'lucide-react';
 import StudentNavbar from '../components/StudentNavbar';
 import StudentFooter from '../components/StudentFooter';
@@ -192,7 +190,7 @@ const StudentHome = () => {
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAllMaterials, setShowAllMaterials] = useState(false);
+  const [searchFilter, setSearchFilter] = useState('both'); // 'name', 'description', or 'both'
   const equipmentScrollRef = useRef(null);
 
   const scrollEquipment = (direction) => {
@@ -345,7 +343,7 @@ const StudentHome = () => {
         </section>
 
         {/* Resources Section */}
-        <section className="py-24 bg-stone-50" id="resources">
+        <section className="py-24 px-6 bg-stone-50" id="resources">
           <div className="container mx-auto px-6">
             <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
               <div>
@@ -353,15 +351,37 @@ const StudentHome = () => {
                 <h2 className="text-4xl font-serif text-stone-900 mt-4">Available Materials</h2>
               </div>
 
-              {/* Search Bar */}
-              <div className="w-full md:w-72">
-                <input
-                  type="text"
-                  placeholder="Search materials..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700 bg-white text-sm"
-                />
+              {/* Search Bar and Filter */}
+              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <select
+                  value={searchFilter}
+                  onChange={(e) => setSearchFilter(e.target.value)}
+                  className="px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700 bg-white text-sm font-medium text-stone-700"
+                >
+                  <option value="both">Search: Name & Description</option>
+                  <option value="name">Search: Name Only</option>
+                  <option value="description">Search: Description Only</option>
+                </select>
+                <div className="relative w-full sm:w-72">
+                  <input
+                    type="text"
+                    placeholder="Search materials..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-4 py-3 pr-10 rounded-xl border border-stone-200 focus:outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700 bg-white text-sm"
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-900 hover:bg-stone-100 rounded-full transition-all"
+                      aria-label="Clear search"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -371,10 +391,10 @@ const StudentHome = () => {
               </div>
             ) : (
               <div className="bg-white rounded-3xl border border-stone-100 overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
+                <div className="max-h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-stone-300 scrollbar-track-stone-100">
                   <table className="w-full">
-                    <thead>
-                      <tr className="bg-stone-50 border-b border-stone-100">
+                    <thead className="sticky top-0 bg-stone-50 z-10">
+                      <tr className="border-b border-stone-100">
                         <th className="px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest w-24">Image</th>
                         <th className="px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Name</th>
                         <th className="px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Specs</th>
@@ -383,8 +403,19 @@ const StudentHome = () => {
                     </thead>
                     <tbody className="divide-y divide-stone-100">
                       {materials
-                        .filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()))
-                        .slice(0, showAllMaterials || searchTerm ? materials.length : 6)
+                        .filter(m => {
+                          const search = searchTerm.toLowerCase();
+                          if (!search) return true;
+
+                          if (searchFilter === 'name') {
+                            return m.name.toLowerCase().includes(search);
+                          } else if (searchFilter === 'description') {
+                            return m.description.toLowerCase().includes(search);
+                          } else { // 'both'
+                            return m.name.toLowerCase().includes(search) ||
+                              m.description.toLowerCase().includes(search);
+                          }
+                        })
                         .map((material) => (
                           <tr key={material._id} onClick={() => setSelectedMaterial(material)} className="group hover:bg-stone-50/50 transition-colors cursor-pointer">
                             <td className="px-8 py-5">
@@ -414,26 +445,23 @@ const StudentHome = () => {
                     </tbody>
                   </table>
 
-                  {materials.length > 6 && !searchTerm && (
-                    <div className="p-4 border-t border-stone-100 flex justify-center bg-stone-50/30">
-                      <button
-                        onClick={() => setShowAllMaterials(!showAllMaterials)}
-                        className="flex items-center gap-2 px-6 py-2 rounded-full border border-stone-200 bg-white text-stone-600 text-sm font-bold tracking-wide hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-all shadow-sm"
-                      >
-                        {showAllMaterials ? (
-                          <>SHOW LESS <ChevronUp size={16} /></>
-                        ) : (
-                          <>VIEW ALL MATERIALS <ChevronDown size={16} /></>
-                        )}
-                      </button>
-                    </div>
-                  )}
+                  {materials.filter(m => {
+                    const search = searchTerm.toLowerCase();
+                    if (!search) return true;
 
-                  {materials.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
-                    <div className="p-12 text-center text-stone-400 text-sm">
-                      No materials found matching "{searchTerm}"
-                    </div>
-                  )}
+                    if (searchFilter === 'name') {
+                      return m.name.toLowerCase().includes(search);
+                    } else if (searchFilter === 'description') {
+                      return m.description.toLowerCase().includes(search);
+                    } else { // 'both'
+                      return m.name.toLowerCase().includes(search) ||
+                        m.description.toLowerCase().includes(search);
+                    }
+                  }).length === 0 && searchTerm && (
+                      <div className="p-12 text-center text-stone-400 text-sm">
+                        No materials found matching "{searchTerm}" in {searchFilter === 'both' ? 'name or description' : searchFilter}
+                      </div>
+                    )}
                 </div>
               </div>
             )}
