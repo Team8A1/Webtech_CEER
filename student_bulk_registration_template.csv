@@ -1,7 +1,8 @@
-name,email,division
-John Doe,john.doe@kletech.ac.in,A
-Shri,shri@kletech.ac.in,B
-sudeep,sudeep@kletech.ac.in,C
-girish,girish@kletech.ac.in,A
-pallavi,pallavi@kletech.ac.in,B
-usha,usha@gmail.com,C
+name,email,division,usn,batch
+John Doe,john.doe@kletech.ac.in,A,01FE23CS001
+Shri,shri@kletech.ac.in,B,01FE23CS002
+sudeep,sudeep@kletech.ac.in,C,01FE23CS003
+girish,girish@kletech.ac.in,A,01FE23CS004
+pallavi,pallavi@kletech.ac.in,B,01FE23CS005
+usha,usha@gmail.com,C,01FE23CS006
+rahul,rahul@kletech.ac.in,A,01FE23CS007

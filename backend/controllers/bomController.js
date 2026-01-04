@@ -43,14 +43,16 @@ const createBOMRequest = async (req, res) => {
         // Send Email to guide
         const guideEmail = student.guideId.email;
         const studentName = student.name;
+        const studentUsn = student.usn || 'N/A';
         const teamId = student.teamId ? student.teamId._id : 'N/A';
         const problemStatement = student.problemStatement || 'N/A';
 
-        const subject = `New BOM Request from ${studentName}`;
-        const text = `Student ${studentName} (Team: ${teamId}) has requested a new BOM item.\n\nItem: ${partName}\nQty: ${qty}\nSpecification: ${specification}\n\nPlease login to the dashboard to approve or reject.`;
+        const subject = `New BOM Request from ${studentName} (${studentUsn})`;
+        const text = `Student ${studentName} (USN: ${studentUsn}, Team: ${teamId}) has requested a new BOM item.\n\nItem: ${partName}\nQty: ${qty}\nSpecification: ${specification}\n\nPlease login to the dashboard to approve or reject.`;
         const html = `
       <h3>New BOM Request</h3>
       <p><strong>Student:</strong> ${studentName}</p>
+      <p><strong>USN:</strong> ${studentUsn}</p>
       <p><strong>Team ID:</strong> ${teamId}</p>
       <p><strong>Problem Statement:</strong> ${problemStatement}</p>
       <hr/>
@@ -86,7 +88,17 @@ const createBOMRequest = async (req, res) => {
 // @access  Private (Student)
 const getStudentBOMRequests = async (req, res) => {
     try {
-        const requests = await BOMRequest.find({ studentId: req.user._id }).sort({ createdAt: -1 });
+        let query = { studentId: req.user._id };
+
+        // If student is in a team, fetch all requests for that team
+        if (req.user.teamId) {
+            query = { teamId: req.user.teamId };
+        }
+
+        const requests = await BOMRequest.find(query)
+            .populate('studentId', 'name') // Helpful to see who made the request
+            .sort({ createdAt: -1 });
+
         res.status(200).json({ success: true, data: requests });
     } catch (error) {
         console.error('Error fetching student BOM requests:', error);

@@ -205,7 +205,7 @@ function LabApprove() {
       </div >
       <div className="grid md:grid-cols-2 gap-6 mb-8">
         {/* Lab Materials */}
-        <div
+        {/* <div
           onClick={() => navigate('/lab/materials')}
           className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer border border-gray-200 overflow-hidden group"
         >
@@ -214,9 +214,9 @@ function LabApprove() {
             <p className="text-gray-600 font-semibold mb-3">View & Manage</p>
             <p className="text-gray-700 text-sm">Jumper wires, motors, components...</p>
           </div>
-        </div>
+        </div> */}
         {/* Lab Equipment */}
-        <div
+        {/* <div
           onClick={() => navigate('/lab/machines')}
           className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer border border-gray-200 overflow-hidden group"
         >
@@ -225,7 +225,7 @@ function LabApprove() {
             <p className="text-gray-600 font-semibold mb-3">Browse & Book</p>
             <p className="text-gray-700 text-sm">Lathe, drilling, 3D printer...</p>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Filter Tabs */}
@@ -324,6 +324,12 @@ function LabApprove() {
                       <div className="min-w-0">
                         {/* Part Name & Sprint */}
                         <div className="mb-6 space-y-3">
+                          <div className="grid grid-cols-[140px_1fr] items-start">
+                            <span className="text-sm font-semibold text-gray-600">Student:</span>
+                            <div className="text-sm text-gray-900 font-medium">
+                              {bom.studentId?.name} <span className="text-gray-500 text-xs">({bom.studentId?.usn || 'N/A'})</span>
+                            </div>
+                          </div>
                           <div className="grid grid-cols-[140px_1fr] items-start">
                             <span className="text-sm font-semibold text-gray-600">Part Name:</span>
                             <div className="text-sm text-gray-900 font-medium max-h-24 overflow-auto pb-2">{bom.partName || 'Unnamed Part'}</div>
@@ -540,8 +546,8 @@ function LabApprove() {
           </div>
         </div>
       )}
-    </div>
-  )
+    </div>)
+  
 }
 
 export default LabApprove

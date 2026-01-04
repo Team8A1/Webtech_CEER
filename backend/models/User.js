@@ -16,6 +16,15 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    usn: {
+      type: String,
+      trim: true,
+      uppercase: true,
+    },
+    batch: {
+      type: String,
+      trim: true,
+    },
     division: {
       type: String,
       uppercase: true,

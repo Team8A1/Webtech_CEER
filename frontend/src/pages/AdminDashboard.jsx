@@ -74,7 +74,7 @@ const AdminDashboard = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [userType, setUserType] = useState('student'); // 'student' or 'faculty'
   const [userForm, setUserForm] = useState({
-    name: '', email: '', usn: '', div: '', batch: '', // Student fields
+    name: '', email: '', usn: '', division: '', batch: '', // Student fields
     department: '', designation: '', password: '', // Faculty fields (password for both)
     labName: '' // Lab In-Charge fields
   });
@@ -358,7 +358,7 @@ const AdminDashboard = () => {
 
     if (userType === 'student') {
       endpoint = '/student/register';
-      payload = { name: userForm.name, email: userForm.email, password: userForm.password, usn: userForm.usn, div: userForm.div, batch: userForm.batch };
+      payload = { name: userForm.name, email: userForm.email, password: userForm.password, usn: userForm.usn, division: userForm.division, batch: userForm.batch };
     } else if (userType === 'faculty') {
       endpoint = '/faculty/register';
       payload = { name: userForm.name, email: userForm.email, password: userForm.password, department: userForm.department, designation: userForm.designation };
@@ -371,7 +371,7 @@ const AdminDashboard = () => {
       await api.post(`${endpoint}`, payload);
       alert(`${userType === 'student' ? 'Student' : userType === 'faculty' ? 'Faculty' : 'Lab In-Charge'} registered successfully`);
       setShowUserModal(false);
-      setUserForm({ name: '', email: '', usn: '', div: '', batch: '', department: '', designation: '', password: '', labName: '' });
+      setUserForm({ name: '', email: '', usn: '', division: '', batch: '', department: '', designation: '', password: '', labName: '' });
       if (userType === 'faculty') fetchDashboardData(); // Refresh faculty list
     } catch (error) {
       alert('Registration failed: ' + (error.response?.data?.message || 'Check console for details'));
@@ -1130,7 +1130,7 @@ const AdminDashboard = () => {
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Division</label>
-                          <input type="text" required value={userForm.div} onChange={e => setUserForm({ ...userForm, div: e.target.value })}
+                          <input type="text" required value={userForm.division} onChange={e => setUserForm({ ...userForm, division: e.target.value })}
                             className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
                         </div>
                       </div>

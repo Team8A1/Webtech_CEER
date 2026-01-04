@@ -9,7 +9,7 @@ const getLabBOMRequests = async (req, res) => {
         // Requirement: "lab incharge will get request only after the faculty approves the request"
 
         const requests = await BOMRequest.find({ guideApproved: true })
-            .populate('studentId', 'name email')
+            .populate('studentId', 'name email usn')
             .populate('teamId', 'problemStatement')
             .populate('guideId', 'name email')
             .populate('labApprovedBy', 'name email')

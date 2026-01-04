@@ -710,7 +710,7 @@ const StudentHome = () => {
             onClick={() => setSelectedEquipment(null)}
           >
             <div
-              className="bg-white rounded-[2rem] max-w-2xl w-full flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 relative"
+              className="bg-white rounded-[2rem] max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 relative"
               onClick={e => e.stopPropagation()}
             >
               <div className="h-72 relative bg-stone-50 flex items-center justify-center p-4 text-center">
@@ -731,7 +731,7 @@ const StudentHome = () => {
                 </button>
               </div>
 
-              <div className="p-8">
+              <div className="p-8 overflow-y-auto scrollbar-thin scrollbar-thumb-stone-200 scrollbar-track-transparent">
 
                 {selectedEquipment.specification && (
                   <div className="mb-8">
