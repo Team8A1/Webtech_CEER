@@ -21,7 +21,8 @@ import {
   BookOpen,
   Shield,
   Activity,
-  ExternalLink
+  ExternalLink,
+  Menu
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminInstructions from './AdminInstructions';
@@ -54,6 +55,7 @@ const AdminDashboard = () => {
   const [expandedFaculty, setExpandedFaculty] = useState(null);
   const [selectedEquipmentView, setSelectedEquipmentView] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 
   // Forms States
@@ -392,7 +394,7 @@ const AdminDashboard = () => {
     <div className="h-screen bg-stone-50 font-sans text-stone-900 selection:bg-maroon-400 selection:text-white flex flex-col overflow-hidden">
 
       {/* Top Navigation */}
-      <header className="bg-[#0F172B] text-white flex-none z-50 shadow-lg border-b border-white/5">
+      <header className="bg-[#0F172B] text-white flex-none z-50 shadow-lg border-b border-white/5 relative">
         <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
@@ -403,7 +405,7 @@ const AdminDashboard = () => {
               </span>
             </div>
 
-            {/* Navigation Links */}
+            {/* Desktop Navigation Links */}
             <nav className="hidden xl:flex items-center gap-10">
               {[
                 { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={16} /> },
@@ -433,15 +435,59 @@ const AdminDashboard = () => {
               ))}
             </nav>
 
-            {/* Right Side */}
+            {/* Right Side & Mobile Toggle */}
             <div className="flex items-center gap-6">
               <button onClick={handleLogout} className="flex items-center gap-2 text-stone-400 hover:text-red-400 transition-colors text-sm font-medium group">
-                <span>Logout</span>
+                <span className="hidden sm:inline">Logout</span>
                 <LogOut size={18} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+
+              {/* Mobile Menu Toggle */}
+              <button
+                className="xl:hidden p-2 text-stone-400 hover:text-white transition-colors"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
             </div>
           </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
+          <div className="absolute top-20 left-0 w-full bg-[#0F172B] border-b border-white/5 shadow-2xl z-40 animate-in slide-in-from-top-5 duration-200 xl:hidden">
+            <div className="flex flex-col p-4 space-y-2 max-h-[80vh] overflow-y-auto">
+              {[
+                { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={18} /> },
+                { id: 'faculty', label: 'Faculty', icon: <Users size={18} /> },
+                { id: 'users', label: 'Users', icon: <UserPlus size={18} /> },
+                { id: 'events', label: 'Events', icon: <Calendar size={18} /> },
+                { id: 'materials', label: 'Materials', icon: <Package size={18} /> },
+                { id: 'equipment', label: 'Equipment', icon: <Wrench size={18} /> },
+                { id: 'instructions', label: 'Instructions', icon: <BookOpen size={18} /> },
+                { id: 'stats', label: 'Stats', icon: <Activity size={18} /> },
+                { id: 'performance', label: 'Performance', icon: <Activity size={18} /> },
+                { id: 'settings', label: 'Settings', icon: <Settings size={18} /> },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${activeTab === item.id
+                    ? 'bg-white/10 text-white font-bold'
+                    : 'text-stone-400 hover:bg-white/5 hover:text-white'
+                    }`}
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              ))}
+
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Main Content */}
@@ -1363,7 +1409,7 @@ const AdminDashboard = () => {
             activeTab === 'equipment' && (
               <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
                 {/* Drag & Drop Zone */}
-                <div
+                {/* <div
                   className={`mb-8 border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all duration-300 cursor-pointer group ${isDragging ? 'border-maroon-500 bg-maroon-50' : 'border-stone-200 bg-stone-50/50 hover:bg-stone-50 hover:border-maroon-200'}`}
                   onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
                   onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
@@ -1386,7 +1432,7 @@ const AdminDashboard = () => {
                     <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-white px-2 py-1 rounded border border-stone-200">.PDF</span>
                     <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-white px-2 py-1 rounded border border-stone-200">.CSV</span>
                   </div>
-                </div>
+                </div> */}
 
                 <div className="flex justify-end mb-8">
                   <button
