@@ -411,7 +411,7 @@ const AdminDashboard = () => {
               <span className="font-serif text-2xl tracking-wide text-white">
                 Admin<span className="text-red-400">.</span>
               </span>
-                </div>
+            </div>
 
             {/* Desktop Navigation Links */}
             <nav className="hidden xl:flex items-center gap-10">
@@ -457,9 +457,9 @@ const AdminDashboard = () => {
               >
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
-                </div>
-              </div>
             </div>
+          </div>
+        </div>
 
         {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
@@ -493,8 +493,8 @@ const AdminDashboard = () => {
                 </button>
               ))}
 
-                </div>
-              </div>
+            </div>
+          </div>
         )}
       </header>
 
@@ -526,9 +526,9 @@ const AdminDashboard = () => {
               {activeTab === 'performance' && 'Monitor server health and activity logs'}
               {activeTab === 'settings' && 'Configure system preferences'}
             </p>
-              </div>
+          </div>
           <div className="flex items-center gap-4">
-              </div>
+          </div>
         </header>
 
         <div className="p-10">
@@ -547,7 +547,7 @@ const AdminDashboard = () => {
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 backdrop-blur-sm border border-stone-200 text-xs font-bold uppercase tracking-widest mb-4 shadow-sm">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span className="text-stone-600">System Active</span>
-                      </div>
+                  </div>
                   <h2 className="text-5xl md:text-7xl font-serif mb-6 leading-tight text-stone-900 tracking-tight">
                     Welcome back,<br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-stone-500 via-stone-800 to-stone-500 animate-gradient-x">Administrator</span>
@@ -559,8 +559,8 @@ const AdminDashboard = () => {
                     <p className="text-sm font-mono text-stone-500 font-bold bg-white/60 px-4 py-2 rounded-xl border border-stone-200/50 shadow-sm inline-block backdrop-blur-md">
                       {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
-                      </div>
-                    </div>
+                  </div>
+                </div>
 
                 {/* Right Side Visual - Abstract Dashboard */}
                 <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 opacity-80">
@@ -573,19 +573,19 @@ const AdminDashboard = () => {
                         <LayoutDashboard size={40} className="text-stone-400 opacity-80" />
                         <div className="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-lg shadow-lg flex items-center justify-center animate-bounce">
                           <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-                            </div>
+                        </div>
                         <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-white/80 backdrop-blur-md rounded-xl shadow-xl border border-white/50 flex items-center justify-center animate-pulse">
                           <div className="flex gap-0.5">
                             <div className="w-0.5 h-3 bg-stone-800 rounded-full"></div>
                             <div className="w-0.5 h-4 bg-stone-400 rounded-full"></div>
                             <div className="w-0.5 h-2 bg-stone-300 rounded-full"></div>
-                              </div>
-                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
 
               {/* Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -595,17 +595,17 @@ const AdminDashboard = () => {
                     <div className="flex items-center gap-4 mb-4">
                       <div className="p-3 bg-stone-100 rounded-2xl text-stone-700 shadow-inner group-hover:scale-110 transition-transform duration-300">
                         <Users size={24} />
-                          </div>
+                      </div>
                       <div>
                         <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">Total Staff</p>
                         <h3 className="text-3xl font-serif text-stone-900">{facultiesData.length}</h3>
-                          </div>
-                        </div>
-                    <div className="w-full bg-stone-200/50 rounded-full h-1.5 overflow-hidden">
-                      <div className="bg-stone-800 h-full rounded-full transition-all duration-1000 group-hover:w-[80%]" style={{ width: '75%' }}></div>
-                        </div>
                       </div>
                     </div>
+                    <div className="w-full bg-stone-200/50 rounded-full h-1.5 overflow-hidden">
+                      <div className="bg-stone-800 h-full rounded-full transition-all duration-1000 group-hover:w-[80%]" style={{ width: '75%' }}></div>
+                    </div>
+                  </div>
+                </div>
 
                 <div className="group relative bg-white/60 backdrop-blur-xl p-6 rounded-3xl border border-white/50 shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -613,17 +613,17 @@ const AdminDashboard = () => {
                     <div className="flex items-center gap-4 mb-4">
                       <div className="p-3 bg-red-50 rounded-2xl text-red-600 shadow-inner group-hover:scale-110 transition-transform duration-300">
                         <Calendar size={24} />
-                          </div>
+                      </div>
                       <div>
                         <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">Active Events</p>
                         <h3 className="text-3xl font-serif text-stone-900">{eventsData.length}</h3>
-                          </div>
-                        </div>
-                    <div className="w-full bg-red-100/50 rounded-full h-1.5 overflow-hidden">
-                      <div className="bg-red-500 h-full rounded-full transition-all duration-1000 group-hover:w-[50%]" style={{ width: '45%' }}></div>
-                        </div>
                       </div>
                     </div>
+                    <div className="w-full bg-red-100/50 rounded-full h-1.5 overflow-hidden">
+                      <div className="bg-red-500 h-full rounded-full transition-all duration-1000 group-hover:w-[50%]" style={{ width: '45%' }}></div>
+                    </div>
+                  </div>
+                </div>
 
                 <div className="group relative bg-white/60 backdrop-blur-xl p-6 rounded-3xl border border-white/50 shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -631,18 +631,18 @@ const AdminDashboard = () => {
                     <div className="flex items-center gap-4 mb-4">
                       <div className="p-3 bg-indigo-50 rounded-2xl text-indigo-600 shadow-inner group-hover:scale-110 transition-transform duration-300">
                         <Package size={24} />
-                          </div>
+                      </div>
                       <div>
                         <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">Resources</p>
                         <h3 className="text-3xl font-serif text-stone-900">{materialsData.length + equipmentsData.length}</h3>
-                          </div>
-                        </div>
-                    <div className="w-full bg-indigo-100/50 rounded-full h-1.5 overflow-hidden">
-                      <div className="bg-indigo-500 h-full rounded-full transition-all duration-1000 group-hover:w-[65%]" style={{ width: '60%' }}></div>
-                        </div>
                       </div>
                     </div>
+                    <div className="w-full bg-indigo-100/50 rounded-full h-1.5 overflow-hidden">
+                      <div className="bg-indigo-500 h-full rounded-full transition-all duration-1000 group-hover:w-[65%]" style={{ width: '60%' }}></div>
+                    </div>
                   </div>
+                </div>
+              </div>
 
               {/* Quick Actions */}
               <div>
@@ -653,10 +653,10 @@ const AdminDashboard = () => {
                     <div className="relative z-10">
                       <div className="mb-3 p-2 w-fit bg-stone-100 rounded-xl group-hover:bg-maroon-100 group-hover:text-maroon-700 transition-colors duration-300">
                         <Plus size={20} />
-                          </div>
+                      </div>
                       <span className="font-semibold text-stone-900 block mb-1 group-hover:text-maroon-900 transition-colors">Add New Event</span>
                       <span className="text-xs text-stone-500 group-hover:text-maroon-700/70 transition-colors">Schedule a campus activity</span>
-                        </div>
+                    </div>
                   </button>
 
                   <button onClick={() => { setActiveTab('users'); }} className="group relative p-4 bg-white/80 backdrop-blur-sm border border-stone-200/60 rounded-2xl hover:border-emerald-200/50 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 text-left overflow-hidden">
@@ -664,10 +664,10 @@ const AdminDashboard = () => {
                     <div className="relative z-10">
                       <div className="mb-3 p-2 w-fit bg-stone-100 rounded-xl group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors duration-300">
                         <UserPlus size={20} />
-                          </div>
+                      </div>
                       <span className="font-semibold text-stone-900 block mb-1 group-hover:text-emerald-900 transition-colors">Register User</span>
                       <span className="text-xs text-stone-500 group-hover:text-emerald-700/70 transition-colors">Add student or faculty</span>
-                        </div>
+                    </div>
                   </button>
 
                   <button onClick={() => { setShowMaterialModal(true); setEditingMaterial(null); }} className="group relative p-4 bg-white/80 backdrop-blur-sm border border-stone-200/60 rounded-2xl hover:border-blue-200/50 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 text-left overflow-hidden">
@@ -675,10 +675,10 @@ const AdminDashboard = () => {
                     <div className="relative z-10">
                       <div className="mb-3 p-2 w-fit bg-stone-100 rounded-xl group-hover:bg-blue-100 group-hover:text-blue-700 transition-colors duration-300">
                         <Package size={20} />
-                          </div>
+                      </div>
                       <span className="font-semibold text-stone-900 block mb-1 group-hover:text-blue-900 transition-colors">Add Material</span>
                       <span className="text-xs text-stone-500 group-hover:text-blue-700/70 transition-colors">Update inventory stock</span>
-                        </div>
+                    </div>
                   </button>
 
                   <button onClick={() => setShowEquipmentModal(true)} className="group relative p-4 bg-white/80 backdrop-blur-sm border border-stone-200/60 rounded-2xl hover:border-orange-200/50 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 text-left overflow-hidden">
@@ -686,14 +686,14 @@ const AdminDashboard = () => {
                     <div className="relative z-10">
                       <div className="mb-3 p-2 w-fit bg-stone-100 rounded-xl group-hover:bg-orange-100 group-hover:text-orange-700 transition-colors duration-300">
                         <Wrench size={20} />
-                          </div>
+                      </div>
                       <span className="font-semibold text-stone-900 block mb-1 group-hover:text-orange-900 transition-colors">Add Equipment</span>
                       <span className="text-xs text-stone-500 group-hover:text-orange-700/70 transition-colors">Register new machinery</span>
-                        </div>
-                  </button>
                     </div>
-                  </div>
+                  </button>
                 </div>
+              </div>
+            </div>
           )
           }
 
@@ -707,7 +707,7 @@ const AdminDashboard = () => {
                   <div>
                     <h2 className="text-xl font-serif mb-1 text-stone-800">Staff Directory</h2>
                     <p className="text-stone-500 text-sm">Manage guides and their assigned student teams.</p>
-                      </div>
+                  </div>
                   <div className="w-full md:w-80 relative">
                     <input
                       type="text"
@@ -717,8 +717,8 @@ const AdminDashboard = () => {
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                     <Search className="w-4 h-4 text-stone-400 absolute left-4 top-3.5" />
-                      </div>
-                    </div>
+                  </div>
+                </div>
 
                 {facultiesData
                   .filter(f =>
@@ -737,7 +737,7 @@ const AdminDashboard = () => {
                           <div className="flex items-center gap-6">
                             <div className="w-14 h-14 bg-gradient-to-br from-stone-100 to-stone-200 rounded-2xl flex items-center justify-center text-stone-500 font-serif text-xl group-hover:from-maroon-700 group-hover:to-maroon-900 group-hover:text-white transition-all shadow-inner">
                               {faculty.name.charAt(0)}
-                                </div>
+                            </div>
                             <div>
                               <h3 className="text-lg font-bold text-stone-900 group-hover:text-maroon-700 transition-colors font-serif">{faculty.name}</h3>
                               <p className="text-sm text-stone-500 flex items-center gap-2 font-medium">
@@ -745,8 +745,8 @@ const AdminDashboard = () => {
                                 <span className="text-stone-300">•</span>
                                 {faculty.email}
                               </p>
-                                </div>
-                              </div>
+                            </div>
+                          </div>
 
                           <div className="flex items-center gap-8">
                             <div className="text-right hidden sm:block">
@@ -755,13 +755,13 @@ const AdminDashboard = () => {
                                 <span className="text-stone-900 font-bold">{teams.length}</span> <span className="text-stone-500">Teams</span>
                                 <span className="mx-3 text-stone-300">|</span>
                                 <span className="text-stone-900 font-bold">{totalStudents}</span> <span className="text-stone-500">Students</span>
-                                  </div>
-                                </div>
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${expandedFaculty === faculty._id ? 'bg-maroon-700 text-white border-maroon-700 shadow-lg shadow-maroon-900/20' : 'border-stone-200 text-stone-400 group-hover:border-maroon-200 group-hover:text-maroon-400'}`}>
-                              {expandedFaculty === faculty._id ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-                                </div>
                               </div>
                             </div>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${expandedFaculty === faculty._id ? 'bg-maroon-700 text-white border-maroon-700 shadow-lg shadow-maroon-900/20' : 'border-stone-200 text-stone-400 group-hover:border-maroon-200 group-hover:text-maroon-400'}`}>
+                              {expandedFaculty === faculty._id ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                            </div>
+                          </div>
+                        </div>
 
                         {expandedFaculty === faculty._id && (
                           <div className="border-t border-stone-100 bg-stone-50/50 p-6 animate-in fade-in slide-in-from-top-1 duration-200">
@@ -769,7 +769,7 @@ const AdminDashboard = () => {
                               <div className="flex flex-col items-center justify-center py-10 text-stone-400 border-2 border-dashed border-stone-200 rounded-xl bg-white/50">
                                 <Package size={32} className="mb-3 opacity-30" />
                                 <p className="font-serif italic text-stone-500">No teams assigned yet.</p>
-                                  </div>
+                              </div>
                             ) : (
                               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                                 {teams.map(team => (
@@ -781,7 +781,7 @@ const AdminDashboard = () => {
                                       <span className="text-[10px] text-stone-400 font-bold bg-stone-50 px-2 py-1 rounded border border-stone-100 uppercase tracking-wider">
                                         {new Date(team.createdAt).toLocaleDateString()}
                                       </span>
-                                        </div>
+                                    </div>
 
                                     <p className="text-sm text-stone-600 mb-5 leading-relaxed line-clamp-2 min-h-[3em]">{team.problemStatement}</p>
 
@@ -794,17 +794,17 @@ const AdminDashboard = () => {
                                             <span className="font-medium text-stone-700">{m.name}</span>
                                             <span className="mx-2 text-stone-200">|</span>
                                             <span className="text-stone-400 font-mono tracking-tight">{m.usn}</span>
-                                              </div>
-                                        ))}
                                           </div>
-                                        </div>
+                                        ))}
                                       </div>
-                                ))}
+                                    </div>
                                   </div>
-                            )}
+                                ))}
                               </div>
-                        )}
+                            )}
                           </div>
+                        )}
+                      </div>
                     );
                   })}
 
@@ -816,10 +816,10 @@ const AdminDashboard = () => {
                     <div className="text-center py-20">
                       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
                         <Search size={24} />
-                          </div>
+                      </div>
                       <h3 className="text-lg font-bold text-gray-900">No faculty found</h3>
                       <p className="text-gray-500">Try adjusting your search terms</p>
-                        </div>
+                    </div>
                   )}
 
                 {/* Lab Incharge Section */}
@@ -828,22 +828,22 @@ const AdminDashboard = () => {
                     <div>
                       <h2 className="text-xl font-serif mb-1 text-stone-800">Lab Incharge Personnel</h2>
                       <p className="text-stone-500 text-sm">All registered lab incharge staff.</p>
-                        </div>
+                    </div>
                     <div className="flex items-center gap-4">
                       <span className="text-sm text-stone-500">
                         Total: <span className="font-bold text-stone-800">{labInchargesData.length}</span>
                       </span>
-                        </div>
-                      </div>
+                    </div>
+                  </div>
 
                   {labInchargesData.length === 0 ? (
                     <div className="text-center py-12 bg-white/60 backdrop-blur-md rounded-2xl border border-stone-100">
                       <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
                         <Users size={20} />
-                          </div>
+                      </div>
                       <h3 className="text-base font-bold text-gray-900">No Lab Incharges Found</h3>
                       <p className="text-sm text-gray-500">Register lab incharges from the Users tab.</p>
-                        </div>
+                    </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {labInchargesData.map((lab) => (
@@ -854,7 +854,7 @@ const AdminDashboard = () => {
                           <div className="flex items-start gap-4">
                             <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-blue-600 font-serif text-lg group-hover:from-blue-600 group-hover:to-blue-800 group-hover:text-white transition-all shadow-inner">
                               {lab.name.charAt(0)}
-                                </div>
+                            </div>
                             <div className="flex-1 min-w-0">
                               <h3 className="text-base font-bold text-stone-900 group-hover:text-blue-700 transition-colors font-serif truncate">
                                 {lab.name}
@@ -865,24 +865,24 @@ const AdminDashboard = () => {
                                   {lab.labName}
                                 </span>
                               )}
-                                </div>
-                              </div>
+                            </div>
+                          </div>
 
                           <div className="mt-3 pt-3 border-t border-stone-100 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <div className={`w-2 h-2 rounded-full ${lab.isActive ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-stone-300'}`}></div>
                               <span className="text-[10px] text-stone-500">{lab.isActive ? 'Active' : 'Inactive'}</span>
-                                </div>
+                            </div>
                             <span className="text-[10px] text-stone-400 font-mono uppercase">
                               {new Date(lab.createdAt).toLocaleDateString()}
                             </span>
-                              </div>
-                            </div>
-                      ))}
+                          </div>
                         </div>
-                  )}
+                      ))}
                     </div>
-                  </div>
+                  )}
+                </div>
+              </div>
             )}
 
           {activeTab === 'performance' && (
@@ -892,7 +892,7 @@ const AdminDashboard = () => {
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-serif text-stone-900">System Performance</h3>
                     <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">Optimal</span>
-                      </div>
+                  </div>
                   <div className="space-y-6">
                     {[
                       { label: 'Server Uptime', value: '99.9%', width: 'w-[99.9%]' },
@@ -903,20 +903,20 @@ const AdminDashboard = () => {
                         <div className="flex justify-between text-sm mb-2">
                           <span className="text-stone-500">{stat.label}</span>
                           <span className="font-mono font-bold text-stone-900">{stat.value}</span>
-                            </div>
+                        </div>
                         <div className="h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
                           <div className={`${stat.width} h-full bg-stone-800 rounded-full`}></div>
-                            </div>
-                          </div>
-                    ))}
+                        </div>
                       </div>
-                    </div>
+                    ))}
+                  </div>
+                </div>
 
                 <div className="bg-white/60 backdrop-blur-xl p-8 rounded-3xl border border-white/50 shadow-sm">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-serif text-stone-900">Recent Activity</h3>
                     <button className="text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors uppercase tracking-widest">View All</button>
-                      </div>
+                  </div>
                   <div className="space-y-4">
                     {[
                       { msg: 'New equipment "3D Printer" added', time: '2 hours ago', icon: <Wrench size={14} /> },
@@ -926,17 +926,17 @@ const AdminDashboard = () => {
                       <div key={i} className="flex items-center gap-4 p-3 hover:bg-stone-50 rounded-xl transition-colors cursor-default group">
                         <div className="p-2 bg-stone-100 rounded-lg text-stone-500 group-hover:bg-white transition-colors">
                           {activity.icon}
-                            </div>
+                        </div>
                         <div className="flex-1">
                           <p className="text-sm font-medium text-stone-800">{activity.msg}</p>
                           <p className="text-[10px] text-stone-400">{activity.time}</p>
-                            </div>
-                          </div>
-                    ))}
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
+              </div>
+            </div>
           )}
 
           {activeTab === 'stats' && (
@@ -957,7 +957,7 @@ const AdminDashboard = () => {
                           {selectedStatMaterials.length > 0 ? selectedStatMaterials.join(', ') : 'Select materials...'}
                         </span>
                         <ChevronDown size={16} className={`transition-transform ${showStatDropdown ? 'rotate-180' : ''}`} />
-                          </div>
+                      </div>
 
                       {showStatDropdown && (
                         <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-stone-200 rounded-xl shadow-2xl z-[100] p-3 animate-in fade-in zoom-in-95 duration-200">
@@ -970,7 +970,7 @@ const AdminDashboard = () => {
                               onChange={(e) => setStatSearchTerm(e.target.value)}
                               onClick={(e) => e.stopPropagation()}
                             />
-                              </div>
+                          </div>
                           <div className="max-h-48 overflow-y-auto space-y-1 custom-scrollbar">
                             {materialsData.filter(m => m.name.toLowerCase().includes(statSearchTerm.toLowerCase())).map(m => (
                               <label key={m._id} className="flex items-center gap-2 p-2 hover:bg-stone-50 rounded-lg cursor-pointer transition-colors group">
@@ -992,7 +992,7 @@ const AdminDashboard = () => {
                             {materialsData.filter(m => m.name.toLowerCase().includes(statSearchTerm.toLowerCase())).length === 0 && (
                               <div className="text-center py-4 text-xs text-stone-400">No materials found</div>
                             )}
-                              </div>
+                          </div>
                           <div className="mt-3 pt-3 border-t border-stone-100 flex justify-end">
                             <button
                               onClick={() => setShowStatDropdown(false)}
@@ -1000,10 +1000,10 @@ const AdminDashboard = () => {
                             >
                               Done
                             </button>
-                              </div>
-                            </div>
-                      )}
+                          </div>
                         </div>
+                      )}
+                    </div>
 
                     {/* Timeline Dropdown */}
                     <div className="flex flex-col gap-1.5 min-w-[150px]">
@@ -1018,9 +1018,9 @@ const AdminDashboard = () => {
                         <option value="thismonth">This Month</option>
                         <option value="thisyear">This Year</option>
                       </select>
-                        </div>
-                      </div>
                     </div>
+                  </div>
+                </div>
 
                 {/* Main Graph Container */}
                 <div className="overflow-x-auto pb-4 custom-scrollbar">
@@ -1028,7 +1028,7 @@ const AdminDashboard = () => {
                     {statsLoading ? (
                       <div className="h-full w-full flex items-center justify-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-maroon-700"></div>
-                          </div>
+                      </div>
                     ) : statsData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={statsData} margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
@@ -1080,10 +1080,10 @@ const AdminDashboard = () => {
                       <div className="h-full w-full flex flex-col items-center justify-center text-stone-400">
                         <Package size={48} className="mb-4 opacity-20" />
                         <p className="text-sm font-medium">No consumption data found for this period</p>
-                          </div>
-                    )}
                       </div>
-                    </div>
+                    )}
+                  </div>
+                </div>
 
                 {/* Environmental Impact Graph */}
                 <div className="bg-white/60 backdrop-blur-xl p-8 rounded-3xl border border-white/50 shadow-sm mt-8">
@@ -1091,8 +1091,8 @@ const AdminDashboard = () => {
                     <div>
                       <h3 className="text-xl font-serif text-stone-900">Environmental Tracking</h3>
                       <p className="text-xs text-stone-500 mt-1 uppercase tracking-widest font-bold">Total Embodied Energy Usage (MJ)</p>
-                        </div>
-                      </div>
+                    </div>
+                  </div>
 
                   <div className="h-[300px] w-full">
                     {impactData.length > 0 ? (
@@ -1131,12 +1131,12 @@ const AdminDashboard = () => {
                     ) : (
                       <div className="h-full w-full flex items-center justify-center text-stone-400 text-sm italic">
                         Insufficient data to generate impact report
-                          </div>
-                    )}
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
+              </div>
+            </div>
           )}
 
           {activeTab === 'users' && (
@@ -1170,24 +1170,24 @@ const AdminDashboard = () => {
                   >
                     Lab In-Charge
                   </button>
-                    </div>
+                </div>
 
                 <form onSubmit={handleUserRegister} className="space-y-6">
                   <div>
                     <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Full Name</label>
                     <input type="text" required value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })}
                       className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                      </div>
+                  </div>
                   <div>
                     <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Email Address</label>
                     <input type="email" required value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })}
                       className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                      </div>
+                  </div>
                   <div>
                     <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Password</label>
                     <input type="text" required value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })}
                       className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                      </div>
+                  </div>
 
                   {userType === 'student' ? (
                     <>
@@ -1196,18 +1196,18 @@ const AdminDashboard = () => {
                           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">USN</label>
                           <input type="text" required value={userForm.usn} onChange={e => setUserForm({ ...userForm, usn: e.target.value })}
                             className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                            </div>
+                        </div>
                         <div>
                           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Division</label>
                           <input type="text" required value={userForm.division} onChange={e => setUserForm({ ...userForm, division: e.target.value })}
                             className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                            </div>
-                          </div>
+                        </div>
+                      </div>
                       <div>
                         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Batch</label>
                         <input type="text" required value={userForm.batch} onChange={e => setUserForm({ ...userForm, batch: e.target.value })}
                           className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                          </div>
+                      </div>
                     </>
                   ) : userType === 'faculty' ? (
                     <>
@@ -1215,12 +1215,12 @@ const AdminDashboard = () => {
                         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Department</label>
                         <input type="text" required value={userForm.department} onChange={e => setUserForm({ ...userForm, department: e.target.value })}
                           className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                          </div>
+                      </div>
                       <div>
                         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Designation</label>
                         <input type="text" required value={userForm.designation} onChange={e => setUserForm({ ...userForm, designation: e.target.value })}
                           className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                          </div>
+                      </div>
                     </>
                   ) : (
                     <>
@@ -1228,7 +1228,7 @@ const AdminDashboard = () => {
                         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Lab Name</label>
                         <input type="text" required value={userForm.labName} onChange={e => setUserForm({ ...userForm, labName: e.target.value })}
                           className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                          </div>
+                      </div>
                     </>
                   )}
 
@@ -1294,8 +1294,8 @@ const AdminDashboard = () => {
                           }
                         }}
                       />
-                        </div>
-                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {/* Bulk Upload Section for Faculty */}
@@ -1354,10 +1354,10 @@ const AdminDashboard = () => {
                           }
                         }}
                       />
-                        </div>
-                      </div>
-                )}
+                    </div>
                   </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -1369,7 +1369,7 @@ const AdminDashboard = () => {
                   <button onClick={() => { setEditingEvent(null); setEventForm({ title: '', date: '', category: '', image: null }); setShowEventModal(true); }} className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98] font-medium">
                     <Plus size={20} /> Add New Event
                   </button>
-                    </div>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {eventsData.map(event => (
@@ -1382,14 +1382,14 @@ const AdminDashboard = () => {
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/30 to-black/30 opacity-80 group-hover:opacity-90 transition-opacity" />
-                          </div>
+                      </div>
 
                       {/* Active/Inactive Badge */}
                       <div className="absolute top-4 left-4 z-20">
                         <span className={`inline-block px-3 py-1 backdrop-blur-md text-white text-[10px] font-bold rounded-full uppercase tracking-widest shadow-sm ${event.isActive ? 'bg-green-600/90' : 'bg-gray-600/90'}`}>
                           {event.isActive ? 'Active' : 'Inactive'}
                         </span>
-                          </div>
+                      </div>
 
                       {/* Actions (Top Right) */}
                       <div className="absolute top-4 right-4 flex gap-2 translate-y-[-20px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
@@ -1402,7 +1402,7 @@ const AdminDashboard = () => {
                         <button onClick={() => handleDeleteEvent(event._id)} className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-red-600 hover:text-white transition-colors border border-white/20">
                           <Trash2 size={18} />
                         </button>
-                          </div>
+                      </div>
 
                       {/* Content (Bottom) */}
                       <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 z-10">
@@ -1413,12 +1413,12 @@ const AdminDashboard = () => {
                         <div className="flex items-center gap-2 text-stone-300 text-sm font-medium">
                           <Calendar size={14} />
                           {event.date}
-                            </div>
-                          </div>
                         </div>
-                  ))}
+                      </div>
                     </div>
-                  </div>
+                  ))}
+                </div>
+              </div>
             )
           }
 
@@ -1437,7 +1437,7 @@ const AdminDashboard = () => {
                   >
                     <Plus size={20} /> Add Material
                   </button>
-                    </div>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {materialsData.map(material => (
@@ -1446,7 +1446,7 @@ const AdminDashboard = () => {
                       <div className="absolute inset-0">
                         <img src={material.imageUrl} alt={material.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90" />
                         <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/20 to-black/20 opacity-80 group-hover:opacity-90 transition-opacity" />
-                          </div>
+                      </div>
 
                       {/* Actions */}
                       <div className="absolute top-4 right-4 flex gap-2 translate-y-[-20px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
@@ -1456,20 +1456,20 @@ const AdminDashboard = () => {
                         <button onClick={() => handleDeleteMaterial(material._id)} className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-red-600 hover:text-white transition-colors border border-white/20">
                           <Trash2 size={16} />
                         </button>
-                          </div>
+                      </div>
 
                       {/* Content */}
                       <div className="absolute bottom-0 left-0 w-full p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 z-10">
                         <div className="flex justify-between items-start mb-2">
                           <h3 className="font-serif text-xl text-white truncate pr-2">{material.name}</h3>
-                            </div>
+                        </div>
                         <p className="text-[10px] font-bold text-stone-300 bg-white/10 inline-block px-2.5 py-1 rounded-md mb-3 uppercase tracking-wider backdrop-blur-md border border-white/10">{material.dimension}</p>
                         <p className="text-sm text-stone-400 line-clamp-2 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">{material.description}</p>
-                          </div>
-                        </div>
-                  ))}
+                      </div>
                     </div>
-                  </div>
+                  ))}
+                </div>
+              </div>
             )
           }
 
@@ -1510,7 +1510,7 @@ const AdminDashboard = () => {
                   >
                     <Plus size={20} /> Add Equipment
                   </button>
-                    </div>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {equipmentsData.map(item => (
@@ -1523,7 +1523,7 @@ const AdminDashboard = () => {
                       <div className="absolute inset-0 bg-white">
                         <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-110" />
                         <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/40 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
-                          </div>
+                      </div>
 
                       {/* Actions */}
                       <div className="absolute top-4 right-4 flex gap-2 translate-y-[-20px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
@@ -1548,24 +1548,24 @@ const AdminDashboard = () => {
                         <button onClick={(e) => { e.stopPropagation(); handleDeleteEquipment(item._id); }} className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:text-red-400 border border-white/20">
                           <Trash2 size={16} />
                         </button>
-                          </div>
+                      </div>
 
                       {/* Content */}
                       <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 z-10">
                         <div className="flex items-center gap-2 mb-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
                           <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">In Charge: {item.inCharge}</p>
-                            </div>
+                        </div>
                         <h3 className="text-2xl font-serif text-white mb-2">{item.name}</h3>
 
                         <div className="text-xs text-red-400 font-bold mt-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 uppercase tracking-wider">
                           View details <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-                            </div>
-                          </div>
                         </div>
-                  ))}
+                      </div>
                     </div>
-                  </div>
+                  ))}
+                </div>
+              </div>
             )
           }
 
@@ -1577,12 +1577,12 @@ const AdminDashboard = () => {
                   <div className="flex items-center gap-5 mb-8">
                     <div className="w-14 h-14 bg-stone-100 rounded-2xl flex items-center justify-center text-stone-800 shadow-inner">
                       <Lock size={28} />
-                        </div>
+                    </div>
                     <div>
                       <h2 className="text-2xl font-serif text-stone-900">Security Settings</h2>
                       <p className="text-sm text-stone-500 font-medium">Manage your password and security preferences</p>
-                        </div>
-                      </div>
+                    </div>
+                  </div>
 
                   <form onSubmit={async (e) => {
                     e.preventDefault();
@@ -1611,22 +1611,22 @@ const AdminDashboard = () => {
                     <div>
                       <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Current Password</label>
                       <input name="currentPassword" type="password" required className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                        </div>
+                    </div>
                     <div>
                       <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">New Password</label>
                       <input name="newPassword" type="password" required className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                        </div>
+                    </div>
                     <div>
                       <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Confirm New Password</label>
                       <input name="confirmPassword" type="password" required className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                        </div>
+                    </div>
 
                     <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">
                       Update Password
                     </button>
                   </form>
-                    </div>
-                  </div>
+                </div>
+              </div>
             )
           }
 
@@ -1647,7 +1647,7 @@ const AdminDashboard = () => {
                 <div className="flex justify-between items-center p-8 border-b border-stone-100 flex-shrink-0">
                   <h2 className="text-2xl font-serif text-stone-900">{editingMaterial ? 'Edit Material' : 'Add Material'}</h2>
                   <button onClick={() => setShowMaterialModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
-                    </div>
+                </div>
                 <div className="flex-1 overflow-y-auto p-8">
                   <form onSubmit={handleMaterialSubmit} className="space-y-5">
                     <div className="grid grid-cols-2 gap-4">
@@ -1657,7 +1657,7 @@ const AdminDashboard = () => {
                         <option value="sheet">Sheet</option>
                         <option value="rod">Rod</option>
                       </select>
-                        </div>
+                    </div>
                     <div className="grid grid-cols-3 gap-4">
                       <div>
                         <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">
@@ -1666,21 +1666,21 @@ const AdminDashboard = () => {
                               'Weight (kg) [Optional]'}
                         </label>
                         <input type="number" step="any" placeholder="0" value={materialForm.fixedDimension || ''} onChange={e => setMaterialForm({ ...materialForm, fixedDimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                          </div>
+                      </div>
                       <div>
                         <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Energy Coeff (MJ/kg)</label>
                         <input type="number" step="any" required placeholder="MJ/kg" value={materialForm.embodiedEnergy || ''} onChange={e => setMaterialForm({ ...materialForm, embodiedEnergy: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                          </div>
+                      </div>
                       <div>
                         <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Carbon Factor (kgCO₂e/kg)</label>
                         <input type="number" step="any" required placeholder="kgCO₂e/kg" value={materialForm.carbonFootprintFactor || ''} onChange={e => setMaterialForm({ ...materialForm, carbonFootprintFactor: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                          </div>
-                        </div>
+                      </div>
+                    </div>
                     {(materialForm.formType === 'sheet' || materialForm.formType === 'rod') && (
                       <div>
                         <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Density (kg/m³)</label>
                         <input type="number" step="any" placeholder="Density" value={materialForm.density || ''} onChange={e => setMaterialForm({ ...materialForm, density: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                          </div>
+                      </div>
                     )}
                     <input type="text" placeholder="Display Dimension (e.g. '5mm' or '20x20cm')" required value={materialForm.dimension} onChange={e => setMaterialForm({ ...materialForm, dimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
                     <textarea placeholder="Description" required value={materialForm.description} onChange={e => setMaterialForm({ ...materialForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none" />
@@ -1689,15 +1689,15 @@ const AdminDashboard = () => {
                       <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
                         <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
                           <Upload size={24} />
-                            </div>
-                        <span className="text-sm font-medium">{materialForm.image?.name || 'Click to Upload Image'}</span>
-                          </div>
                         </div>
+                        <span className="text-sm font-medium">{materialForm.image?.name || 'Click to Upload Image'}</span>
+                      </div>
+                    </div>
                     <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">Save Material</button>
                   </form>
-                    </div>
-                  </div>
                 </div>
+              </div>
+            </div>
           )
         }
 
@@ -1709,7 +1709,7 @@ const AdminDashboard = () => {
                 <div className="flex justify-between items-center p-8 border-b border-stone-100 flex-shrink-0">
                   <h2 className="text-2xl font-serif text-stone-900">{editingEvent ? 'Edit Event' : 'Add New Event'}</h2>
                   <button onClick={() => { setShowEventModal(false); setEditingEvent(null); }} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
-                    </div>
+                </div>
                 <div className="flex-1 overflow-y-auto p-8">
                   <form onSubmit={handleEventSubmit} className="space-y-5">
                     <input type="text" placeholder="Event Title" required value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
@@ -1720,15 +1720,15 @@ const AdminDashboard = () => {
                       <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
                         <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
                           <Upload size={24} />
-                            </div>
-                        <span className="text-sm font-medium">{eventForm.image?.name || (editingEvent ? 'Change Event Image (Optional)' : 'Upload Event Image')}</span>
-                          </div>
                         </div>
+                        <span className="text-sm font-medium">{eventForm.image?.name || (editingEvent ? 'Change Event Image (Optional)' : 'Upload Event Image')}</span>
+                      </div>
+                    </div>
                     <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">{editingEvent ? 'Update Event' : 'Create Event'}</button>
                   </form>
-                    </div>
-                  </div>
                 </div>
+              </div>
+            </div>
           )
         }
 
@@ -1740,7 +1740,7 @@ const AdminDashboard = () => {
                 <div className="flex justify-between items-center p-8 border-b border-stone-100 flex-shrink-0">
                   <h2 className="text-2xl font-serif text-stone-900">{editingEquipment ? 'Edit Equipment' : 'Add New Equipment'}</h2>
                   <button onClick={() => { setShowEquipmentModal(false); setEditingEquipment(null); }} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
-                    </div>
+                </div>
                 <div className="flex-1 overflow-y-auto p-8">
                   <form onSubmit={handleEquipmentSubmit} className="space-y-5">
                     <input type="text" placeholder="Equipment Name" required value={equipmentForm.name} onChange={e => setEquipmentForm({ ...equipmentForm, name: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
@@ -1775,18 +1775,18 @@ const AdminDashboard = () => {
                       <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
                         <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
                           <Upload size={24} />
-                            </div>
+                        </div>
                         <span className="text-sm font-medium">{equipmentForm.image ? equipmentForm.image.name : (editingEquipment ? 'Change Image' : 'Upload Equipment Image')}</span>
                         <p className="text-[10px] opacity-60 font-medium tracking-wide">PASTE IMAGE OR DRAG & DROP</p>
-                          </div>
-                        </div>
+                      </div>
+                    </div>
                     <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">
                       {editingEquipment ? 'Update Changes' : 'Add Equipment'}
                     </button>
                   </form>
-                    </div>
-                  </div>
                 </div>
+              </div>
+            </div>
           )
         }
 
@@ -1814,7 +1814,7 @@ const AdminDashboard = () => {
                   >
                     <X className="w-6 h-6" />
                   </button>
-                    </div>
+                </div>
 
                 <div className="p-8 flex-1 overflow-y-auto">
                   <div className="space-y-6">
@@ -1828,7 +1828,7 @@ const AdminDashboard = () => {
                         <p className="text-sm text-stone-700 font-mono bg-stone-50 p-3 rounded-lg border border-stone-100">
                           {selectedEquipmentView.specification}
                         </p>
-                          </div>
+                      </div>
                     )}
 
                     <div>
@@ -1838,7 +1838,7 @@ const AdminDashboard = () => {
                       <p className="text-stone-600 leading-relaxed font-light">
                         {selectedEquipmentView.description}
                       </p>
-                        </div>
+                    </div>
 
                     {selectedEquipmentView.additionalInfo && (
                       <div>
@@ -1853,9 +1853,9 @@ const AdminDashboard = () => {
                         >
                           {selectedEquipmentView.additionalInfo} <ExternalLink size={14} />
                         </a>
-                          </div>
-                    )}
                       </div>
+                    )}
+                  </div>
 
                   <div className="pt-6 border-t border-stone-100 flex justify-end mt-4 gap-4">
                     <button
@@ -1882,10 +1882,10 @@ const AdminDashboard = () => {
                     >
                       CLOSE DETAILS
                     </button>
-                      </div>
-                    </div>
                   </div>
                 </div>
+              </div>
+            </div>
           )
         }
 
@@ -1901,14 +1901,14 @@ const AdminDashboard = () => {
                     <p className="text-sm text-stone-500 mt-1">
                       {bulkType === 'student' ? 'Student' : 'Faculty'} Registration Summary
                     </p>
-                      </div>
+                  </div>
                   <button
                     onClick={() => setShowBulkResultsModal(false)}
                     className="p-2 hover:bg-stone-100 rounded-full transition-colors"
                   >
                     <X className="text-stone-400 hover:text-stone-900" />
                   </button>
-                    </div>
+                </div>
 
                 {/* Summary Stats */}
                 <div className="px-8 py-6 bg-stone-50 border-b border-stone-100">
@@ -1919,28 +1919,28 @@ const AdminDashboard = () => {
                           <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
-                            </div>
+                        </div>
                         <div>
                           <p className="text-xs font-bold text-stone-500 uppercase tracking-widest">Successful</p>
                           <p className="text-3xl font-serif text-emerald-600">{bulkResults.success.length}</p>
-                            </div>
-                          </div>
                         </div>
+                      </div>
+                    </div>
                     <div className="bg-white p-6 rounded-2xl border border-red-100 shadow-sm">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
                           <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
-                            </div>
+                        </div>
                         <div>
                           <p className="text-xs font-bold text-stone-500 uppercase tracking-widest">Failed</p>
                           <p className="text-3xl font-serif text-red-600">{bulkResults.failed.length}</p>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </div>
+                  </div>
+                </div>
 
                 {/* Failed Entries Table */}
                 {bulkResults.failed.length > 0 && (
@@ -1948,7 +1948,7 @@ const AdminDashboard = () => {
                     <div className="px-8 py-4 border-b border-stone-100">
                       <h3 className="text-lg font-serif text-stone-900">Failed Entries</h3>
                       <p className="text-xs text-stone-500 mt-1">Review and correct these entries before re-uploading</p>
-                        </div>
+                    </div>
                     <div className="flex-1 overflow-y-auto px-8 py-0">
                       <table className="w-full">
                         <thead className="sticky top-0 bg-white">
@@ -1970,8 +1970,8 @@ const AdminDashboard = () => {
                           ))}
                         </tbody>
                       </table>
-                        </div>
-                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {/* Actions */}
@@ -2031,13 +2031,13 @@ const AdminDashboard = () => {
                   >
                     CLOSE
                   </button>
-                    </div>
-                  </div>
                 </div>
+              </div>
+            </div>
           )}
-        </div>
-      </main>
-    </div>
+
+      </main >
+    </div >
   );
 };
 

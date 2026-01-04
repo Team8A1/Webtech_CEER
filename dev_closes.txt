@@ -1,0 +1,257 @@
+399:  if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-500 font-serif">Loading Dashboard...</div>;
+414:            </div>
+460:            </div>
+461:          </div>
+462:        </div>
+496:            </div>
+497:          </div>
+529:          </div>
+531:          </div>
+542:                <div className="absolute top-0 left-0 -translate-x-12 -translate-y-12 w-64 h-64 bg-blue-100/50 rounded-full blur-3xl -z-10 mix-blend-multiply opacity-70 animate-blob"></div>
+543:                <div className="absolute top-0 left-64 w-64 h-64 bg-purple-100/50 rounded-full blur-3xl -z-10 mix-blend-multiply opacity-70 animate-blob animation-delay-2000"></div>
+544:                <div className="absolute -bottom-32 left-32 w-64 h-64 bg-pink-100/50 rounded-full blur-3xl -z-10 mix-blend-multiply opacity-70 animate-blob animation-delay-4000"></div>
+550:                  </div>
+562:                  </div>
+563:                </div>
+568:                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-48 h-48 bg-gray-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+569:                    <div className="absolute right-10 top-1/2 -translate-y-1/2 w-48 h-48 bg-stone-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+575:                          <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+576:                        </div>
+579:                            <div className="w-0.5 h-3 bg-stone-800 rounded-full"></div>
+580:                            <div className="w-0.5 h-4 bg-stone-400 rounded-full"></div>
+581:                            <div className="w-0.5 h-2 bg-stone-300 rounded-full"></div>
+582:                          </div>
+583:                        </div>
+584:                      </div>
+585:                    </div>
+586:                  </div>
+587:                </div>
+588:              </div>
+593:                  <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+598:                      </div>
+602:                      </div>
+603:                    </div>
+605:                      <div className="bg-stone-800 h-full rounded-full transition-all duration-1000 group-hover:w-[80%]" style={{ width: '75%' }}></div>
+606:                    </div>
+607:                  </div>
+608:                </div>
+611:                  <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+616:                      </div>
+620:                      </div>
+621:                    </div>
+623:                      <div className="bg-red-500 h-full rounded-full transition-all duration-1000 group-hover:w-[50%]" style={{ width: '45%' }}></div>
+624:                    </div>
+625:                  </div>
+626:                </div>
+629:                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+634:                      </div>
+638:                      </div>
+639:                    </div>
+641:                      <div className="bg-indigo-500 h-full rounded-full transition-all duration-1000 group-hover:w-[65%]" style={{ width: '60%' }}></div>
+642:                    </div>
+643:                  </div>
+644:                </div>
+645:              </div>
+652:                    <div className="absolute inset-0 bg-gradient-to-r from-maroon-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+656:                      </div>
+659:                    </div>
+663:                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+667:                      </div>
+670:                    </div>
+674:                    <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+678:                      </div>
+681:                    </div>
+685:                    <div className="absolute inset-0 bg-gradient-to-r from-orange-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+689:                      </div>
+692:                    </div>
+694:                </div>
+695:              </div>
+696:            </div>
+710:                  </div>
+720:                  </div>
+721:                </div>
+740:                            </div>
+748:                            </div>
+749:                          </div>
+753:                              <div className="text-[10px] text-stone-400 uppercase tracking-widest font-bold mb-0.5">Allocated</div>
+758:                              </div>
+759:                            </div>
+762:                            </div>
+763:                          </div>
+764:                        </div>
+772:                              </div>
+777:                                    <div className="absolute top-0 left-0 w-1 h-full bg-stone-200 group-hover/team:bg-maroon-400 transition-colors"></div>
+784:                                    </div>
+789:                                      <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Members</div>
+793:                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
+797:                                          </div>
+799:                                      </div>
+800:                                    </div>
+801:                                  </div>
+803:                              </div>
+805:                          </div>
+807:                      </div>
+819:                      </div>
+822:                    </div>
+831:                    </div>
+836:                    </div>
+837:                  </div>
+843:                      </div>
+846:                    </div>
+857:                            </div>
+868:                            </div>
+869:                          </div>
+873:                              <div className={`w-2 h-2 rounded-full ${lab.isActive ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-stone-300'}`}></div>
+875:                            </div>
+879:                          </div>
+880:                        </div>
+882:                    </div>
+884:                </div>
+885:              </div>
+895:                  </div>
+906:                        </div>
+908:                          <div className={`${stat.width} h-full bg-stone-800 rounded-full`}></div>
+909:                        </div>
+910:                      </div>
+912:                  </div>
+913:                </div>
+919:                  </div>
+929:                        </div>
+933:                        </div>
+934:                      </div>
+936:                  </div>
+937:                </div>
+938:              </div>
+939:            </div>
+960:                      </div>
+973:                          </div>
+993:                              <div className="text-center py-4 text-xs text-stone-400">No materials found</div>
+995:                          </div>
+1003:                          </div>
+1004:                        </div>
+1006:                    </div>
+1021:                    </div>
+1022:                  </div>
+1023:                </div>
+1030:                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-maroon-700"></div>
+1031:                      </div>
+1083:                      </div>
+1085:                  </div>
+1086:                </div>
+1094:                    </div>
+1095:                  </div>
+1134:                      </div>
+1136:                  </div>
+1137:                </div>
+1138:              </div>
+1139:            </div>
+1173:                </div>
+1180:                  </div>
+1185:                  </div>
+1190:                  </div>
+1199:                        </div>
+1204:                        </div>
+1205:                      </div>
+1210:                      </div>
+1218:                      </div>
+1223:                      </div>
+1231:                      </div>
+1297:                    </div>
+1298:                  </div>
+1357:                    </div>
+1358:                  </div>
+1360:              </div>
+1361:            </div>
+1372:                </div>
+1385:                      </div>
+1392:                      </div>
+1405:                      </div>
+1416:                        </div>
+1417:                      </div>
+1418:                    </div>
+1420:                </div>
+1421:              </div>
+1440:                </div>
+1449:                      </div>
+1459:                      </div>
+1465:                        </div>
+1468:                      </div>
+1469:                    </div>
+1471:                </div>
+1472:              </div>
+1497:                      </div>
+1503:                      </div>
+1504:                    </div> */}
+1513:                </div>
+1526:                      </div>
+1551:                      </div>
+1558:                        </div>
+1563:                        </div>
+1564:                      </div>
+1565:                    </div>
+1567:                </div>
+1568:              </div>
+1580:                    </div>
+1584:                    </div>
+1585:                  </div>
+1614:                    </div>
+1618:                    </div>
+1622:                    </div>
+1628:                </div>
+1629:              </div>
+1638:        </div>
+1650:                </div>
+1660:                    </div>
+1669:                      </div>
+1673:                      </div>
+1677:                      </div>
+1678:                    </div>
+1683:                      </div>
+1692:                        </div>
+1694:                      </div>
+1695:                    </div>
+1698:                </div>
+1699:              </div>
+1700:            </div>
+1712:                </div>
+1723:                        </div>
+1725:                      </div>
+1726:                    </div>
+1729:                </div>
+1730:              </div>
+1731:            </div>
+1743:                </div>
+1778:                        </div>
+1781:                      </div>
+1782:                    </div>
+1787:                </div>
+1788:              </div>
+1789:            </div>
+1817:                </div>
+1831:                      </div>
+1841:                    </div>
+1856:                      </div>
+1858:                  </div>
+1885:                  </div>
+1886:                </div>
+1887:              </div>
+1888:            </div>
+1904:                  </div>
+1911:                </div>
+1922:                        </div>
+1926:                        </div>
+1927:                      </div>
+1928:                    </div>
+1935:                        </div>
+1939:                        </div>
+1940:                      </div>
+1941:                    </div>
+1942:                  </div>
+1943:                </div>
+1951:                    </div>
+1973:                    </div>
+1974:                  </div>
+2034:                </div>
+2035:              </div>
+2036:            </div>
+2040:    </div >
