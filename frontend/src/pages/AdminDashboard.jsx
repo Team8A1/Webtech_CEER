@@ -1528,57 +1528,59 @@ const AdminDashboard = () => {
         {
           showMaterialModal && (
             <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
-                <div className="flex justify-between items-center mb-8">
+              <div className="bg-white rounded-[2rem] max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+                <div className="flex justify-between items-center p-8 border-b border-stone-100 flex-shrink-0">
                   <h2 className="text-2xl font-serif text-stone-900">{editingMaterial ? 'Edit Material' : 'Add Material'}</h2>
                   <button onClick={() => setShowMaterialModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
                 </div>
-                <form onSubmit={handleMaterialSubmit} className="space-y-5">
-                  <div className="grid grid-cols-2 gap-4">
-                    <input type="text" placeholder="Name" required value={materialForm.name} onChange={e => setMaterialForm({ ...materialForm, name: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                    <select value={materialForm.formType || 'unit'} onChange={e => setMaterialForm({ ...materialForm, formType: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium text-stone-700">
-                      <option value="unit">Unit (Item)</option>
-                      <option value="sheet">Sheet</option>
-                      <option value="rod">Rod</option>
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">
-                        {materialForm.formType === 'sheet' ? 'Thickness (mm)' :
-                          materialForm.formType === 'rod' ? 'Diameter (mm)' :
-                            'Weight (kg) [Optional]'}
-                      </label>
-                      <input type="number" step="any" placeholder="0" value={materialForm.fixedDimension || ''} onChange={e => setMaterialForm({ ...materialForm, fixedDimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                <div className="flex-1 overflow-y-auto p-8">
+                  <form onSubmit={handleMaterialSubmit} className="space-y-5">
+                    <div className="grid grid-cols-2 gap-4">
+                      <input type="text" placeholder="Name" required value={materialForm.name} onChange={e => setMaterialForm({ ...materialForm, name: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                      <select value={materialForm.formType || 'unit'} onChange={e => setMaterialForm({ ...materialForm, formType: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium text-stone-700">
+                        <option value="unit">Unit (Item)</option>
+                        <option value="sheet">Sheet</option>
+                        <option value="rod">Rod</option>
+                      </select>
                     </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Energy Coeff (MJ/kg)</label>
-                      <input type="number" step="any" required placeholder="MJ/kg" value={materialForm.embodiedEnergy || ''} onChange={e => setMaterialForm({ ...materialForm, embodiedEnergy: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Carbon Factor (kgCO₂e/kg)</label>
-                      <input type="number" step="any" required placeholder="kgCO₂e/kg" value={materialForm.carbonFootprintFactor || ''} onChange={e => setMaterialForm({ ...materialForm, carbonFootprintFactor: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                    </div>
-                  </div>
-                  {(materialForm.formType === 'sheet' || materialForm.formType === 'rod') && (
-                    <div>
-                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Density (kg/m³)</label>
-                      <input type="number" step="any" placeholder="Density" value={materialForm.density || ''} onChange={e => setMaterialForm({ ...materialForm, density: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                    </div>
-                  )}
-                  <input type="text" placeholder="Display Dimension (e.g. '5mm' or '20x20cm')" required value={materialForm.dimension} onChange={e => setMaterialForm({ ...materialForm, dimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
-                  <textarea placeholder="Description" required value={materialForm.description} onChange={e => setMaterialForm({ ...materialForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none" />
-                  <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
-                    <input type="file" accept="image/*" onChange={e => setMaterialForm({ ...materialForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
-                    <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
-                      <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
-                        <Upload size={24} />
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">
+                          {materialForm.formType === 'sheet' ? 'Thickness (mm)' :
+                            materialForm.formType === 'rod' ? 'Diameter (mm)' :
+                              'Weight (kg) [Optional]'}
+                        </label>
+                        <input type="number" step="any" placeholder="0" value={materialForm.fixedDimension || ''} onChange={e => setMaterialForm({ ...materialForm, fixedDimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
                       </div>
-                      <span className="text-sm font-medium">{materialForm.image?.name || 'Click to Upload Image'}</span>
+                      <div>
+                        <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Energy Coeff (MJ/kg)</label>
+                        <input type="number" step="any" required placeholder="MJ/kg" value={materialForm.embodiedEnergy || ''} onChange={e => setMaterialForm({ ...materialForm, embodiedEnergy: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Carbon Factor (kgCO₂e/kg)</label>
+                        <input type="number" step="any" required placeholder="kgCO₂e/kg" value={materialForm.carbonFootprintFactor || ''} onChange={e => setMaterialForm({ ...materialForm, carbonFootprintFactor: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                      </div>
                     </div>
-                  </div>
-                  <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">Save Material</button>
-                </form>
+                    {(materialForm.formType === 'sheet' || materialForm.formType === 'rod') && (
+                      <div>
+                        <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Density (kg/m³)</label>
+                        <input type="number" step="any" placeholder="Density" value={materialForm.density || ''} onChange={e => setMaterialForm({ ...materialForm, density: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                      </div>
+                    )}
+                    <input type="text" placeholder="Display Dimension (e.g. '5mm' or '20x20cm')" required value={materialForm.dimension} onChange={e => setMaterialForm({ ...materialForm, dimension: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                    <textarea placeholder="Description" required value={materialForm.description} onChange={e => setMaterialForm({ ...materialForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none" />
+                    <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
+                      <input type="file" accept="image/*" onChange={e => setMaterialForm({ ...materialForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
+                      <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
+                        <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
+                          <Upload size={24} />
+                        </div>
+                        <span className="text-sm font-medium">{materialForm.image?.name || 'Click to Upload Image'}</span>
+                      </div>
+                    </div>
+                    <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">Save Material</button>
+                  </form>
+                </div>
               </div>
             </div>
           )
@@ -1588,26 +1590,28 @@ const AdminDashboard = () => {
         {
           showEventModal && (
             <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
-                <div className="flex justify-between items-center mb-8">
+              <div className="bg-white rounded-[2rem] max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+                <div className="flex justify-between items-center p-8 border-b border-stone-100 flex-shrink-0">
                   <h2 className="text-2xl font-serif text-stone-900">{editingEvent ? 'Edit Event' : 'Add New Event'}</h2>
                   <button onClick={() => { setShowEventModal(false); setEditingEvent(null); }} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
                 </div>
-                <form onSubmit={handleEventSubmit} className="space-y-5">
-                  <input type="text" placeholder="Event Title" required value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                  <input type="text" placeholder="Date (e.g. Dec 15, 2025)" required value={eventForm.date} onChange={e => setEventForm({ ...eventForm, date: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                  <input type="text" placeholder="Category (e.g. Conference)" required value={eventForm.category} onChange={e => setEventForm({ ...eventForm, category: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                  <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
-                    <input type="file" accept="image/*" onChange={e => setEventForm({ ...eventForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" required={!editingEvent} />
-                    <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
-                      <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
-                        <Upload size={24} />
+                <div className="flex-1 overflow-y-auto p-8">
+                  <form onSubmit={handleEventSubmit} className="space-y-5">
+                    <input type="text" placeholder="Event Title" required value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                    <input type="text" placeholder="Date (e.g. Dec 15, 2025)" required value={eventForm.date} onChange={e => setEventForm({ ...eventForm, date: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                    <input type="text" placeholder="Category (e.g. Conference)" required value={eventForm.category} onChange={e => setEventForm({ ...eventForm, category: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                    <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
+                      <input type="file" accept="image/*" onChange={e => setEventForm({ ...eventForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" required={!editingEvent} />
+                      <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
+                        <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
+                          <Upload size={24} />
+                        </div>
+                        <span className="text-sm font-medium">{eventForm.image?.name || (editingEvent ? 'Change Event Image (Optional)' : 'Upload Event Image')}</span>
                       </div>
-                      <span className="text-sm font-medium">{eventForm.image?.name || (editingEvent ? 'Change Event Image (Optional)' : 'Upload Event Image')}</span>
                     </div>
-                  </div>
-                  <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">{editingEvent ? 'Update Event' : 'Create Event'}</button>
-                </form>
+                    <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">{editingEvent ? 'Update Event' : 'Create Event'}</button>
+                  </form>
+                </div>
               </div>
             </div>
           )
@@ -1617,53 +1621,55 @@ const AdminDashboard = () => {
         {
           showEquipmentModal && (
             <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
-                <div className="flex justify-between items-center mb-8">
+              <div className="bg-white rounded-[2rem] max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
+                <div className="flex justify-between items-center p-8 border-b border-stone-100 flex-shrink-0">
                   <h2 className="text-2xl font-serif text-stone-900">{editingEquipment ? 'Edit Equipment' : 'Add New Equipment'}</h2>
                   <button onClick={() => { setShowEquipmentModal(false); setEditingEquipment(null); }} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
                 </div>
-                <form onSubmit={handleEquipmentSubmit} className="space-y-5">
-                  <input type="text" placeholder="Equipment Name" required value={equipmentForm.name} onChange={e => setEquipmentForm({ ...equipmentForm, name: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                  <input type="text" placeholder="Person In Charge" required value={equipmentForm.inCharge} onChange={e => setEquipmentForm({ ...equipmentForm, inCharge: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                  <input type="text" placeholder="Specification" value={equipmentForm.specification} onChange={e => setEquipmentForm({ ...equipmentForm, specification: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                  <textarea placeholder="Description" required value={equipmentForm.description} onChange={e => setEquipmentForm({ ...equipmentForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
-                  <textarea placeholder="Additional Information (Optional)" value={equipmentForm.additionalInfo} onChange={e => setEquipmentForm({ ...equipmentForm, additionalInfo: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
+                <div className="flex-1 overflow-y-auto p-8">
+                  <form onSubmit={handleEquipmentSubmit} className="space-y-5">
+                    <input type="text" placeholder="Equipment Name" required value={equipmentForm.name} onChange={e => setEquipmentForm({ ...equipmentForm, name: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                    <input type="text" placeholder="Person In Charge" required value={equipmentForm.inCharge} onChange={e => setEquipmentForm({ ...equipmentForm, inCharge: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                    <input type="text" placeholder="Specification" value={equipmentForm.specification} onChange={e => setEquipmentForm({ ...equipmentForm, specification: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                    <textarea placeholder="Description" required value={equipmentForm.description} onChange={e => setEquipmentForm({ ...equipmentForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
+                    <textarea placeholder="Additional Information (Optional)" value={equipmentForm.additionalInfo} onChange={e => setEquipmentForm({ ...equipmentForm, additionalInfo: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
 
-                  <div
-                    className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group"
-                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      const file = e.dataTransfer.files[0];
-                      if (file && file.type.startsWith('image/')) {
-                        setEquipmentForm({ ...equipmentForm, image: file });
-                      }
-                    }}
-                    onPaste={(e) => {
-                      const items = e.clipboardData.items;
-                      for (let i = 0; i < items.length; i++) {
-                        if (items[i].type.indexOf('image') !== -1) {
-                          const file = items[i].getAsFile();
+                    <div
+                      className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group"
+                      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const file = e.dataTransfer.files[0];
+                        if (file && file.type.startsWith('image/')) {
                           setEquipmentForm({ ...equipmentForm, image: file });
-                          break;
                         }
-                      }
-                    }}
-                  >
-                    <input type="file" accept="image/*" onChange={e => setEquipmentForm({ ...equipmentForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
-                    <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
-                      <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
-                        <Upload size={24} />
+                      }}
+                      onPaste={(e) => {
+                        const items = e.clipboardData.items;
+                        for (let i = 0; i < items.length; i++) {
+                          if (items[i].type.indexOf('image') !== -1) {
+                            const file = items[i].getAsFile();
+                            setEquipmentForm({ ...equipmentForm, image: file });
+                            break;
+                          }
+                        }
+                      }}
+                    >
+                      <input type="file" accept="image/*" onChange={e => setEquipmentForm({ ...equipmentForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" />
+                      <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
+                        <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
+                          <Upload size={24} />
+                        </div>
+                        <span className="text-sm font-medium">{equipmentForm.image ? equipmentForm.image.name : (editingEquipment ? 'Change Image' : 'Upload Equipment Image')}</span>
+                        <p className="text-[10px] opacity-60 font-medium tracking-wide">PASTE IMAGE OR DRAG & DROP</p>
                       </div>
-                      <span className="text-sm font-medium">{equipmentForm.image ? equipmentForm.image.name : (editingEquipment ? 'Change Image' : 'Upload Equipment Image')}</span>
-                      <p className="text-[10px] opacity-60 font-medium tracking-wide">PASTE IMAGE OR DRAG & DROP</p>
                     </div>
-                  </div>
-                  <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">
-                    {editingEquipment ? 'Update Changes' : 'Add Equipment'}
-                  </button>
-                </form>
+                    <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">
+                      {editingEquipment ? 'Update Changes' : 'Add Equipment'}
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           )
@@ -1677,10 +1683,10 @@ const AdminDashboard = () => {
               onClick={() => setSelectedEquipmentView(null)}
             >
               <div
-                className="bg-white rounded-[2rem] max-w-2xl w-full flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 relative"
+                className="bg-white rounded-[2rem] max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 relative"
                 onClick={e => e.stopPropagation()}
               >
-                <div className="h-72 relative bg-stone-50 flex items-center justify-center p-4">
+                <div className="h-72 shrink-0 relative bg-stone-50 flex items-center justify-center p-4">
                   <img
                     src={selectedEquipmentView.imageUrl}
                     alt={selectedEquipmentView.name}
@@ -1695,8 +1701,8 @@ const AdminDashboard = () => {
                   </button>
                 </div>
 
-                <div className="p-8">
-                  <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 scrollbar-hide">
+                <div className="p-8 flex-1 overflow-y-auto">
+                  <div className="space-y-6">
                     <h2 className="text-3xl font-serif text-stone-900">{selectedEquipmentView.name}</h2>
 
                     {selectedEquipmentView.specification && (
@@ -1736,7 +1742,25 @@ const AdminDashboard = () => {
                     )}
                   </div>
 
-                  <div className="pt-6 border-t border-stone-100 flex justify-end mt-4">
+                  <div className="pt-6 border-t border-stone-100 flex justify-end mt-4 gap-4">
+                    <button
+                      onClick={() => {
+                        setEditingEquipment(selectedEquipmentView);
+                        setEquipmentForm({
+                          name: selectedEquipmentView.name,
+                          specification: selectedEquipmentView.specification || '',
+                          description: selectedEquipmentView.description,
+                          additionalInfo: selectedEquipmentView.additionalInfo || '',
+                          inCharge: selectedEquipmentView.inCharge,
+                          image: null
+                        });
+                        setSelectedEquipmentView(null);
+                        setShowEquipmentModal(true);
+                      }}
+                      className="px-8 py-3 bg-stone-100 text-stone-900 rounded-full font-bold text-sm tracking-wide hover:bg-stone-200 transition-colors shadow-sm"
+                    >
+                      EDIT DETAILS
+                    </button>
                     <button
                       onClick={() => setSelectedEquipmentView(null)}
                       className="px-8 py-3 bg-stone-900 text-white rounded-full font-bold text-sm tracking-wide hover:bg-stone-800 transition-colors shadow-lg"

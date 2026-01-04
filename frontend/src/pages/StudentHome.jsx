@@ -578,14 +578,26 @@ const StudentHome = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
 
-                <div className="absolute bottom-6 left-6 text-white">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg border border-white/30">
-                      <Zap className="w-4 h-4 text-orange-300" />
-                    </span>
-                    <span className="text-xs font-medium uppercase tracking-wider text-orange-200">Energy Impact</span>
+                <div className="absolute bottom-6 left-6 text-white space-y-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg border border-white/30">
+                        <Zap className="w-4 h-4 text-orange-300" />
+                      </span>
+                      <span className="text-xs font-medium uppercase tracking-wider text-orange-200">Energy Impact</span>
+                    </div>
+                    <p className="font-serif text-3xl">{selectedMaterial.embodiedEnergy} <span className="text-lg font-sans text-stone-300">MJ/kg</span></p>
                   </div>
-                  <p className="font-serif text-3xl">{selectedMaterial.embodiedEnergy} <span className="text-lg font-sans text-stone-300">MJ/kg</span></p>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg border border-white/30">
+                        <Leaf className="w-4 h-4 text-green-300" />
+                      </span>
+                      <span className="text-xs font-medium uppercase tracking-wider text-green-200">Carbon Footprint</span>
+                    </div>
+                    <p className="font-serif text-3xl">{selectedMaterial.carbonFootprintFactor} <span className="text-lg font-sans text-stone-300">kgCO₂e/kg</span></p>
+                  </div>
                 </div>
               </div>
 
