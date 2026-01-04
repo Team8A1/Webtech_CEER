@@ -55,6 +55,9 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1, autofill = nu
         consumableName: initial.consumableName || '',
         specification: initial.specification || '',
         qty: initial.qty || '',
+        length: initial.length ? initial.length * 1000 : '', // Convert stored meters to input millimeters
+        width: initial.width ? initial.width * 1000 : '',   // Convert stored meters to input millimeters
+        weight: initial.weight || '',
         notifyGuide: true
       })
     } else if (autofill) {
@@ -152,8 +155,8 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1, autofill = nu
       consumableName: form.consumableName,
       specification: form.specification,
       qty: Number(form.qty) || 0,
-      length: Number(form.length) || 0,
-      width: Number(form.width) || 0,
+      length: (Number(form.length) || 0) / 1000, // Convert mm to meters for storage
+      width: (Number(form.width) || 0) / 1000,   // Convert mm to meters for storage
       weight: Number(form.weight) || 0,
       notifyGuide: form.notifyGuide
     }
@@ -250,14 +253,14 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1, autofill = nu
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Length (meters)</label>
-              <input name="length" type="number" step="0.001" value={form.length} onChange={handleChange} placeholder="e.g. 0.5" required className="p-3 bg-white border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
+              <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Length (mm)</label>
+              <input name="length" type="number" step="0.1" value={form.length} onChange={handleChange} placeholder="e.g. 500" required className="p-3 bg-white border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
             </div>
 
             {selectedMaterial.formType === 'sheet' && (
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Width (meters)</label>
-                <input name="width" type="number" step="0.001" value={form.width} onChange={handleChange} placeholder="e.g. 0.3" required className="p-3 bg-white border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
+                <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Width (mm)</label>
+                <input name="width" type="number" step="0.1" value={form.width} onChange={handleChange} placeholder="e.g. 300" required className="p-3 bg-white border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
               </div>
             )}
           </div>

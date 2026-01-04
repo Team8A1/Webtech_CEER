@@ -59,7 +59,7 @@ const AdminDashboard = () => {
   // Forms States
   const [showMaterialModal, setShowMaterialModal] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState(null);
-  const [materialForm, setMaterialForm] = useState({ name: '', dimension: '', description: '', image: null, density: 0, embodiedEnergy: 0, fixedDimension: 0, formType: 'unit' });
+  const [materialForm, setMaterialForm] = useState({ name: '', dimension: '', description: '', image: null, density: 0, embodiedEnergy: 0, carbonFootprintFactor: 0, fixedDimension: 0, formType: 'unit' });
 
   const [showEventModal, setShowEventModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
@@ -196,7 +196,7 @@ const AdminDashboard = () => {
       alert(`Material ${editingMaterial ? 'updated' : 'added'} successfully`);
       setShowMaterialModal(false);
       setEditingMaterial(null);
-      setMaterialForm({ name: '', dimension: '', description: '', image: null, density: 0, embodiedEnergy: 0, fixedDimension: 0, formType: 'unit' });
+      setMaterialForm({ name: '', dimension: '', description: '', image: null, density: 0, embodiedEnergy: 0, carbonFootprintFactor: 0, fixedDimension: 0, formType: 'unit' });
       fetchMaterials();
     } catch (error) {
       alert('Error saving material: ' + (error.response?.data?.message || error.message));
@@ -1315,7 +1315,7 @@ const AdminDashboard = () => {
                   <button
                     onClick={() => {
                       setEditingMaterial(null);
-                      setMaterialForm({ name: '', dimension: '', description: '', image: null, density: 0, embodiedEnergy: 0, fixedDimension: 0, formType: 'unit' });
+                      setMaterialForm({ name: '', dimension: '', description: '', image: null, density: 0, embodiedEnergy: 0, carbonFootprintFactor: 0, fixedDimension: 0, formType: 'unit' });
                       setShowMaterialModal(true);
                     }}
                     className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98] font-medium"
@@ -1542,7 +1542,7 @@ const AdminDashboard = () => {
                       <option value="rod">Rod</option>
                     </select>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">
                         {materialForm.formType === 'sheet' ? 'Thickness (mm)' :
@@ -1554,6 +1554,10 @@ const AdminDashboard = () => {
                     <div>
                       <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Energy Coeff (MJ/kg)</label>
                       <input type="number" step="any" required placeholder="MJ/kg" value={materialForm.embodiedEnergy || ''} onChange={e => setMaterialForm({ ...materialForm, embodiedEnergy: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 block">Carbon Factor (kgCO₂e/kg)</label>
+                      <input type="number" step="any" required placeholder="kgCO₂e/kg" value={materialForm.carbonFootprintFactor || ''} onChange={e => setMaterialForm({ ...materialForm, carbonFootprintFactor: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium" />
                     </div>
                   </div>
                   {(materialForm.formType === 'sheet' || materialForm.formType === 'rod') && (

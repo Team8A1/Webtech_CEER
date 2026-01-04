@@ -46,7 +46,7 @@ function ResourcesSection() {
     <section className="py-20 bg-slate-50" id="resources">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-14">
-          <h2 className="text-4xl font-bold text-slate-900 mb-4">Student Resources</h2>
+          <h2 className="text-4xl font-serif font-bold text-slate-900 mb-4">Student Resources</h2>
           <p className="text-xl text-slate-600">Everything you need for a successful academic journey</p>
         </div>
 

@@ -89,6 +89,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/material", materialRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/energy", require("./routes/energyRoutes"));
+app.use("/api/carbon", require("./routes/carbonRoutes"));
 app.use("/api/equipment", require("./routes/equipmentRoutes"));
 app.use("/api/instructions", require("./routes/instruction.routes"));
 

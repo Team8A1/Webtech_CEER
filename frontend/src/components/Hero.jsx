@@ -46,7 +46,7 @@ function Hero() {
           className={`max-w-3xl transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
         >
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-0 pb-0 leading-tight">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-0 pb-0 leading-tight">
             Welcome to CEER
           </h1>
           <p className="text-sm md:text-base text-slate-300 tracking-wider mt-0 pt-0">

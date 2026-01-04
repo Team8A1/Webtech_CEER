@@ -36,6 +36,12 @@ const materialSchema = new mongoose.Schema({
         required: true,
         default: 0
     },
+    // Carbon Footprint Factor in kgCO2e/kg
+    carbonFootprintFactor: {
+        type: Number,
+        required: true,
+        default: 0
+    },
     // Fixed Dimension in mm (Thickness for sheets, Diameter for rods, Weight for units)
     fixedDimension: {
         type: Number,

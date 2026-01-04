@@ -23,7 +23,7 @@ const uploadFromBuffer = (buffer) => {
 
 const addMaterial = async (req, res) => {
     try {
-        const { name, dimension, description, density, embodiedEnergy, fixedDimension, formType } = req.body;
+        const { name, dimension, description, density, embodiedEnergy, carbonFootprintFactor, fixedDimension, formType } = req.body;
 
         if (!req.file) {
             return res.status(400).json({ success: false, message: 'Image is required' });
@@ -40,6 +40,7 @@ const addMaterial = async (req, res) => {
             density: density || 0,
             embodiedEnergy: embodiedEnergy || 0,
             fixedDimension: fixedDimension || 0,
+            carbonFootprintFactor: carbonFootprintFactor || 0,
             formType: formType || 'unit'
         });
 
@@ -86,7 +87,7 @@ const deleteMaterial = async (req, res) => {
 const updateMaterial = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, dimension, description, density, embodiedEnergy, fixedDimension, formType } = req.body;
+        const { name, dimension, description, density, embodiedEnergy, carbonFootprintFactor, fixedDimension, formType } = req.body;
 
         let material = await Material.findById(id);
         if (!material) {
@@ -114,6 +115,7 @@ const updateMaterial = async (req, res) => {
 
         if (density !== undefined) material.density = density;
         if (embodiedEnergy !== undefined) material.embodiedEnergy = embodiedEnergy;
+        if (carbonFootprintFactor !== undefined) material.carbonFootprintFactor = carbonFootprintFactor;
         if (fixedDimension !== undefined) material.fixedDimension = fixedDimension;
         if (formType !== undefined) material.formType = formType;
 

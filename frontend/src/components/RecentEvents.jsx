@@ -110,7 +110,7 @@ function RecentEvents() {
                     <div className="inline-block mb-0">
 
                     </div>
-                    <h2 className="text-5xl md:text-6xl mt-2 font-bold text-maroon-700 mb-4">
+                    <h2 className="text-5xl md:text-6xl mt-2 font-serif font-bold text-maroon-700 mb-4">
                         Recent Events
                     </h2>
                     <p className="text-xl text-slate-600 max-w-2xl mx-auto">
@@ -137,8 +137,8 @@ function RecentEvents() {
                                 key={index}
                                 onClick={() => setSelectedEvent(event)}
                                 className={`transition-all duration-700 ease-out relative cursor-pointer ${position === 'center'
-                                        ? 'w-80 md:w-[350px] h-[420px] md:h-[480px] scale-100 opacity-100 z-10'
-                                        : 'w-52 md:w-60 h-[340px] md:h-[380px] scale-90 opacity-50'
+                                    ? 'w-80 md:w-[350px] h-[420px] md:h-[480px] scale-100 opacity-100 z-10'
+                                    : 'w-52 md:w-60 h-[340px] md:h-[380px] scale-90 opacity-50'
                                     }`}
                             >
                                 <div className="relative w-full h-full rounded-[2rem] overflow-hidden border border-slate-200/50 shadow-2xl transition-shadow duration-300 bg-white">
@@ -208,8 +208,8 @@ function RecentEvents() {
                             key={index}
                             onClick={() => setActiveIndex(index)}
                             className={`transition-all duration-500 rounded-full ${index === activeIndex
-                                    ? 'w-12 h-3 bg-maroon-700 shadow-lg'
-                                    : 'w-3 h-3 bg-slate-300 hover:bg-slate-400 hover:scale-125'
+                                ? 'w-12 h-3 bg-maroon-700 shadow-lg'
+                                : 'w-3 h-3 bg-slate-300 hover:bg-slate-400 hover:scale-125'
                                 }`}
                             aria-label={`Go to event ${index + 1}`}
                         />
@@ -219,11 +219,11 @@ function RecentEvents() {
 
             {/* Event Detail Modal */}
             {selectedEvent && (
-                <div 
+                <div
                     className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4"
                     onClick={() => setSelectedEvent(null)}
                 >
-                    <div 
+                    <div
                         className="bg-white rounded-[2rem] max-w-2xl w-full shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden"
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -236,7 +236,7 @@ function RecentEvents() {
                                     className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
-                                
+
                                 {/* Status indicator on image */}
                                 <div className="absolute top-4 left-4 z-20">
                                     {selectedEvent.isActive ? (
