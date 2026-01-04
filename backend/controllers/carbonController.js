@@ -1,19 +1,28 @@
 const BOMRequest = require('../models/BOMRequest');
 const Material = require('../models/Material');
+const User = require('../models/User');
 
-// @desc    Get carbon footprint analysis for approved BOM items
+// @desc    Get carbon footprint analysis for approved BOM items (team-based)
 // @route   GET /api/carbon/analysis
 // @access  Private (Student)
 const getCarbonAnalysis = async (req, res) => {
     try {
         const studentId = req.user._id;
+        const student = await User.findById(studentId);
 
-        // Current requirement: "approved by both faculty and lab in charge"
-        const bomRequests = await BOMRequest.find({
-            studentId,
+        // Build query - if student has a team, get all team BOMs
+        let query = {
             guideApproved: true,
             labApproved: true
-        });
+        };
+
+        if (student && student.teamId) {
+            query.teamId = student.teamId;
+        } else {
+            query.studentId = studentId;
+        }
+
+        const bomRequests = await BOMRequest.find(query);
 
         const analysisData = [];
         let totalSystemCarbon = 0;

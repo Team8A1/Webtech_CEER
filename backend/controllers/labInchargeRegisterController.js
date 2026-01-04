@@ -62,4 +62,30 @@ const registerLabIncharge = async (req, res) => {
   }
 };
 
-module.exports = { registerLabIncharge };
+/**
+ * Get all lab incharges
+ * @route GET /api/lab/list
+ * @access Admin
+ */
+const getAllLabIncharges = async (req, res) => {
+  try {
+    const labIncharges = await LabIncharge.find({ isActive: true })
+      .select('-password')
+      .sort({ name: 1 });
+
+    return res.status(200).json({
+      success: true,
+      data: labIncharges,
+    });
+  } catch (error) {
+    console.error('Get Lab Incharges Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { registerLabIncharge, getAllLabIncharges };
+

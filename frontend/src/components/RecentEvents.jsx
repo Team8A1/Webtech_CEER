@@ -229,13 +229,13 @@ function RecentEvents() {
                     >
                         <div className="grid md:grid-cols-[45%_55%] overflow-hidden">
                             {/* Left - Image Section */}
-                            <div className="relative h-96 md:h-full bg-stone-100">
+                            <div className="relative h-[500px] md:h-full bg-stone-50">
                                 <img
                                     src={selectedEvent.image || selectedEvent.imageUrl}
                                     alt={selectedEvent.title}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-contain"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
+                                {/* Removed gradient overlay for better image visibility */}
 
                                 {/* Status indicator on image */}
                                 <div className="absolute top-4 left-4 z-20">

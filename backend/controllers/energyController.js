@@ -1,20 +1,28 @@
 const BOMRequest = require('../models/BOMRequest');
 const Material = require('../models/Material');
+const User = require('../models/User');
 
-// @desc    Get embodied energy analysis for approved BOM items
+// @desc    Get embodied energy analysis for approved BOM items (team-based)
 // @route   GET /api/energy/analysis
 // @access  Private (Student)
 const getEnergyAnalysis = async (req, res) => {
     try {
         const studentId = req.user._id;
+        const student = await User.findById(studentId);
 
-        // Fetch pending, approved, or rejected doesn't matter for analysis, but usually we filter for approved?
-        // Current requirement: "approved by both faculty and lab in charge"
-        const bomRequests = await BOMRequest.find({
-            studentId,
+        // Build query - if student has a team, get all team BOMs
+        let query = {
             guideApproved: true,
             labApproved: true
-        });
+        };
+
+        if (student && student.teamId) {
+            query.teamId = student.teamId;
+        } else {
+            query.studentId = studentId;
+        }
+
+        const bomRequests = await BOMRequest.find(query);
 
         const analysisData = [];
         let totalSystemEnergy = 0;

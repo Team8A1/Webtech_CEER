@@ -159,9 +159,133 @@ const getStudentTeam = async (req, res) => {
     }
 };
 
+/**
+ * Update an existing team
+ * @route PUT /api/faculty/team/update/:teamId
+ * @access Private (Faculty only)
+ */
+const updateTeam = async (req, res) => {
+    try {
+        const { teamId } = req.params;
+        const { problemStatement, members, teamName } = req.body;
+        const guideId = req.user.id;
+
+        // Find the team and verify ownership
+        const team = await Team.findById(teamId);
+
+        if (!team) {
+            return res.status(404).json({
+                success: false,
+                message: 'Team not found',
+            });
+        }
+
+        // Verify the faculty is the guide of this team
+        if (team.guide.toString() !== guideId) {
+            return res.status(403).json({
+                success: false,
+                message: 'You are not authorized to edit this team',
+            });
+        }
+
+        // Get current team members
+        const currentMembers = team.members.map(m => m.toString());
+        const newMembers = members || currentMembers;
+
+        // Find students being removed
+        const removedMembers = currentMembers.filter(m => !newMembers.includes(m));
+
+        // Find students being added
+        const addedMembers = newMembers.filter(m => !currentMembers.includes(m));
+
+        // Verify new students exist and are not in another team
+        if (addedMembers.length > 0) {
+            const studentsToAdd = await User.find({ _id: { $in: addedMembers } });
+
+            if (studentsToAdd.length !== addedMembers.length) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'One or more students not found',
+                });
+            }
+
+            const alreadyInTeam = studentsToAdd.filter(s => s.teamId && s.teamId.toString() !== teamId);
+            if (alreadyInTeam.length > 0) {
+                const names = alreadyInTeam.map(s => s.name).join(', ');
+                return res.status(400).json({
+                    success: false,
+                    message: `The following students are already in another team: ${names}`,
+                });
+            }
+        }
+
+        // Update the team
+        team.problemStatement = problemStatement || team.problemStatement;
+        team.members = newMembers;
+        if (teamName) team.teamName = teamName;
+
+        await team.save();
+
+        // Remove team reference from removed students
+        if (removedMembers.length > 0) {
+            await User.updateMany(
+                { _id: { $in: removedMembers } },
+                {
+                    $unset: {
+                        teamId: '',
+                        problemStatement: '',
+                        guideId: '',
+                    },
+                }
+            );
+        }
+
+        // Add team reference to newly added students
+        if (addedMembers.length > 0) {
+            await User.updateMany(
+                { _id: { $in: addedMembers } },
+                {
+                    $set: {
+                        teamId: team._id,
+                        problemStatement: team.problemStatement,
+                        guideId: guideId,
+                    },
+                }
+            );
+        }
+
+        // Update problem statement for all current members
+        await User.updateMany(
+            { _id: { $in: newMembers } },
+            {
+                $set: {
+                    problemStatement: team.problemStatement,
+                },
+            }
+        );
+
+        // Fetch updated team with populated members
+        const updatedTeam = await Team.findById(teamId).populate('members', 'name email usn');
+
+        return res.status(200).json({
+            success: true,
+            message: 'Team updated successfully',
+            team: updatedTeam,
+        });
+    } catch (error) {
+        console.error('Update Team Error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
     createTeam,
     getFacultyTeams,
     getAvailableStudents,
     getStudentTeam,
+    updateTeam,
 };

@@ -4,15 +4,13 @@ const Faculty = require('../models/Faculty');
 const Team = require('../models/Team');
 const { sendEmail } = require('../utils/emailUtil');
 
-// @desc    Create a new BOM request
-// @route   POST /api/student/request/bom
-// @access  Private (Student)
+
 const createBOMRequest = async (req, res) => {
     try {
         const { slNo, sprintNo, date, partName, consumableName, specification, qty, length, width, weight, notifyGuide } = req.body;
         const studentId = req.user._id;
 
-        // Get student details to find guide and team
+
         const student = await User.findById(studentId).populate('guideId').populate('teamId');
 
         if (!student) {
@@ -83,21 +81,24 @@ const createBOMRequest = async (req, res) => {
     }
 };
 
-// @desc    Get all BOM requests for a student
+// @desc    Get all BOM requests for a student (or their team)
 // @route   GET /api/student/request/bom
 // @access  Private (Student)
 const getStudentBOMRequests = async (req, res) => {
     try {
-        let query = { studentId: req.user._id };
+        const student = await User.findById(req.user._id);
 
-        // If student is in a team, fetch all requests for that team
-        if (req.user.teamId) {
-            query = { teamId: req.user.teamId };
+        let requests;
+
+        // If student is part of a team, get all BOMs for that team
+        if (student && student.teamId) {
+            requests = await BOMRequest.find({ teamId: student.teamId })
+                .populate('studentId', 'name email')
+                .sort({ createdAt: -1 });
+        } else {
+            // If not in a team, get only their own BOMs
+            requests = await BOMRequest.find({ studentId: req.user._id }).sort({ createdAt: -1 });
         }
-
-        const requests = await BOMRequest.find(query)
-            .populate('studentId', 'name') // Helpful to see who made the request
-            .sort({ createdAt: -1 });
 
         res.status(200).json({ success: true, data: requests });
     } catch (error) {

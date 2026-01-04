@@ -416,6 +416,7 @@ const StudentHome = () => {
                               m.description.toLowerCase().includes(search);
                           }
                         })
+                        .sort((a, b) => a.name.localeCompare(b.name))
                         .map((material) => (
                           <tr key={material._id} onClick={() => setSelectedMaterial(material)} className="group hover:bg-stone-50/50 transition-colors cursor-pointer">
                             <td className="px-8 py-5">
