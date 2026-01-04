@@ -25,6 +25,10 @@ const eventSchema = new mongoose.Schema({
         required: true,
         default: 'General'
     },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
     createdAt: {
         type: Date,
         default: Date.now

@@ -62,6 +62,7 @@ const AdminDashboard = () => {
   const [materialForm, setMaterialForm] = useState({ name: '', dimension: '', description: '', image: null, density: 0, embodiedEnergy: 0, fixedDimension: 0, formType: 'unit' });
 
   const [showEventModal, setShowEventModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
   const [eventForm, setEventForm] = useState({ title: '', date: '', category: '', image: null });
 
   const [showEquipmentModal, setShowEquipmentModal] = useState(false);
@@ -215,18 +216,37 @@ const AdminDashboard = () => {
     }
 
     try {
-      await api.post('/events', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      alert('Event created successfully');
+      if (editingEvent) {
+        await api.put(`/events/${editingEvent._id}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        alert('Event updated successfully');
+      } else {
+        await api.post('/events', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        alert('Event created successfully');
+      }
       setShowEventModal(false);
+      setEditingEvent(null);
       setEventForm({ title: '', date: '', category: '', image: null });
       fetchEvents();
     } catch (error) {
       alert('Error saving event: ' + (error.response?.data?.message || error.message));
       console.error(error);
+    }
+  };
+
+  const handleToggleEventStatus = async (id, currentStatus) => {
+    try {
+      await api.patch(`/events/${id}/toggle-status`);
+      fetchEvents();
+    } catch (error) {
+      alert('Error toggling event status: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -1193,7 +1213,7 @@ const AdminDashboard = () => {
             activeTab === 'events' && (
               <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
                 <div className="flex justify-end mb-8">
-                  <button onClick={() => setShowEventModal(true)} className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98] font-medium">
+                  <button onClick={() => { setEditingEvent(null); setEventForm({ title: '', date: '', category: '', image: null }); setShowEventModal(true); }} className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98] font-medium">
                     <Plus size={20} /> Add New Event
                   </button>
                 </div>
@@ -1211,8 +1231,21 @@ const AdminDashboard = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/30 to-black/30 opacity-80 group-hover:opacity-90 transition-opacity" />
                       </div>
 
+                      {/* Active/Inactive Badge */}
+                      <div className="absolute top-4 left-4 z-20">
+                        <span className={`inline-block px-3 py-1 backdrop-blur-md text-white text-[10px] font-bold rounded-full uppercase tracking-widest shadow-sm ${event.isActive ? 'bg-green-600/90' : 'bg-gray-600/90'}`}>
+                          {event.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+
                       {/* Actions (Top Right) */}
                       <div className="absolute top-4 right-4 flex gap-2 translate-y-[-20px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
+                        <button onClick={() => { setEditingEvent(event); setEventForm(event); setShowEventModal(true); }} className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-blue-600 hover:text-white transition-colors border border-white/20">
+                          <Edit2 size={18} />
+                        </button>
+                        <button onClick={() => handleToggleEventStatus(event._id, event.isActive)} className={`p-2.5 backdrop-blur-md rounded-full text-white transition-colors border border-white/20 ${event.isActive ? 'bg-yellow-600/50 hover:bg-yellow-700' : 'bg-green-600/50 hover:bg-green-700'}`}>
+                          {event.isActive ? '○' : '●'}
+                        </button>
                         <button onClick={() => handleDeleteEvent(event._id)} className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-red-600 hover:text-white transition-colors border border-white/20">
                           <Trash2 size={18} />
                         </button>
@@ -1509,23 +1542,23 @@ const AdminDashboard = () => {
           <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20">
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-serif text-stone-900">Add New Event</h2>
-                <button onClick={() => setShowEventModal(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
+                <h2 className="text-2xl font-serif text-stone-900">{editingEvent ? 'Edit Event' : 'Add New Event'}</h2>
+                <button onClick={() => { setShowEventModal(false); setEditingEvent(null); }} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X className="text-stone-400 hover:text-stone-900" /></button>
               </div>
               <form onSubmit={handleEventSubmit} className="space-y-5">
                 <input type="text" placeholder="Event Title" required value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
                 <input type="text" placeholder="Date (e.g. Dec 15, 2025)" required value={eventForm.date} onChange={e => setEventForm({ ...eventForm, date: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
                 <input type="text" placeholder="Category (e.g. Conference)" required value={eventForm.category} onChange={e => setEventForm({ ...eventForm, category: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
                 <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
-                  <input type="file" accept="image/*" onChange={e => setEventForm({ ...eventForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" required />
+                  <input type="file" accept="image/*" onChange={e => setEventForm({ ...eventForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" required={!editingEvent} />
                   <div className="flex flex-col items-center gap-3 text-stone-400 group-hover:text-maroon-500 transition-colors">
                     <div className="p-3 bg-stone-100 rounded-full group-hover:bg-maroon-50 transition-colors">
                       <Upload size={24} />
                     </div>
-                    <span className="text-sm font-medium">{eventForm.image?.name || 'Upload Event Image'}</span>
+                    <span className="text-sm font-medium">{eventForm.image?.name || (editingEvent ? 'Change Event Image (Optional)' : 'Upload Event Image')}</span>
                   </div>
                 </div>
-                <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">Create Event</button>
+                <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">{editingEvent ? 'Update Event' : 'Create Event'}</button>
               </form>
             </div>
           </div>

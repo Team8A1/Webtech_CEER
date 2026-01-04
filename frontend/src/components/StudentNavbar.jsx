@@ -131,11 +131,11 @@ const StudentNavbar = ({ user }) => {
                                 key={item}
                                 href={item === 'Instructions' ? '/student/instructions' : `/student/dashboard#${item.toLowerCase()}`}
                                 className={`text-sm uppercase tracking-widest transition-colors relative group 
-                                    ${isUpdate ? 'text-yellow-500 font-black' : 'text-stone-500 hover:text-stone-900'}`}
+                                    ${isUpdate ? 'text-blue-600 font-black' : 'text-stone-500 hover:text-stone-900'}`}
                             >
                                 {item}
-                                {isUpdate && <span className="absolute -top-1 -right-2 w-2 h-2 bg-yellow-400 rounded-full animate-ping"></span>}
-                                <span className={`absolute -bottom-2 left-0 w-0 h-0.5 bg-red-700 transition-all duration-300 group-hover:w-full ${isUpdate ? 'w-full bg-yellow-500' : ''}`}></span>
+                                {isUpdate && <span className="absolute -top-1 -right-2 w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>}
+                                <span className={`absolute -bottom-2 left-0 w-0 h-0.5 bg-red-700 transition-all duration-300 group-hover:w-full ${isUpdate ? 'w-full bg-blue-600' : ''}`}></span>
                             </a>
                         );
                     })}
