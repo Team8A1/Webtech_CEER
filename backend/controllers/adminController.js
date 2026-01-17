@@ -36,8 +36,6 @@ const getDashboardData = async (req, res) => {
     }
 };
 
-
-
 const registerBulkStudents = async (req, res) => {
     try {
         const { students } = req.body;
@@ -89,7 +87,7 @@ const registerBulkStudents = async (req, res) => {
                     division: student.division ? student.division.toUpperCase() : undefined,
                     batch: student.batch,
                     role: 'student',
-                    password: student.password || 'student@123', // Default password
+                    password: 'student@123', // Default password
                     mustChangePassword: true,
                     isActive: true
                 });
@@ -160,7 +158,7 @@ const registerBulkFaculty = async (req, res) => {
                     email: faculty.email,
                     department: faculty.department || '',
                     role: 'faculty',
-                    password: faculty.password || 'faculty@123', // Default password if missing
+                    password: 'faculty@123', // Default password if missing
                     mustChangePassword: true,
                     isApproved: true
                 });
@@ -235,7 +233,6 @@ const loginAdmin = async (req, res) => {
         }
 
         const token = generateToken(admin);
-
         res.status(200).json({
             success: true,
             data: {

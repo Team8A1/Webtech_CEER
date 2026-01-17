@@ -8,8 +8,9 @@ const { sendEmail } = require('../utils/emailUtil');
 const createBOMRequest = async (req, res) => {
     try {
         const { slNo, sprintNo, date, partName, consumableName, specification, qty, length, width, weight, notifyGuide } = req.body;
+        console.log("weight is ",weight);
+        
         const studentId = req.user._id;
-
 
         const student = await User.findById(studentId).populate('guideId').populate('teamId');
 
@@ -41,7 +42,7 @@ const createBOMRequest = async (req, res) => {
         // Send Email to guide
         const guideEmail = student.guideId.email;
         const studentName = student.name;
-        const studentUsn = student.usn || 'N/A';
+        const studentUsn = student.usn || student.email||'N/A';
         const teamId = student.teamId ? student.teamId._id : 'N/A';
         const problemStatement = student.problemStatement || 'N/A';
 
@@ -59,6 +60,8 @@ const createBOMRequest = async (req, res) => {
       <p><strong>Specification:</strong> ${specification}</p>
       <br/>
       <p>Please login to your faculty dashboard to review this request.</p>
+      <p> Enter Page : http://localhost:5173/login/faculty <p>
+      
     `;
 
         if (notifyGuide !== false) { // Default to true if not provided, or check explicitly
@@ -133,9 +136,7 @@ const updateBOMRequest = async (req, res) => {
         const { id } = req.params;
         const { slNo, sprintNo, date, partName, consumableName, specification, qty, length, width, weight } = req.body;
         const studentId = req.user._id;
-
         const bomRequest = await BOMRequest.findById(id);
-
         if (!bomRequest) {
             return res.status(404).json({ success: false, message: 'BOM Request not found' });
         }

@@ -101,7 +101,6 @@ npm run dev
 # Application will run on http://localhost:5173
 ```
 
-
 ## Project Structure
 
 ```

@@ -10,7 +10,7 @@ const Admin = require('../models/Admin');
 const protect = async (req, res, next) => {
   let token;
 
-  // Check for token in Authorization header
+      // Check for token in Authorization header
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
       // Extract token from header
