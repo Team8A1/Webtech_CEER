@@ -15,6 +15,7 @@ function FacultyTeamCreate() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [divisionFilter, setDivisionFilter] = useState('All')
   const [tempSelectedIds, setTempSelectedIds] = useState(new Set())
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetchAvailableStudents()
@@ -40,6 +41,7 @@ function FacultyTeamCreate() {
   const openSelectionModal = () => {
     setTempSelectedIds(new Set(selectedStudents.map(s => s._id)))
     setDivisionFilter('All')
+    setSearchQuery('')
     setIsModalOpen(true)
   }
 
@@ -65,9 +67,18 @@ function FacultyTeamCreate() {
 
   const getFilteredStudents = () => {
     return availableStudents.filter(student => {
-      if (divisionFilter === 'All') return true
-      if (divisionFilter === 'No Division') return !student.division
-      return student.division === divisionFilter
+      // Division filter
+      const divisionMatch = divisionFilter === 'All' ||
+        (divisionFilter === 'No Division' && !student.division) ||
+        student.division === divisionFilter;
+
+      // Search filter (name, email, USN)
+      const searchMatch = !searchQuery ||
+        student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (student.usn && student.usn.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      return divisionMatch && searchMatch;
     })
   }
 
@@ -244,17 +255,45 @@ function FacultyTeamCreate() {
               </div>
 
               {/* Division Filter */}
-              <div className="flex items-center gap-3">
-                <label className="text-sm font-medium text-slate-600">Filter by Division:</label>
-                <select
-                  value={divisionFilter}
-                  onChange={(e) => setDivisionFilter(e.target.value)}
-                  className="bg-white border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  {uniqueDivisions.map(div => (
-                    <option key={div} value={div}>{div}</option>
-                  ))}
-                </select>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-medium text-slate-600">Filter by Division:</label>
+                  <select
+                    value={divisionFilter}
+                    onChange={(e) => setDivisionFilter(e.target.value)}
+                    className="bg-white border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    {uniqueDivisions.map(div => (
+                      <option key={div} value={div}>{div}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Search Input */}
+                <div className="flex-1 w-full sm:w-auto">
+                  <div className="relative">
+                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder="Search by name, email, or USN..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-1.5 bg-white border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 

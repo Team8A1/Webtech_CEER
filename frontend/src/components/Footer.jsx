@@ -9,7 +9,7 @@ function Footer() {
             <ul className="space-y-1.5">
               <li><a href="https://www.kletech.ac.in/course/centre-for-engineering-education-research" target="_blank" rel="noopener noreferrer" className="hover:text-maroon-400 transition-colors text-sm">CEER</a></li>
               <li><a href="https://www.kletech.ac.in/" target="_blank" rel="noopener noreferrer" className="hover:text-maroon-400 transition-colors text-sm">KLE Tech</a></li>
-              <li><a href="https://library.kletech.ac.in/" target="_blank" rel="noopener noreferrer" className="hover:text-maroon-400 transition-colors text-sm">Library</a></li>
+              <li><a href="https://library.kletech.ac.in/" target="_blank" rel="noopener noreferrer" className="hover:text-maroon-400 transition-colors text-sm">Central Library</a></li>
             </ul>
           </div>
 

@@ -22,7 +22,8 @@ import {
   Shield,
   Activity,
   ExternalLink,
-  Menu
+  Menu,
+  Briefcase
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminInstructions from './AdminInstructions';
@@ -647,7 +648,7 @@ const AdminDashboard = () => {
               {/* Quick Actions */}
               <div>
                 <h3 className="text-lg font-serif text-stone-900 mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                   <button onClick={() => setShowEventModal(true)} className="group relative p-4 bg-white/80 backdrop-blur-sm border border-stone-200/60 rounded-2xl hover:border-maroon-200/50 hover:shadow-xl hover:shadow-maroon-500/10 transition-all duration-300 text-left overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-r from-maroon-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="relative z-10">
@@ -656,6 +657,17 @@ const AdminDashboard = () => {
                       </div>
                       <span className="font-semibold text-stone-900 block mb-1 group-hover:text-maroon-900 transition-colors">Add New Event</span>
                       <span className="text-xs text-stone-500 group-hover:text-maroon-700/70 transition-colors">Schedule a campus activity</span>
+                    </div>
+                  </button>
+
+                  <button onClick={() => navigate('/admin/projects')} className="group relative p-4 bg-white/80 backdrop-blur-sm border border-stone-200/60 rounded-2xl hover:border-purple-200/50 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 text-left overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative z-10">
+                      <div className="mb-3 p-2 w-fit bg-stone-100 rounded-xl group-hover:bg-purple-100 group-hover:text-purple-700 transition-colors duration-300">
+                        <Briefcase size={20} />
+                      </div>
+                      <span className="font-semibold text-stone-900 block mb-1 group-hover:text-purple-900 transition-colors">Manage Projects</span>
+                      <span className="text-xs text-stone-500 group-hover:text-purple-700/70 transition-colors">Edit landing page projects</span>
                     </div>
                   </button>
 
@@ -890,14 +902,47 @@ const AdminDashboard = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="bg-white/60 backdrop-blur-xl p-8 rounded-3xl border border-white/50 shadow-sm">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-serif text-stone-900">System Performance</h3>
-                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">Optimal</span>
+                    <h3 className="text-xl font-serif text-stone-900">System Statistics</h3>
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">Live Data</span>
                   </div>
                   <div className="space-y-6">
                     {[
-                      { label: 'Server Uptime', value: '99.9%', width: 'w-[99.9%]' },
-                      { label: 'Database Load', value: '12%', width: 'w-[12%]' },
-                      { label: 'Storage Usage', value: '64%', width: 'w-[64%]' },
+                      {
+                        label: 'Total Students',
+                        value: facultiesData.reduce((acc, f) => acc + f.teams.reduce((sum, t) => sum + t.members.length, 0), 0),
+                        max: facultiesData.reduce((acc, f) => acc + f.teams.reduce((sum, t) => sum + t.members.length, 0), 0) || 100,
+                        color: 'bg-blue-600'
+                      },
+                      {
+                        label: 'Total Teams',
+                        value: facultiesData.reduce((acc, f) => acc + f.teams.length, 0),
+                        max: facultiesData.reduce((acc, f) => acc + f.teams.length, 0) || 50,
+                        color: 'bg-purple-600'
+                      },
+                      {
+                        label: 'Total Faculty',
+                        value: facultiesData.length,
+                        max: facultiesData.length || 20,
+                        color: 'bg-maroon-600'
+                      },
+                      {
+                        label: 'Active Events',
+                        value: eventsData.filter(e => e.isActive).length,
+                        max: eventsData.length || 10,
+                        color: 'bg-orange-600'
+                      },
+                      {
+                        label: 'Available Materials',
+                        value: materialsData.length,
+                        max: materialsData.length || 100,
+                        color: 'bg-green-600'
+                      },
+                      {
+                        label: 'Available Equipment',
+                        value: equipmentsData.length,
+                        max: equipmentsData.length || 50,
+                        color: 'bg-indigo-600'
+                      }
                     ].map((stat, i) => (
                       <div key={i}>
                         <div className="flex justify-between text-sm mb-2">
@@ -905,7 +950,10 @@ const AdminDashboard = () => {
                           <span className="font-mono font-bold text-stone-900">{stat.value}</span>
                         </div>
                         <div className="h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
-                          <div className={`${stat.width} h-full bg-stone-800 rounded-full`}></div>
+                          <div
+                            className={`h-full ${stat.color} rounded-full transition-all duration-1000`}
+                            style={{ width: `${stat.max > 0 ? (stat.value / stat.max) * 100 : 0}%` }}
+                          ></div>
                         </div>
                       </div>
                     ))}
@@ -914,25 +962,65 @@ const AdminDashboard = () => {
 
                 <div className="bg-white/60 backdrop-blur-xl p-8 rounded-3xl border border-white/50 shadow-sm">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-serif text-stone-900">Recent Activity</h3>
-                    <button className="text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors uppercase tracking-widest">View All</button>
+                    <h3 className="text-xl font-serif text-stone-900">System Overview</h3>
+                    <span className="text-xs text-stone-400 font-mono">{new Date().toLocaleString()}</span>
                   </div>
                   <div className="space-y-4">
-                    {[
-                      { msg: 'New equipment "3D Printer" added', time: '2 hours ago', icon: <Wrench size={14} /> },
-                      { msg: 'User "Dr. Smith" updated profile', time: '5 hours ago', icon: <Users size={14} /> },
-                      { msg: 'System backup completed successfully', time: 'Yesterday', icon: <Shield size={14} /> },
-                    ].map((activity, i) => (
-                      <div key={i} className="flex items-center gap-4 p-3 hover:bg-stone-50 rounded-xl transition-colors cursor-default group">
-                        <div className="p-2 bg-stone-100 rounded-lg text-stone-500 group-hover:bg-white transition-colors">
-                          {activity.icon}
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">Student Enrollment</p>
+                          <p className="text-3xl font-bold text-blue-900">
+                            {facultiesData.reduce((acc, f) => acc + f.teams.reduce((sum, t) => sum + t.members.length, 0), 0)}
+                          </p>
                         </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-stone-800">{activity.msg}</p>
-                          <p className="text-[10px] text-stone-400">{activity.time}</p>
+                        <div className="p-3 bg-blue-200 rounded-xl">
+                          <Users size={24} className="text-blue-700" />
                         </div>
                       </div>
-                    ))}
+                    </div>
+
+                    <div className="p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-purple-600 font-bold uppercase tracking-wider mb-1">Active Teams</p>
+                          <p className="text-3xl font-bold text-purple-900">
+                            {facultiesData.reduce((acc, f) => acc + f.teams.length, 0)}
+                          </p>
+                        </div>
+                        <div className="p-3 bg-purple-200 rounded-xl">
+                          <Users size={24} className="text-purple-700" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-green-600 font-bold uppercase tracking-wider mb-1">Resources Available</p>
+                          <p className="text-3xl font-bold text-green-900">
+                            {materialsData.length + equipmentsData.length}
+                          </p>
+                        </div>
+                        <div className="p-3 bg-green-200 rounded-xl">
+                          <Package size={24} className="text-green-700" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-orange-600 font-bold uppercase tracking-wider mb-1">Upcoming Events</p>
+                          <p className="text-3xl font-bold text-orange-900">
+                            {eventsData.filter(e => e.isActive).length}
+                          </p>
+                        </div>
+                        <div className="p-3 bg-orange-200 rounded-xl">
+                          <Calendar size={24} className="text-orange-700" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1713,7 +1801,20 @@ const AdminDashboard = () => {
                 <div className="flex-1 overflow-y-auto p-8">
                   <form onSubmit={handleEventSubmit} className="space-y-5">
                     <input type="text" placeholder="Event Title" required value={eventForm.title} onChange={e => setEventForm({ ...eventForm, title: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
-                    <input type="text" placeholder="Date (e.g. Dec 15, 2025)" required value={eventForm.date} onChange={e => setEventForm({ ...eventForm, date: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" size={20} />
+                      <input
+                        type="date"
+                        required
+                        value={eventForm.date ? eventForm.date.split('-').reverse().join('-') : ''}
+                        onChange={e => {
+                          // Convert from yyyy-mm-dd to dd-mm-yyyy
+                          const [year, month, day] = e.target.value.split('-');
+                          setEventForm({ ...eventForm, date: `${day}-${month}-${year}` });
+                        }}
+                        className="w-full pl-11 pr-4 p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium"
+                      />
+                    </div>
                     <input type="text" placeholder="Category (e.g. Conference)" required value={eventForm.category} onChange={e => setEventForm({ ...eventForm, category: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
                     <div className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group">
                       <input type="file" accept="image/*" onChange={e => setEventForm({ ...eventForm, image: e.target.files[0] })} className="absolute inset-0 opacity-0 cursor-pointer" required={!editingEvent} />

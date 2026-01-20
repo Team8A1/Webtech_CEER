@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 
 function OurProjects() {
-  const [isVisible, setIsVisible] = useState(false)
-  const sectionRef = useRef(null)
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+  const [newsItems, setNewsItems] = useState([]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -25,32 +26,23 @@ function OurProjects() {
     }
   }, [])
 
-  const newsItems = [
-    {
-      title: 'Smart Campus IoT System',
-      date: 'November 2025',
-      category: 'IoT',
-      snippet: 'Developed an integrated IoT solution for campus automation including smart lighting, attendance tracking, and energy management.'
-    },
-    {
-      title: 'AI-Powered Student Assistant Chatbot',
-      date: 'October 2025',
-      category: 'AI/ML',
-      snippet: 'Created an intelligent chatbot using NLP to help students with course information, timetables, and academic queries.'
-    },
-    {
-      title: 'Web-Based Library Management System',
-      date: 'September 2025',
-      category: 'Web Development',
-      snippet: 'Full-stack application with React and Node.js for efficient book cataloging, issuing, and digital resource management.'
-    },
-    {
-      title: 'Mobile App for Campus Navigation',
-      date: 'August 2025',
-      category: 'Mobile Dev',
-      snippet: 'Cross-platform mobile application using React Native with AR features for indoor campus navigation and facility locator.'
-    }
-  ]
+  useEffect(() => {
+    // Fetch projects from backend
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/projects');
+        const data = await response.json();
+        if (data.success) {
+          setNewsItems(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        // Fallback to empty array if fetch fails
+        setNewsItems([]);
+      }
+    };
+    fetchProjects();
+  }, []);
 
   return (
     <section ref={sectionRef} className="py-20 bg-white">

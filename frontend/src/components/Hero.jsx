@@ -50,7 +50,7 @@ function Hero() {
             Welcome to CEER
           </h1>
           <p className="text-sm md:text-base text-slate-300 tracking-wider mt-0 pt-0">
-            (center for engineering education research)
+            (Center For Engineering Education Research)
           </p>
           <p className="text-xl md:text-2xl text-slate-200 mb-2 leading-relaxed">
             Access your portal, resources & community. Your gateway to academic excellence and student life at KLE Tech.

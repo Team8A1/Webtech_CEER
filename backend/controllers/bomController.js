@@ -8,8 +8,8 @@ const { sendEmail } = require('../utils/emailUtil');
 const createBOMRequest = async (req, res) => {
     try {
         const { slNo, sprintNo, date, partName, consumableName, specification, qty, length, width, weight, notifyGuide } = req.body;
-        console.log("weight is ",weight);
-        
+        console.log("weight is ", weight);
+
         const studentId = req.user._id;
 
         const student = await User.findById(studentId).populate('guideId').populate('teamId');
@@ -42,7 +42,7 @@ const createBOMRequest = async (req, res) => {
         // Send Email to guide
         const guideEmail = student.guideId.email;
         const studentName = student.name;
-        const studentUsn = student.usn || student.email||'N/A';
+        const studentUsn = student.usn || student.email || 'N/A';
         const teamId = student.teamId ? student.teamId._id : 'N/A';
         const problemStatement = student.problemStatement || 'N/A';
 
@@ -248,6 +248,57 @@ const updateBOMRequestStatus = async (req, res) => {
         }
 
         await bomRequest.save();
+
+        // Send email notification to student
+        if (status === 'approved' || status === 'rejected') {
+            try {
+                const student = await User.findById(bomRequest.studentId);
+                if (student && student.email) {
+                    const faculty = await User.findById(req.user._id);
+                    const facultyName = faculty ? faculty.name : 'Your Faculty Guide';
+
+                    const statusText = status === 'approved' ? 'APPROVED' : 'REJECTED';
+                    const statusColor = status === 'approved' ? '#16a34a' : '#dc2626';
+
+                    const subject = `BOM Request ${statusText} - ${bomRequest.partName || bomRequest.consumableName}`;
+                    const text = `Your BOM request for ${bomRequest.partName || bomRequest.consumableName} has been ${status} by ${facultyName}.${status === 'rejected' && reason ? `\n\nReason: ${reason}` : ''}`;
+
+                    const html = `
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                            <h2 style="color: #1f2937; border-bottom: 3px solid ${statusColor}; padding-bottom: 10px;">
+                                BOM Request ${statusText}
+                            </h2>
+                            <p>Dear ${student.name},</p>
+                            <p>Your BOM request has been <strong style="color: ${statusColor};">${status.toUpperCase()}</strong> by ${facultyName}.</p>
+                            
+                            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                <h3 style="margin-top: 0; color: #374151;">Request Details:</h3>
+                                <p><strong>Item:</strong> ${bomRequest.partName || bomRequest.consumableName}</p>
+                                <p><strong>Quantity:</strong> ${bomRequest.qty}</p>
+                                <p><strong>Specification:</strong> ${bomRequest.specification}</p>
+                                ${status === 'rejected' && reason ? `<p><strong style="color: #dc2626;">Reason for Rejection:</strong> ${reason}</p>` : ''}
+                            </div>
+                            
+                            ${status === 'approved' ?
+                            '<p style="color: #16a34a;">✓ Your request will now proceed to lab approval.</p>' :
+                            '<p style="color: #dc2626;">You may need to submit a new request with the required modifications.</p>'
+                        }
+                            
+                            <p>Please login to your student dashboard to view the full details.</p>
+                            <p><a href="http://localhost:5173/login/student" style="background-color: #7f1d1d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">View Dashboard</a></p>
+                            
+                            <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+                            <p style="color: #6b7280; font-size: 12px;">This is an automated notification from CEER Portal.</p>
+                        </div>
+                    `;
+
+                    await sendEmail(student.email, subject, text, html);
+                }
+            } catch (emailError) {
+                console.error('Error sending email to student:', emailError);
+                // Don't fail the request if email fails
+            }
+        }
 
         res.status(200).json({ success: true, data: bomRequest, message: 'BOM Request updated' });
     } catch (error) {

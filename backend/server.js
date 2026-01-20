@@ -92,6 +92,7 @@ app.use("/api/energy", require("./routes/energyRoutes"));
 app.use("/api/carbon", require("./routes/carbonRoutes"));
 app.use("/api/equipment", require("./routes/equipmentRoutes"));
 app.use("/api/instructions", require("./routes/instruction.routes"));
+app.use("/api/projects", require("./routes/projectRoutes"));
 
 // -------------------------
 // Test Route

@@ -66,6 +66,14 @@ function RoleSelection() {
           Back to Home
         </button>
       </div>
+      <div className="absolute top-6 right-6 z-20">
+        <button
+          onClick={() => navigate('/explorer-portal')}
+          className="px-4 py-2 bg-stone-900 text-white rounded-lg shadow-md hover:bg-maroon-700 transition-colors border border-stone-900 font-medium"
+        >
+          Explorer Portal
+        </button>
+      </div>
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img
@@ -85,9 +93,9 @@ function RoleSelection() {
           <p className="text-lg text-stone-600 mb-2 font-light">
             Select your role to continue
           </p>
-          <p className="text-sm text-stone-500 tracking-wider">
+          {/* <p className="text-sm text-stone-500 tracking-wider">
             CENTER FOR ENGINEERING EDUCATION RESEARCH
-          </p>
+          </p> */}
         </div>
 
         {/* Role Selection Grid */}

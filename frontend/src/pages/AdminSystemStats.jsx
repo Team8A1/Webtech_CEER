@@ -19,11 +19,11 @@ function AdminSystemStats() {
   useEffect(() => {
     const teams = JSON.parse(localStorage.getItem('teams') || '[]')
     const boms = JSON.parse(localStorage.getItem('boms') || '[]')
-    
+
     const active = teams.filter(t => t.status === 'in-progress').length
     const completed = teams.filter(t => t.status === 'completed').length
     const completionRate = teams.length ? Math.round((completed / teams.length) * 100) : 0
-    
+
     // Calculate department stats from teams
     const depts = {}
     teams.forEach(team => {
@@ -32,13 +32,13 @@ function AdminSystemStats() {
       depts[dept].teams++
       if (team.status === 'completed') depts[dept].completed++
     })
-    
+
     const departmentData = Object.entries(depts).map(([name, data]) => ({
       dept: name,
       teams: data.teams,
       completion: data.teams ? Math.round((data.completed / data.teams) * 100) : 0
     }))
-    
+
     // Calculate faculty workload from BOMs
     const facultyWork = {}
     boms.forEach(bom => {
@@ -50,13 +50,13 @@ function AdminSystemStats() {
         facultyWork[faculty].pending++
       }
     })
-    
+
     const facultyData = Object.entries(facultyWork).map(([name, data]) => ({
       name,
       pending: data.pending,
       approved: data.approved
     }))
-    
+
     setDepartmentStats(departmentData)
     setFacultyWorkload(facultyData)
     setStats({
@@ -119,7 +119,7 @@ function AdminSystemStats() {
                   <span className="font-bold text-blue-600">{stats.facultyPending} pending</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div 
+                  <div
                     className="bg-blue-600 h-3 rounded-full"
                     style={{ width: `${Math.min((stats.facultyPending / 20) * 100, 100)}%` }}
                   ></div>
@@ -131,7 +131,7 @@ function AdminSystemStats() {
                   <span className="font-bold text-purple-600">{stats.labPending} pending</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div 
+                  <div
                     className="bg-purple-600 h-3 rounded-full"
                     style={{ width: `${Math.min((stats.labPending / 20) * 100, 100)}%` }}
                   ></div>
@@ -147,12 +147,12 @@ function AdminSystemStats() {
               <div className="relative w-48 h-48">
                 <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
                   <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" strokeWidth="10" />
-                  <circle 
-                    cx="50" 
-                    cy="50" 
-                    r="45" 
-                    fill="none" 
-                    stroke="#10b981" 
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke="#10b981"
                     strokeWidth="10"
                     strokeDasharray={`${stats.completionRate * 2.83} 283`}
                     strokeLinecap="round"
@@ -180,7 +180,7 @@ function AdminSystemStats() {
                   <span className="font-bold text-purple-600">{dept.teams} teams • {dept.completion}% complete</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div 
+                  <div
                     className="bg-purple-600 h-3 rounded-full transition-all"
                     style={{ width: `${dept.completion}%` }}
                   ></div>
@@ -219,7 +219,7 @@ function AdminSystemStats() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="w-32 bg-gray-200 rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-purple-600 h-2 rounded-full"
                           style={{ width: `${(faculty.pending / (faculty.pending + faculty.approved)) * 100}%` }}
                         ></div>

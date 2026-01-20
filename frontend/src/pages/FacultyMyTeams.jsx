@@ -15,6 +15,7 @@ function FacultyMyTeams() {
     const [editData, setEditData] = useState({ problemStatement: '', members: [] });
     const [availableStudents, setAvailableStudents] = useState([]);
     const [saving, setSaving] = useState(false);
+    const [memberSearchQuery, setMemberSearchQuery] = useState('');
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -158,7 +159,17 @@ function FacultyMyTeams() {
     };
 
     const getAvailableToAdd = () => {
-        return availableStudents.filter(s => !editData.members.includes(s._id));
+        return availableStudents.filter(student => {
+            const notAlreadyMember = !editData.members.includes(student._id);
+
+            // Search filter
+            const searchMatch = !memberSearchQuery ||
+                student.name.toLowerCase().includes(memberSearchQuery.toLowerCase()) ||
+                student.email.toLowerCase().includes(memberSearchQuery.toLowerCase()) ||
+                (student.usn && student.usn.toLowerCase().includes(memberSearchQuery.toLowerCase()));
+
+            return notAlreadyMember && searchMatch;
+        });
     };
 
     return (
@@ -360,7 +371,32 @@ function FacultyMyTeams() {
                                     {/* Add New Student */}
                                     {getAvailableToAdd().length > 0 && (
                                         <div className="border border-gray-200 rounded-lg overflow-hidden">
-                                            <div className="bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-700">Add New Members</div>
+                                            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="text-sm font-semibold text-gray-700">Add New Members</div>
+                                                </div>
+                                                {/* Search Input */}
+                                                <div className="relative">
+                                                    <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                                    </svg>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Search by name, email, or USN..."
+                                                        value={memberSearchQuery}
+                                                        onChange={(e) => setMemberSearchQuery(e.target.value)}
+                                                        className="w-full pl-9 pr-8 py-1.5 text-sm bg-white border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 outline-none"
+                                                    />
+                                                    {memberSearchQuery && (
+                                                        <button
+                                                            onClick={() => setMemberSearchQuery('')}
+                                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                        >
+                                                            <X className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
                                             <div className="max-h-48 overflow-y-auto divide-y">
                                                 {getAvailableToAdd().map((student) => (
                                                     <div key={student._id} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">

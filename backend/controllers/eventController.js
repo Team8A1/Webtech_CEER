@@ -27,9 +27,34 @@ const uploadFromBuffer = (buffer) => {
 const getAllEvents = async (req, res) => {
     try {
         const events = await Event.find({}).sort({ createdAt: -1 });
+
+        // Auto-inactivate events where date is today or has passed
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
+
+        const updates = events.map(async (event) => {
+            if (event.isActive && event.date) {
+                // Parse dd-mm-yyyy format
+                const [day, month, year] = event.date.split('-').map(Number);
+                const eventDate = new Date(year, month - 1, day);
+                eventDate.setHours(0, 0, 0, 0);
+
+                // Inactivate if event date has passed (before today)
+                if (eventDate < today) {
+                    event.isActive = false;
+                    await event.save();
+                }
+            }
+        });
+
+        await Promise.all(updates);
+
+        // Refetch to get updated state
+        const updatedEvents = await Event.find({}).sort({ createdAt: -1 });
+
         res.status(200).json({
             success: true,
-            data: events
+            data: updatedEvents
         });
     } catch (error) {
         console.error('Error fetching events:', error);

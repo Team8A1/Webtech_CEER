@@ -146,10 +146,7 @@ const TeamSection = ({ team, loading }) => (
               <h3 className="text-3xl font-serif text-stone-900 mb-6">{team.problemStatement}</h3>
 
               <div className="flex flex-col md:flex-row gap-8 pt-8 border-t border-stone-200">
-                <div>
-                  <p className="text-xs uppercase tracking-widest text-stone-400 mb-1">Team ID</p>
-                  <p className="text-stone-700 font-medium font-serif">{team._id}</p>
-                </div>
+
                 <div>
                   <p className="text-xs uppercase tracking-widest text-stone-400 mb-1">Guide</p>
                   <p className="text-stone-900 font-medium font-serif">{team.guide?.name}</p>
@@ -358,8 +355,8 @@ const StudentHome = () => {
                   onChange={(e) => setSearchFilter(e.target.value)}
                   className="px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700 bg-white text-sm font-medium text-stone-700"
                 >
-                  <option value="both">Search: Name & Description</option>
                   <option value="name">Search: Name Only</option>
+                  <option value="both">Search: Name & Description</option>
                   <option value="description">Search: Description Only</option>
                 </select>
                 <div className="relative w-full sm:w-72">
