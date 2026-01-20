@@ -57,6 +57,9 @@ const AdminDashboard = () => {
   const [expandedFaculty, setExpandedFaculty] = useState(null);
   const [selectedEquipmentView, setSelectedEquipmentView] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeStaffTab, setActiveStaffTab] = useState('faculty');
+  const [labSearchTerm, setLabSearchTerm] = useState('');
+  const [studentSearchQuery, setStudentSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 
@@ -425,7 +428,7 @@ const AdminDashboard = () => {
                 { id: 'equipment', label: 'Equipment', icon: <Wrench size={16} /> },
                 { id: 'instructions', label: 'Instructions', icon: <BookOpen size={16} /> },
                 { id: 'stats', label: 'Stats', icon: <Activity size={16} /> },
-                { id: 'performance', label: 'Performance', icon: <Activity size={16} /> },
+                { id: 'performance', label: 'Analytics', icon: <Activity size={16} /> },
                 { id: 'settings', label: 'Settings', icon: <Settings size={16} /> },
               ].map((item) => (
                 <button
@@ -475,7 +478,7 @@ const AdminDashboard = () => {
                 { id: 'equipment', label: 'Equipment', icon: <Wrench size={18} /> },
                 { id: 'instructions', label: 'Instructions', icon: <BookOpen size={18} /> },
                 { id: 'stats', label: 'Stats', icon: <Activity size={18} /> },
-                { id: 'performance', label: 'Performance', icon: <Activity size={18} /> },
+                { id: 'performance', label: 'Analytics', icon: <Activity size={18} /> },
                 { id: 'settings', label: 'Settings', icon: <Settings size={18} /> },
               ].map((item) => (
                 <button
@@ -524,7 +527,7 @@ const AdminDashboard = () => {
               {activeTab === 'equipment' && 'Track and manage lab machinery'}
               {activeTab === 'instructions' && 'Update guidelines for students'}
               {activeTab === 'stats' && 'Track material usage across approved BOM requests'}
-              {activeTab === 'performance' && 'Monitor server health and activity logs'}
+              {activeTab === 'performance' && 'View key system metrics and statistics'}
               {activeTab === 'settings' && 'Configure system preferences'}
             </p>
           </div>
@@ -714,313 +717,326 @@ const AdminDashboard = () => {
             activeTab === 'staff' && (
               <div className="space-y-6 max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
 
-                {/* Search & Stats Header */}
-                <div className="flex flex-col md:flex-row justify-between items-end gap-4 bg-white/60 backdrop-blur-md p-6 rounded-2xl border border-white shadow-sm">
-                  <div>
-                    <h2 className="text-xl font-serif mb-1 text-stone-800">Staff Directory</h2>
-                    <p className="text-stone-500 text-sm">Manage guides and their assigned student teams.</p>
-                  </div>
-                  <div className="w-full md:w-80 relative">
-                    <input
-                      type="text"
-                      placeholder="Search faculty or department..."
-                      className="w-full pl-11 pr-4 py-3 bg-white border-0 ring-1 ring-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-maroon-700/20 focus:shadow-lg transition-all shadow-sm placeholder:text-stone-400"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <Search className="w-4 h-4 text-stone-400 absolute left-4 top-3.5" />
-                  </div>
+                {/* In-page Tabs */}
+                <div className="flex gap-8 border-b border-stone-200 mb-6">
+                  <button
+                    onClick={() => setActiveStaffTab('faculty')}
+                    className={`pb-4 text-sm font-semibold transition-all relative ${activeStaffTab === 'faculty' ? 'text-maroon-700' : 'text-stone-400 hover:text-stone-600'}`}
+                  >
+                    Faculty Directory
+                    {activeStaffTab === 'faculty' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-maroon-700 animate-in fade-in slide-in-from-left-2" />}
+                  </button>
+                  <button
+                    onClick={() => setActiveStaffTab('lab')}
+                    className={`pb-4 text-sm font-semibold transition-all relative ${activeStaffTab === 'lab' ? 'text-maroon-700' : 'text-stone-400 hover:text-stone-600'}`}
+                  >
+                    Lab Incharges
+                    {activeStaffTab === 'lab' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-maroon-700 animate-in fade-in slide-in-from-left-2" />}
+                  </button>
                 </div>
 
-                {facultiesData
-                  .filter(f =>
-                    f.faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    f.faculty.department.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
-                  .map(({ faculty, teams }) => {
-                    const totalStudents = teams.reduce((acc, team) => acc + team.members.length, 0);
-
-                    return (
-                      <div key={faculty._id} className="bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
-                        <div
-                          onClick={() => setExpandedFaculty(expandedFaculty === faculty._id ? null : faculty._id)}
-                          className="flex items-center justify-between p-6 cursor-pointer hover:bg-stone-50/50 transition-colors"
-                        >
-                          <div className="flex items-center gap-6">
-                            <div className="w-14 h-14 bg-gradient-to-br from-stone-100 to-stone-200 rounded-2xl flex items-center justify-center text-stone-500 font-serif text-xl group-hover:from-maroon-700 group-hover:to-maroon-900 group-hover:text-white transition-all shadow-inner">
-                              {faculty.name.charAt(0)}
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-bold text-stone-900 group-hover:text-maroon-700 transition-colors font-serif">{faculty.name}</h3>
-                              <p className="text-sm text-stone-500 flex items-center gap-2 font-medium">
-                                <span className="bg-stone-100 text-xs px-2.5 py-0.5 rounded-md text-stone-600 border border-stone-200">{faculty.department}</span>
-                                <span className="text-stone-300">•</span>
-                                {faculty.email}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-8">
-                            <div className="text-right hidden sm:block">
-                              <div className="text-[10px] text-stone-400 uppercase tracking-widest font-bold mb-0.5">Allocated</div>
-                              <div className="text-sm font-medium">
-                                <span className="text-stone-900 font-bold">{teams.length}</span> <span className="text-stone-500">Teams</span>
-                                <span className="mx-3 text-stone-300">|</span>
-                                <span className="text-stone-900 font-bold">{totalStudents}</span> <span className="text-stone-500">Students</span>
-                              </div>
-                            </div>
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${expandedFaculty === faculty._id ? 'bg-maroon-700 text-white border-maroon-700 shadow-lg shadow-maroon-900/20' : 'border-stone-200 text-stone-400 group-hover:border-maroon-200 group-hover:text-maroon-400'}`}>
-                              {expandedFaculty === faculty._id ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-                            </div>
-                          </div>
+                {activeStaffTab === 'faculty' && (
+                  <div className="space-y-6 animate-in fade-in duration-300">
+                    {/* Search & Stats Header */}
+                    <div className="flex flex-col md:flex-row justify-between items-end gap-4 bg-white/60 backdrop-blur-md p-6 rounded-2xl border border-white shadow-sm">
+                      <div>
+                        <h2 className="text-xl font-serif mb-1 text-stone-800">Faculty Directory</h2>
+                        <p className="text-stone-500 text-sm">Manage guides and their assigned student teams.</p>
+                      </div>
+                      <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                        <div className="w-full md:w-80 relative">
+                          <input
+                            type="text"
+                            placeholder="Search faculty or department..."
+                            className="w-full pl-11 pr-4 py-3 bg-white border-0 ring-1 ring-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-maroon-700/20 focus:shadow-lg transition-all shadow-sm placeholder:text-stone-400"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                          <Search className="w-4 h-4 text-stone-400 absolute left-4 top-3.5" />
                         </div>
+                        <span className="text-sm text-stone-500 whitespace-nowrap">
+                          Total: <span className="font-bold text-stone-800">{facultiesData.length}</span>
+                        </span>
+                      </div>
+                    </div>
 
-                        {expandedFaculty === faculty._id && (
-                          <div className="border-t border-stone-100 bg-stone-50/50 p-6 animate-in fade-in slide-in-from-top-1 duration-200">
-                            {teams.length === 0 ? (
-                              <div className="flex flex-col items-center justify-center py-10 text-stone-400 border-2 border-dashed border-stone-200 rounded-xl bg-white/50">
-                                <Package size={32} className="mb-3 opacity-30" />
-                                <p className="font-serif italic text-stone-500">No teams assigned yet.</p>
-                              </div>
-                            ) : (
-                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                                {teams.map(team => (
-                                  <div key={team._id} className="bg-white border border-stone-100 rounded-xl p-6 hover:border-maroon-100 hover:shadow-lg hover:shadow-maroon-900/5 transition-all relative overflow-hidden group/team">
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-stone-200 group-hover/team:bg-maroon-400 transition-colors"></div>
+                    <div className="space-y-6">
+                      {facultiesData
+                        .filter(f =>
+                          f.faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          f.faculty.department.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .map(({ faculty, teams }) => {
+                          const totalStudents = teams.reduce((acc, team) => acc + team.members.length, 0);
 
-                                    <div className="flex justify-between items-start mb-4">
-                                      <h4 className="font-bold text-lg text-stone-900 line-clamp-1 font-serif group-hover/team:text-maroon-800 transition-colors">{team.teamName || 'Unnamed Team'}</h4>
-                                      <span className="text-[10px] text-stone-400 font-bold bg-stone-50 px-2 py-1 rounded border border-stone-100 uppercase tracking-wider">
-                                        {new Date(team.createdAt).toLocaleDateString()}
-                                      </span>
-                                    </div>
+                          return (
+                            <div key={faculty._id} className="bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
+                              <div
+                                onClick={() => setExpandedFaculty(expandedFaculty === faculty._id ? null : faculty._id)}
+                                className="flex items-center justify-between p-6 cursor-pointer hover:bg-stone-50/50 transition-colors"
+                              >
+                                <div className="flex items-center gap-6">
+                                  <div className="w-14 h-14 bg-gradient-to-br from-stone-100 to-stone-200 rounded-2xl flex items-center justify-center text-stone-500 font-serif text-xl group-hover:from-maroon-700 group-hover:to-maroon-900 group-hover:text-white transition-all shadow-inner">
+                                    {faculty.name.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <h3 className="text-lg font-bold text-stone-900 group-hover:text-maroon-700 transition-colors font-serif">{faculty.name}</h3>
+                                    <p className="text-sm text-stone-500 flex items-center gap-2 font-medium">
+                                      <span className="bg-stone-100 text-xs px-2.5 py-0.5 rounded-md text-stone-600 border border-stone-200">{faculty.department}</span>
+                                      <span className="text-stone-300">•</span>
+                                      {faculty.email}
+                                    </p>
+                                  </div>
+                                </div>
 
-                                    <p className="text-sm text-stone-600 mb-5 leading-relaxed line-clamp-2 min-h-[3em]">{team.problemStatement}</p>
-
-                                    <div className="space-y-3">
-                                      <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Members</div>
-                                      <div className="flex flex-wrap gap-2">
-                                        {team.members.map(m => (
-                                          <div key={m._id} className="inline-flex items-center px-2.5 py-1.5 bg-stone-50 border border-stone-100 rounded-md text-xs hover:bg-white hover:shadow-sm transition-all cursor-default">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
-                                            <span className="font-medium text-stone-700">{m.name}</span>
-                                            <span className="mx-2 text-stone-200">|</span>
-                                            <span className="text-stone-400 font-mono tracking-tight">{m.usn}</span>
-                                          </div>
-                                        ))}
-                                      </div>
+                                <div className="flex items-center gap-8">
+                                  <div className="text-right hidden sm:block">
+                                    <div className="text-[10px] text-stone-400 uppercase tracking-widest font-bold mb-0.5">Allocated</div>
+                                    <div className="text-sm font-medium">
+                                      <span className="text-stone-900 font-bold">{teams.length}</span> <span className="text-stone-500">Teams</span>
+                                      <span className="mx-3 text-stone-300">|</span>
+                                      <span className="text-stone-900 font-bold">{totalStudents}</span> <span className="text-stone-500">Students</span>
                                     </div>
                                   </div>
-                                ))}
+                                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${expandedFaculty === faculty._id ? 'bg-maroon-700 text-white border-maroon-700 shadow-lg shadow-maroon-900/20' : 'border-stone-200 text-stone-400 group-hover:border-maroon-200 group-hover:text-maroon-400'}`}>
+                                    {expandedFaculty === faculty._id ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                                  </div>
+                                </div>
                               </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
 
-                {/* Empty State */}
-                {facultiesData.filter(f =>
-                  f.faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  f.faculty.department.toLowerCase().includes(searchTerm.toLowerCase())
-                ).length === 0 && (
-                    <div className="text-center py-20">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-                        <Search size={24} />
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-900">No faculty found</h3>
-                      <p className="text-gray-500">Try adjusting your search terms</p>
-                    </div>
-                  )}
+                              {expandedFaculty === faculty._id && (
+                                <div className="border-t border-stone-100 bg-stone-50/50 p-6 animate-in fade-in slide-in-from-top-1 duration-200">
+                                  {teams.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-10 text-stone-400 border-2 border-dashed border-stone-200 rounded-xl bg-white/50">
+                                      <Package size={32} className="mb-3 opacity-30" />
+                                      <p className="font-serif italic text-stone-500">No teams assigned yet.</p>
+                                    </div>
+                                  ) : (
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                                      {teams.map(team => (
+                                        <div key={team._id} className="bg-white border border-stone-100 rounded-xl p-6 hover:border-maroon-100 hover:shadow-lg hover:shadow-maroon-900/5 transition-all relative overflow-hidden group/team">
+                                          <div className="absolute top-0 left-0 w-1 h-full bg-stone-200 group-hover/team:bg-maroon-400 transition-colors"></div>
 
-                {/* Lab Incharge Section */}
-                <div className="mt-10">
-                  <div className="flex flex-col md:flex-row justify-between items-end gap-4 bg-blue-50/60 backdrop-blur-md p-6 rounded-2xl border border-blue-100 shadow-sm mb-6">
-                    <div>
-                      <h2 className="text-xl font-serif mb-1 text-stone-800">Lab Incharge Personnel</h2>
-                      <p className="text-stone-500 text-sm">All registered lab incharge staff.</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm text-stone-500">
-                        Total: <span className="font-bold text-stone-800">{labInchargesData.length}</span>
-                      </span>
-                    </div>
-                  </div>
+                                          <div className="flex justify-between items-start mb-4">
+                                            <h4 className="font-bold text-lg text-stone-900 line-clamp-1 font-serif group-hover/team:text-maroon-800 transition-colors">{team.teamName || 'Unnamed Team'}</h4>
+                                            <span className="text-[10px] text-stone-400 font-bold bg-stone-50 px-2 py-1 rounded border border-stone-100 uppercase tracking-wider">
+                                              {new Date(team.createdAt).toLocaleDateString()}
+                                            </span>
+                                          </div>
 
-                  {labInchargesData.length === 0 ? (
-                    <div className="text-center py-12 bg-white/60 backdrop-blur-md rounded-2xl border border-stone-100">
-                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
-                        <Users size={20} />
-                      </div>
-                      <h3 className="text-base font-bold text-gray-900">No Lab Incharges Found</h3>
-                      <p className="text-sm text-gray-500">Register lab incharges from the Users tab.</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {labInchargesData.map((lab) => (
-                        <div
-                          key={lab._id}
-                          className="bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
-                        >
-                          <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-blue-600 font-serif text-lg group-hover:from-blue-600 group-hover:to-blue-800 group-hover:text-white transition-all shadow-inner">
-                              {lab.name.charAt(0)}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-base font-bold text-stone-900 group-hover:text-blue-700 transition-colors font-serif truncate">
-                                {lab.name}
-                              </h3>
-                              <p className="text-xs text-stone-500 truncate mb-1">{lab.email}</p>
-                              {lab.labName && (
-                                <span className="inline-block bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-100">
-                                  {lab.labName}
-                                </span>
+                                          <p className="text-sm text-stone-600 mb-5 leading-relaxed line-clamp-2 min-h-[3em]">{team.problemStatement}</p>
+
+                                          <div className="space-y-3">
+                                            <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Members</div>
+                                            <div className="flex flex-wrap gap-2">
+                                              {team.members.map(m => (
+                                                <div key={m._id} className="inline-flex items-center px-2.5 py-1.5 bg-stone-50 border border-stone-100 rounded-md text-xs hover:bg-white hover:shadow-sm transition-all cursor-default">
+                                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
+                                                  <span className="font-medium text-stone-700">{m.name}</span>
+                                                  <span className="mx-2 text-stone-200">|</span>
+                                                  <span className="text-stone-400 font-mono tracking-tight">{m.usn}</span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
                               )}
                             </div>
-                          </div>
+                          );
+                        })}
 
-                          <div className="mt-3 pt-3 border-t border-stone-100 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${lab.isActive ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-stone-300'}`}></div>
-                              <span className="text-[10px] text-stone-500">{lab.isActive ? 'Active' : 'Inactive'}</span>
+                      {/* Empty State */}
+                      {facultiesData.filter(f =>
+                        f.faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        f.faculty.department.toLowerCase().includes(searchTerm.toLowerCase())
+                      ).length === 0 && (
+                          <div className="text-center py-20">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                              <Search size={24} />
                             </div>
-                            <span className="text-[10px] text-stone-400 font-mono uppercase">
-                              {new Date(lab.createdAt).toLocaleDateString()}
-                            </span>
+                            <h3 className="text-lg font-bold text-gray-900">No faculty found</h3>
+                            <p className="text-gray-500">Try adjusting your search terms</p>
                           </div>
-                        </div>
-                      ))}
+                        )}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {activeStaffTab === 'lab' && (
+                  <div className="animate-in fade-in duration-300">
+                    {/* Lab Incharge Section */}
+                    <div className="flex flex-col md:flex-row justify-between items-end gap-4 bg-blue-50/60 backdrop-blur-md p-6 rounded-2xl border border-blue-100 shadow-sm mb-6">
+                      <div>
+                        <h2 className="text-xl font-serif mb-1 text-stone-800">Lab Incharges</h2>
+                        <p className="text-stone-500 text-sm">All registered lab incharge staff.</p>
+                      </div>
+                      <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                        <div className="w-full md:w-64 relative">
+                          <input
+                            type="text"
+                            placeholder="Search by name or lab..."
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-blue-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all shadow-sm placeholder:text-stone-400"
+                            value={labSearchTerm}
+                            onChange={(e) => setLabSearchTerm(e.target.value)}
+                          />
+                          <Search className="w-4 h-4 text-blue-400 absolute left-3.5 top-2.5" />
+                        </div>
+                        <span className="text-sm text-stone-500 whitespace-nowrap">
+                          Total: <span className="font-bold text-stone-800">{labInchargesData.length}</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {labInchargesData.filter(lab =>
+                      lab.name.toLowerCase().includes(labSearchTerm.toLowerCase()) ||
+                      (lab.labName && lab.labName.toLowerCase().includes(labSearchTerm.toLowerCase()))
+                    ).length === 0 ? (
+                      <div className="text-center py-12 bg-white/60 backdrop-blur-md rounded-2xl border border-stone-100">
+                        <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
+                          <Users size={20} />
+                        </div>
+                        <h3 className="text-base font-bold text-gray-900">No Lab Incharges Found</h3>
+                        <p className="text-sm text-gray-500">Try adjusting your search terms or register from the Users tab.</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {labInchargesData
+                          .filter(lab =>
+                            lab.name.toLowerCase().includes(labSearchTerm.toLowerCase()) ||
+                            (lab.labName && lab.labName.toLowerCase().includes(labSearchTerm.toLowerCase()))
+                          )
+                          .map((lab) => (
+                            <div
+                              key={lab._id}
+                              className="bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+                            >
+                              <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-blue-600 font-serif text-lg group-hover:from-blue-600 group-hover:to-blue-800 group-hover:text-white transition-all shadow-inner">
+                                  {lab.name.charAt(0)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="text-base font-bold text-stone-900 group-hover:text-blue-700 transition-colors font-serif truncate">
+                                    {lab.name}
+                                  </h3>
+                                  <p className="text-xs text-stone-500 truncate mb-1">{lab.email}</p>
+                                  {lab.labName && (
+                                    <span className="inline-block bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-100">
+                                      {lab.labName}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="mt-3 pt-3 border-t border-stone-100 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-2 h-2 rounded-full ${lab.isActive ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-stone-300'}`}></div>
+                                  <span className="text-[10px] text-stone-500">{lab.isActive ? 'Active' : 'Inactive'}</span>
+                                </div>
+                                <span className="text-[10px] text-stone-400 font-mono uppercase">
+                                  {new Date(lab.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
           {activeTab === 'performance' && (
-            <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white/60 backdrop-blur-xl p-8 rounded-3xl border border-white/50 shadow-sm">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-serif text-stone-900">System Statistics</h3>
-                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">Live Data</span>
+            <div className="max-w-4xl mx-auto space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+              {/* Total Students Card */}
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">Total Students</p>
+                    <p className="text-3xl font-bold text-blue-900">
+                      {facultiesData.reduce((acc, f) => acc + f.teams.reduce((sum, t) => sum + t.members.length, 0), 0)}
+                    </p>
                   </div>
-                  <div className="space-y-6">
-                    {[
-                      {
-                        label: 'Total Students',
-                        value: facultiesData.reduce((acc, f) => acc + f.teams.reduce((sum, t) => sum + t.members.length, 0), 0),
-                        max: facultiesData.reduce((acc, f) => acc + f.teams.reduce((sum, t) => sum + t.members.length, 0), 0) || 100,
-                        color: 'bg-blue-600'
-                      },
-                      {
-                        label: 'Total Teams',
-                        value: facultiesData.reduce((acc, f) => acc + f.teams.length, 0),
-                        max: facultiesData.reduce((acc, f) => acc + f.teams.length, 0) || 50,
-                        color: 'bg-purple-600'
-                      },
-                      {
-                        label: 'Total Faculty',
-                        value: facultiesData.length,
-                        max: facultiesData.length || 20,
-                        color: 'bg-maroon-600'
-                      },
-                      {
-                        label: 'Active Events',
-                        value: eventsData.filter(e => e.isActive).length,
-                        max: eventsData.length || 10,
-                        color: 'bg-orange-600'
-                      },
-                      {
-                        label: 'Available Materials',
-                        value: materialsData.length,
-                        max: materialsData.length || 100,
-                        color: 'bg-green-600'
-                      },
-                      {
-                        label: 'Available Equipment',
-                        value: equipmentsData.length,
-                        max: equipmentsData.length || 50,
-                        color: 'bg-indigo-600'
-                      }
-                    ].map((stat, i) => (
-                      <div key={i}>
-                        <div className="flex justify-between text-sm mb-2">
-                          <span className="text-stone-500">{stat.label}</span>
-                          <span className="font-mono font-bold text-stone-900">{stat.value}</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full ${stat.color} rounded-full transition-all duration-1000`}
-                            style={{ width: `${stat.max > 0 ? (stat.value / stat.max) * 100 : 0}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="p-3 bg-blue-200 rounded-xl">
+                    <Users size={24} className="text-blue-700" />
                   </div>
                 </div>
+              </div>
 
-                <div className="bg-white/60 backdrop-blur-xl p-8 rounded-3xl border border-white/50 shadow-sm">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-serif text-stone-900">System Overview</h3>
-                    <span className="text-xs text-stone-400 font-mono">{new Date().toLocaleString()}</span>
+              {/* Active Teams Card */}
+              <div className="p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-purple-600 font-bold uppercase tracking-wider mb-1">Active Teams</p>
+                    <p className="text-3xl font-bold text-purple-900">
+                      {facultiesData.reduce((acc, f) => acc + f.teams.length, 0)}
+                    </p>
                   </div>
-                  <div className="space-y-4">
-                    <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">Student Enrollment</p>
-                          <p className="text-3xl font-bold text-blue-900">
-                            {facultiesData.reduce((acc, f) => acc + f.teams.reduce((sum, t) => sum + t.members.length, 0), 0)}
-                          </p>
-                        </div>
-                        <div className="p-3 bg-blue-200 rounded-xl">
-                          <Users size={24} className="text-blue-700" />
-                        </div>
-                      </div>
-                    </div>
+                  <div className="p-3 bg-purple-200 rounded-xl">
+                    <Users size={24} className="text-purple-700" />
+                  </div>
+                </div>
+              </div>
 
-                    <div className="p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs text-purple-600 font-bold uppercase tracking-wider mb-1">Active Teams</p>
-                          <p className="text-3xl font-bold text-purple-900">
-                            {facultiesData.reduce((acc, f) => acc + f.teams.length, 0)}
-                          </p>
-                        </div>
-                        <div className="p-3 bg-purple-200 rounded-xl">
-                          <Users size={24} className="text-purple-700" />
-                        </div>
-                      </div>
-                    </div>
+              {/* Total Faculty Card */}
+              <div className="p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-red-600 font-bold uppercase tracking-wider mb-1">Total Faculty</p>
+                    <p className="text-3xl font-bold text-red-900">
+                      {facultiesData.length}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-red-200 rounded-xl">
+                    <Users size={24} className="text-red-700" />
+                  </div>
+                </div>
+              </div>
 
-                    <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs text-green-600 font-bold uppercase tracking-wider mb-1">Resources Available</p>
-                          <p className="text-3xl font-bold text-green-900">
-                            {materialsData.length + equipmentsData.length}
-                          </p>
-                        </div>
-                        <div className="p-3 bg-green-200 rounded-xl">
-                          <Package size={24} className="text-green-700" />
-                        </div>
-                      </div>
-                    </div>
+              {/* Active Events Card */}
+              <div className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-orange-600 font-bold uppercase tracking-wider mb-1">Active Events</p>
+                    <p className="text-3xl font-bold text-orange-900">
+                      {eventsData.filter(e => e.isActive).length}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-orange-200 rounded-xl">
+                    <Calendar size={24} className="text-orange-700" />
+                  </div>
+                </div>
+              </div>
 
-                    <div className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs text-orange-600 font-bold uppercase tracking-wider mb-1">Upcoming Events</p>
-                          <p className="text-3xl font-bold text-orange-900">
-                            {eventsData.filter(e => e.isActive).length}
-                          </p>
-                        </div>
-                        <div className="p-3 bg-orange-200 rounded-xl">
-                          <Calendar size={24} className="text-orange-700" />
-                        </div>
-                      </div>
-                    </div>
+              {/* Available Materials Card */}
+              <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-green-600 font-bold uppercase tracking-wider mb-1">Available Materials</p>
+                    <p className="text-3xl font-bold text-green-900">
+                      {materialsData.length}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-green-200 rounded-xl">
+                    <Package size={24} className="text-green-700" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Available Equipment Card */}
+              <div className="p-4 bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-xl border border-indigo-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-indigo-600 font-bold uppercase tracking-wider mb-1">Available Equipment</p>
+                    <p className="text-3xl font-bold text-indigo-900">
+                      {equipmentsData.length}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-indigo-200 rounded-xl">
+                    <Wrench size={24} className="text-indigo-700" />
                   </div>
                 </div>
               </div>
@@ -1258,256 +1274,341 @@ const AdminDashboard = () => {
                   >
                     Lab In-Charge
                   </button>
+                  <button
+                    onClick={() => {
+                      setUserType('studentLookup');
+                    }}
+                    className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all shadow-sm ${userType === 'studentLookup' ? 'bg-white text-maroon-700 shadow-md' : 'text-stone-400 hover:text-stone-600'}`}
+                  >
+                    Student Lookup
+                  </button>
                 </div>
 
-                <form onSubmit={handleUserRegister} className="space-y-6">
+                {userType !== 'studentLookup' && (
                   <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Full Name</label>
-                    <input type="text" required value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })}
-                      className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Email Address</label>
-                    <input type="email" required value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })}
-                      className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Password</label>
-                    <input type="text" required value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })}
-                      className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                  </div>
-
-                  {userType === 'student' ? (
-                    <>
-                      <div className="grid grid-cols-2 gap-5">
-                        <div>
-                          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">USN</label>
-                          <input type="text" required value={userForm.usn} onChange={e => setUserForm({ ...userForm, usn: e.target.value })}
-                            className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Division</label>
-                          <input type="text" required value={userForm.division} onChange={e => setUserForm({ ...userForm, division: e.target.value })}
-                            className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                        </div>
-                      </div>
+                    <form onSubmit={handleUserRegister} className="space-y-6">
                       <div>
-                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Batch</label>
-                        <input type="text" required value={userForm.batch} onChange={e => setUserForm({ ...userForm, batch: e.target.value })}
-                          className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
-                      </div>
-                    </>
-                  ) : userType === 'faculty' ? (
-                    <>
-                      <div>
-                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Department</label>
-                        <input type="text" required value={userForm.department} onChange={e => setUserForm({ ...userForm, department: e.target.value })}
+                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Full Name</label>
+                        <input type="text" required value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })}
                           className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Designation</label>
-                        <input type="text" required value={userForm.designation} onChange={e => setUserForm({ ...userForm, designation: e.target.value })}
+                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Email Address</label>
+                        <input type="email" required value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })}
                           className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
                       </div>
-                    </>
-                  ) : (
-                    <>
                       <div>
-                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Lab Name</label>
-                        <input type="text" required value={userForm.labName} onChange={e => setUserForm({ ...userForm, labName: e.target.value })}
+                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Password</label>
+                        <input type="text" required value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })}
                           className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
                       </div>
-                    </>
-                  )}
 
-                  <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">
-                    Register {userType === 'student' ? 'Student' : userType === 'faculty' ? 'Faculty' : 'Lab In-Charge'}
-                  </button>
-                </form>
+                      {userType === 'student' ? (
+                        <>
+                          <div className="grid grid-cols-2 gap-5">
+                            <div>
+                              <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">USN</label>
+                              <input type="text" required value={userForm.usn} onChange={e => setUserForm({ ...userForm, usn: e.target.value })}
+                                className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Division</label>
+                              <input type="text" required value={userForm.division} onChange={e => setUserForm({ ...userForm, division: e.target.value })}
+                                className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Batch</label>
+                            <input type="text" required value={userForm.batch} onChange={e => setUserForm({ ...userForm, batch: e.target.value })}
+                              className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
+                          </div>
+                        </>
+                      ) : userType === 'faculty' ? (
+                        <>
+                          <div>
+                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Department</label>
+                            <input type="text" required value={userForm.department} onChange={e => setUserForm({ ...userForm, department: e.target.value })}
+                              className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Designation</label>
+                            <input type="text" required value={userForm.designation} onChange={e => setUserForm({ ...userForm, designation: e.target.value })}
+                              className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div>
+                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Lab Name</label>
+                            <input type="text" required value={userForm.labName} onChange={e => setUserForm({ ...userForm, labName: e.target.value })}
+                              className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
+                          </div>
+                        </>
+                      )}
 
-                {/* Bulk Upload Section for Students */}
-                {userType === 'student' && (
-                  <div className="mt-10 pt-10 border-t border-stone-100">
-                    <h3 className="text-base font-bold text-stone-800 mb-2 font-serif">Bulk Registration (Students)</h3>
-                    <p className="text-sm text-stone-500 mb-6">Upload a CSV file with columns: Name, Email, Password, USN, Division, Batch</p>
+                      <button type="submit" className="w-full py-4 bg-maroon-700 text-white font-bold rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98]">
+                        Register {userType === 'student' ? 'Student' : userType === 'faculty' ? 'Faculty' : 'Lab In-Charge'}
+                      </button>
+                    </form>
 
-                    <div className="flex gap-4">
-                      <input
-                        type="file"
-                        accept=".csv"
-                        className="block w-full text-sm text-stone-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-stone-900 file:text-white hover:file:bg-maroon-700 file:transition-colors cursor-pointer"
-                        onChange={async (e) => {
-                          const file = e.target.files[0];
-                          if (!file) return;
+                    {/* Bulk Upload Section for Students */}
+                    {userType === 'student' && (
+                      <div className="mt-10 pt-10 border-t border-stone-100">
+                        <h3 className="text-base font-bold text-stone-800 mb-2 font-serif">Bulk Registration (Students)</h3>
+                        <p className="text-sm text-stone-500 mb-6">Upload a CSV file with columns: Name, Email, Password, USN, Division, Batch</p>
 
-                          if (confirm(`Upload and register students from ${file.name}?`)) {
-                            const text = await file.text();
-                            const lines = text.split('\n');
-                            const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
+                        <div className="flex gap-4">
+                          <input
+                            type="file"
+                            accept=".csv"
+                            className="block w-full text-sm text-stone-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-stone-900 file:text-white hover:file:bg-maroon-700 file:transition-colors cursor-pointer"
+                            onChange={async (e) => {
+                              const file = e.target.files[0];
+                              if (!file) return;
 
-                            const students = [];
+                              if (confirm(`Upload and register students from ${file.name}?`)) {
+                                const text = await file.text();
+                                const lines = text.split('\n');
+                                const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
 
-                            // Simple CSV parsing
-                            for (let i = 1; i < lines.length; i++) {
-                              if (!lines[i].trim()) continue;
+                                const students = [];
 
-                              const values = lines[i].split(',').map(v => v.trim());
-                              const userObj = {};
+                                // Simple CSV parsing
+                                for (let i = 1; i < lines.length; i++) {
+                                  if (!lines[i].trim()) continue;
 
-                              headers.forEach((h, index) => {
-                                if (h.includes('name')) userObj.name = values[index];
-                                else if (h.includes('email')) userObj.email = values[index];
-                                else if (h.includes('usn')) userObj.usn = values[index];
-                                else if (h.includes('div')) userObj.division = values[index];
-                                else if (h.includes('batch')) userObj.batch = values[index];
-                              });
+                                  const values = lines[i].split(',').map(v => v.trim());
+                                  const userObj = {};
 
-                              if (userObj.email && userObj.name) {
-                                students.push(userObj);
+                                  headers.forEach((h, index) => {
+                                    if (h.includes('name')) userObj.name = values[index];
+                                    else if (h.includes('email')) userObj.email = values[index];
+                                    else if (h.includes('usn')) userObj.usn = values[index];
+                                    else if (h.includes('div')) userObj.division = values[index];
+                                    else if (h.includes('batch')) userObj.batch = values[index];
+                                  });
+
+                                  if (userObj.email && userObj.name) {
+                                    students.push(userObj);
+                                  }
+                                }
+
+                                try {
+                                  const response = await api.post('/admin/register/students', { students });
+                                  const { success, results } = response.data;
+                                  setBulkResults(results);
+                                  setBulkType('student');
+                                  setShowBulkResultsModal(true);
+                                } catch (err) {
+                                  console.error('Bulk upload failed:', err);
+                                  alert('Bulk upload failed: ' + (err.response?.data?.message || err.message));
+                                }
+
+                                e.target.value = ''; // Reset input
                               }
-                            }
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
 
-                            try {
-                              const response = await api.post('/admin/register/students', { students });
-                              const { success, results } = response.data;
-                              setBulkResults(results);
-                              setBulkType('student');
-                              setShowBulkResultsModal(true);
-                            } catch (err) {
-                              console.error('Bulk upload failed:', err);
-                              alert('Bulk upload failed: ' + (err.response?.data?.message || err.message));
-                            }
+                    {/* Bulk Upload Section for Faculty */}
+                    {userType === 'faculty' && (
+                      <div className="mt-10 pt-10 border-t border-stone-100">
+                        <h3 className="text-base font-bold text-stone-800 mb-2 font-serif">Bulk Registration (Faculty)</h3>
+                        <p className="text-sm text-stone-500 mb-6">Upload a CSV file with columns: Name, Email, Department</p>
 
-                            e.target.value = ''; // Reset input
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
+                        <div className="flex gap-4">
+                          <input
+                            type="file"
+                            accept=".csv"
+                            className="block w-full text-sm text-stone-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-stone-900 file:text-white hover:file:bg-maroon-700 file:transition-colors cursor-pointer"
+                            onChange={async (e) => {
+                              const file = e.target.files[0];
+                              if (!file) return;
 
-                {/* Bulk Upload Section for Faculty */}
-                {userType === 'faculty' && (
-                  <div className="mt-10 pt-10 border-t border-stone-100">
-                    <h3 className="text-base font-bold text-stone-800 mb-2 font-serif">Bulk Registration (Faculty)</h3>
-                    <p className="text-sm text-stone-500 mb-6">Upload a CSV file with columns: Name, Email, Department</p>
+                              if (confirm(`Upload and register faculty from ${file.name}?`)) {
+                                const text = await file.text();
+                                const lines = text.split('\n');
+                                const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
 
-                    <div className="flex gap-4">
-                      <input
-                        type="file"
-                        accept=".csv"
-                        className="block w-full text-sm text-stone-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-stone-900 file:text-white hover:file:bg-maroon-700 file:transition-colors cursor-pointer"
-                        onChange={async (e) => {
-                          const file = e.target.files[0];
-                          if (!file) return;
+                                const faculties = [];
 
-                          if (confirm(`Upload and register faculty from ${file.name}?`)) {
-                            const text = await file.text();
-                            const lines = text.split('\n');
-                            const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
+                                // Simple CSV parsing
+                                for (let i = 1; i < lines.length; i++) {
+                                  if (!lines[i].trim()) continue;
 
-                            const faculties = [];
+                                  const values = lines[i].split(',').map(v => v.trim());
+                                  const userObj = {};
 
-                            // Simple CSV parsing
-                            for (let i = 1; i < lines.length; i++) {
-                              if (!lines[i].trim()) continue;
+                                  headers.forEach((h, index) => {
+                                    if (h.includes('name')) userObj.name = values[index];
+                                    else if (h.includes('email')) userObj.email = values[index];
+                                    else if (h.includes('dept') || h.includes('department')) userObj.department = values[index];
+                                  });
 
-                              const values = lines[i].split(',').map(v => v.trim());
-                              const userObj = {};
+                                  if (userObj.email && userObj.name) {
+                                    faculties.push(userObj);
+                                  }
+                                }
 
-                              headers.forEach((h, index) => {
-                                if (h.includes('name')) userObj.name = values[index];
-                                else if (h.includes('email')) userObj.email = values[index];
-                                else if (h.includes('dept') || h.includes('department')) userObj.department = values[index];
-                              });
+                                try {
+                                  const response = await api.post('/admin/register/faculty', { faculties });
+                                  const { success, results } = response.data;
+                                  setBulkResults(results);
+                                  setBulkType('faculty');
+                                  setShowBulkResultsModal(true);
+                                  fetchDashboardData(); // Refresh list
+                                } catch (err) {
+                                  console.error('Bulk upload failed:', err);
+                                  alert('Bulk upload failed: ' + (err.response?.data?.message || err.message));
+                                }
 
-                              if (userObj.email && userObj.name) {
-                                faculties.push(userObj);
+                                e.target.value = ''; // Reset input
                               }
-                            }
-
-                            try {
-                              const response = await api.post('/admin/register/faculty', { faculties });
-                              const { success, results } = response.data;
-                              setBulkResults(results);
-                              setBulkType('faculty');
-                              setShowBulkResultsModal(true);
-                              fetchDashboardData(); // Refresh list
-                            } catch (err) {
-                              console.error('Bulk upload failed:', err);
-                              alert('Bulk upload failed: ' + (err.response?.data?.message || err.message));
-                            }
-
-                            e.target.value = ''; // Reset input
-                          }
-                        }}
-                      />
-                    </div>
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
+
+
+
+              {/* Student Lookup Section */}
+              {userType === 'studentLookup' && (
+                <div className="mt-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                      <Search size={20} />
+                    </div>
+                    <h3 className="text-xl font-serif text-stone-800">Student Lookup</h3>
+                  </div>
+                  <div className="relative mb-6">
+                    <input
+                      type="text"
+                      placeholder="Search by student name or USN..."
+                      className="w-full pl-11 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-maroon-700/20 transition-all"
+                      value={studentSearchQuery}
+                      onChange={(e) => setStudentSearchQuery(e.target.value)}
+                    />
+                    <Search className="w-5 h-5 text-stone-400 absolute left-4 top-3.5" />
+                  </div>
+
+                  {studentSearchQuery && (
+                    <div className="space-y-4">
+                      {facultiesData
+                        .flatMap(f => (f.teams || []).flatMap(t => (t.members || []).map(m => ({
+                          name: m.name || '',
+                          usn: m.usn || '',
+                          guide: f.faculty?.name || 'Unknown',
+                          problemStatement: t.problemStatement || 'N/A'
+                        }))))
+                        .filter(s =>
+                          (s.name && s.name.toLowerCase().includes(studentSearchQuery.toLowerCase())) ||
+                          (s.usn && s.usn.toLowerCase().includes(studentSearchQuery.toLowerCase()))
+                        )
+                        .slice(0, 5) // Limit results
+                        .map((student, idx) => (
+                          <div key={idx} className="p-4 bg-stone-50 rounded-xl border border-stone-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <h4 className="font-bold text-stone-900">{student.name}</h4>
+                                <p className="text-xs font-mono text-stone-500">{student.usn}</p>
+                              </div>
+                              <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded uppercase">Student Found</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-sm mt-4">
+                              <div>
+                                <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-1">Guide</p>
+                                <p className="text-stone-700 font-medium">Prof. {student.guide}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-1">Division</p>
+                                <p className="text-stone-700 font-medium">N/A</p>
+                              </div>
+                            </div>
+                            <div className="mt-4 pt-4 border-t border-stone-200/50">
+                              <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-1">Problem Statement</p>
+                              <p className="text-stone-600 text-sm italic leading-relaxed">{student.problemStatement}</p>
+                            </div>
+                          </div>
+                        ))}
+                      {studentSearchQuery && facultiesData
+                        .flatMap(f => (f.teams || []).flatMap(t => (t.members || [])))
+                        .filter(s =>
+                          (s.name && s.name.toLowerCase().includes(studentSearchQuery.toLowerCase())) ||
+                          (s.usn && s.usn.toLowerCase().includes(studentSearchQuery.toLowerCase()))
+                        ).length === 0 && (
+                          <p className="text-center text-stone-400 text-sm py-4">No matching student found</p>
+                        )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
           {/* Events Tab */}
-          {
-            activeTab === 'events' && (
-              <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
-                <div className="flex justify-end mb-8">
-                  <button onClick={() => { setEditingEvent(null); setEventForm({ title: '', date: '', category: '', image: null }); setShowEventModal(true); }} className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98] font-medium">
-                    <Plus size={20} /> Add New Event
-                  </button>
-                </div>
+          {activeTab === 'events' && (
+            <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+              <div className="flex justify-end mb-8">
+                <button onClick={() => { setEditingEvent(null); setEventForm({ title: '', date: '', category: '', image: null }); setShowEventModal(true); }} className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98] font-medium">
+                  <Plus size={20} /> Add New Event
+                </button>
+              </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {eventsData.map(event => (
-                    <div key={event._id} className="group relative h-80 bg-stone-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500">
-                      {/* Background Image & Gradient */}
-                      <div className="absolute inset-0">
-                        <img
-                          src={event.image || event.imageUrl}
-                          alt={event.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/30 to-black/30 opacity-80 group-hover:opacity-90 transition-opacity" />
-                      </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {eventsData.map(event => (
+                  <div key={event._id} className="group relative h-80 bg-stone-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500">
+                    {/* Background Image & Gradient */}
+                    <div className="absolute inset-0">
+                      <img
+                        src={event.image || event.imageUrl}
+                        alt={event.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/30 to-black/30 opacity-80 group-hover:opacity-90 transition-opacity" />
+                    </div>
 
-                      {/* Active/Inactive Badge */}
-                      <div className="absolute top-4 left-4 z-20">
-                        <span className={`inline-block px-3 py-1 backdrop-blur-md text-white text-[10px] font-bold rounded-full uppercase tracking-widest shadow-sm ${event.isActive ? 'bg-green-600/90' : 'bg-gray-600/90'}`}>
-                          {event.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
+                    {/* Active/Inactive Badge */}
+                    <div className="absolute top-4 left-4 z-20">
+                      <span className={`inline-block px-3 py-1 backdrop-blur-md text-white text-[10px] font-bold rounded-full uppercase tracking-widest shadow-sm ${event.isActive ? 'bg-green-600/90' : 'bg-gray-600/90'}`}>
+                        {event.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
 
-                      {/* Actions (Top Right) */}
-                      <div className="absolute top-4 right-4 flex gap-2 translate-y-[-20px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
-                        <button onClick={() => { setEditingEvent(event); setEventForm(event); setShowEventModal(true); }} className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-blue-600 hover:text-white transition-colors border border-white/20">
-                          <Edit2 size={18} />
-                        </button>
-                        <button onClick={() => handleToggleEventStatus(event._id, event.isActive)} className={`p-2.5 backdrop-blur-md rounded-full text-white transition-colors border border-white/20 ${event.isActive ? 'bg-yellow-600/50 hover:bg-yellow-700' : 'bg-green-600/50 hover:bg-green-700'}`}>
-                          {event.isActive ? '○' : '●'}
-                        </button>
-                        <button onClick={() => handleDeleteEvent(event._id)} className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-red-600 hover:text-white transition-colors border border-white/20">
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
+                    {/* Actions (Top Right) */}
+                    <div className="absolute top-4 right-4 flex gap-2 translate-y-[-20px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
+                      <button onClick={() => { setEditingEvent(event); setEventForm(event); setShowEventModal(true); }} className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-blue-600 hover:text-white transition-colors border border-white/20">
+                        <Edit2 size={18} />
+                      </button>
+                      <button onClick={() => handleToggleEventStatus(event._id, event.isActive)} className={`p-2.5 backdrop-blur-md rounded-full text-white transition-colors border border-white/20 ${event.isActive ? 'bg-yellow-600/50 hover:bg-yellow-700' : 'bg-green-600/50 hover:bg-green-700'}`}>
+                        {event.isActive ? '○' : '●'}
+                      </button>
+                      <button onClick={() => handleDeleteEvent(event._id)} className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-red-600 hover:text-white transition-colors border border-white/20">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
 
-                      {/* Content (Bottom) */}
-                      <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 z-10">
-                        <span className="inline-block px-3 py-1 bg-red-600/90 backdrop-blur-md text-white text-[10px] font-bold rounded-full uppercase tracking-widest shadow-sm mb-3">
-                          {event.category}
-                        </span>
-                        <h3 className="font-serif text-2xl text-white mb-2 leading-tight">{event.title}</h3>
-                        <div className="flex items-center gap-2 text-stone-300 text-sm font-medium">
-                          <Calendar size={14} />
-                          {event.date}
-                        </div>
+                    {/* Content (Bottom) */}
+                    <div className="absolute bottom-0 left-0 w-full p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 z-10">
+                      <span className="inline-block px-3 py-1 bg-red-600/90 backdrop-blur-md text-white text-[10px] font-bold rounded-full uppercase tracking-widest shadow-sm mb-3">
+                        {event.category}
+                      </span>
+                      <h3 className="font-serif text-2xl text-white mb-2 leading-tight">{event.title}</h3>
+                      <div className="flex items-center gap-2 text-stone-300 text-sm font-medium">
+                        <Calendar size={14} />
+                        {event.date}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-            )
+            </div>
+          )
           }
 
           {/* Materials Tab */}
@@ -1723,7 +1824,7 @@ const AdminDashboard = () => {
               <AdminInstructions />
             )
           }
-        </div>
+        </div >
 
         {/* --- Modals --- */}
 
@@ -2135,7 +2236,8 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </div>
-          )}
+          )
+        }
 
       </main >
     </div >

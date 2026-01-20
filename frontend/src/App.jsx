@@ -24,7 +24,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import StudentInstructions from './pages/StudentInstructions'
 import AdminInstructions from './pages/AdminInstructions'
 import AdminProjects from './pages/AdminProjects'
-import ExplorerPortal from './pages/ExplorerPortal'
+
 
 function App() {
   return (
@@ -32,7 +32,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<RoleSelection />} />
-        <Route path="/explorer-portal" element={<ExplorerPortal />} />
+        {/* <Route path="/explorer-portal" element={<ExplorerPortal />} /> */}
         <Route path="/login/student" element={<StudentLogin />} />
         <Route path="/login/admin" element={<AdminLogin />} />
         <Route path="/login/faculty" element={<FacultyLogin />} />

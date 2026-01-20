@@ -80,10 +80,9 @@ const AdminInstructions = () => {
             const unsavedContent = localStorage.getItem(`unsaved_${activeTab}`);
 
             if (unsavedContent) {
-                // Load unsaved content
+                // Load unsaved content (don't set hasUnsavedChanges yet - only when user edits)
                 if (quillInstance.current) {
                     quillInstance.current.root.innerHTML = unsavedContent;
-                    setHasUnsavedChanges(true);
                 }
             } else {
                 // Fetch from server
@@ -101,7 +100,6 @@ const AdminInstructions = () => {
             const unsavedContent = localStorage.getItem(`unsaved_${activeTab}`);
             if (unsavedContent && quillInstance.current) {
                 quillInstance.current.root.innerHTML = unsavedContent;
-                setHasUnsavedChanges(true);
             } else if (quillInstance.current) {
                 quillInstance.current.root.innerHTML = '';
             }
