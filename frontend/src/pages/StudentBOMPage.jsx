@@ -330,6 +330,27 @@ function StudentBOMPage() {
                                 <span className="text-sm text-stone-600 font-medium">{bom.consumableName}</span>
                                 <span className="text-xs text-stone-500">{bom.specification}</span>
                                 <span className="text-xs font-mono text-stone-400 mt-1">QTY: {bom.qty}</span>
+
+                                {/* Edit History Indicator */}
+                                {bom.editHistory && bom.editHistory.length > 0 && (
+                                  <div className="mt-2 pt-2 border-t border-stone-200">
+                                    <span className="text-xs font-semibold text-blue-600 mb-1 block">✏️ Edited by {bom.editHistory[bom.editHistory.length - 1].editedByRole === 'guide' ? 'Guide' : 'Lab Incharge'}</span>
+                                    {Array.from(Object.entries(bom.editHistory[bom.editHistory.length - 1].changes || {})).map(([field, change]) => (
+                                      <div key={field} className="text-xs mb-1">
+                                        <span className="font-semibold text-stone-600 capitalize">{field.replace(/([A-Z])/g, ' $1')}:</span>
+                                        <div className="flex gap-2 items-center mt-0.5">
+                                          <span className="px-2 py-0.5 bg-red-50 text-red-700 rounded border border-red-200 line-through">
+                                            {String(change.oldValue)}
+                                          </span>
+                                          <span className="text-stone-400">→</span>
+                                          <span className="px-2 py-0.5 bg-green-50 text-green-700 rounded border border-green-200 font-medium">
+                                            {String(change.newValue)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             </td>
                             <td className="px-6 py-5">

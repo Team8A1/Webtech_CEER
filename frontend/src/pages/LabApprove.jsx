@@ -7,10 +7,22 @@ import { X } from 'lucide-react';
 function LabApprove() {
   const [boms, setBoms] = useState([])
   const [filter, setFilter] = useState('pending') // pending, approved, all, rejected
+  const [searchQuery, setSearchQuery] = useState('')
   const navigate = useNavigate()
   const previousPendingCountRef = useRef(0)
   const [rejectingId, setRejectingId] = useState(null)
   const [rejectionReason, setRejectionReason] = useState('')
+
+  // Edit State
+  const [editingBom, setEditingBom] = useState(null);
+  const [editForm, setEditForm] = useState({
+    consumableName: '',
+    specification: '',
+    qty: '',
+    partName: '',
+    sprintNo: '',
+  });
+
 
   // Password Change State
   const [user, setUser] = useState(null);
@@ -125,6 +137,38 @@ function LabApprove() {
     }
   }
 
+  const handleEditClick = (bom) => {
+    setEditingBom(bom);
+    setEditForm({
+      consumableName: bom.consumableName,
+      specification: bom.specification,
+      qty: bom.qty,
+      partName: bom.partName,
+      sprintNo: bom.sprintNo,
+      // Add other fields if needed for editing
+    });
+  };
+
+  const submitEdit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch('http://localhost:8000/api/lab/bom/edit', {
+        id: editingBom._id || editingBom.id,
+        updates: editForm
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      load();
+      alert('BOM Request Updated Successfully');
+      setEditingBom(null);
+    } catch (error) {
+      console.error('Error updating BOM:', error);
+      alert(error.response?.data?.message || 'Error updating request');
+    }
+  };
+
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setPasswordError('');
@@ -177,10 +221,25 @@ function LabApprove() {
   };
 
   const getFilteredBOMs = () => {
-    if (filter === 'pending') return boms.filter(b => !b.labApproved && b.status !== 'rejected')
-    if (filter === 'approved') return boms.filter(b => b.labApproved && b.status !== 'rejected')
-    if (filter === 'rejected') return boms.filter(b => b.status === 'rejected')
-    return boms
+    let filtered = boms;
+
+    // Apply tab filter
+    if (filter === 'pending') filtered = filtered.filter(b => !b.labApproved && b.status !== 'rejected')
+    else if (filter === 'approved') filtered = filtered.filter(b => b.labApproved && b.status !== 'rejected')
+    else if (filter === 'rejected') filtered = filtered.filter(b => b.status === 'rejected')
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(b => {
+        const studentName = b.studentId?.name?.toLowerCase() || '';
+        const studentUSN = b.studentId?.usn?.toLowerCase() || '';
+        const studentEmail = b.studentId?.email?.toLowerCase() || '';
+        return studentName.includes(query) || studentUSN.includes(query) || studentEmail.includes(query);
+      });
+    }
+
+    return filtered;
   }
 
   const filteredBoms = getFilteredBOMs()
@@ -266,6 +325,17 @@ function LabApprove() {
         >
           All ({boms.length})
         </button>
+      </div>
+
+      {/* Search Input */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search by student name, USN, or email..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full max-w-md px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+        />
       </div>
 
       {/* BOM Cards */}
@@ -389,6 +459,12 @@ function LabApprove() {
                         >
                           Reject
                         </button>
+                        <button
+                          onClick={() => handleEditClick(bom)}
+                          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors shadow"
+                        >
+                          Edit
+                        </button>
                       </div>
                     ) : (
                       <div className="text-center">
@@ -465,6 +541,91 @@ function LabApprove() {
                 Reject Request
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Edit Modal */}
+      {editingBom && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Edit BOM Request</h3>
+              <button onClick={() => setEditingBom(null)} className="text-gray-500 hover:text-gray-700">
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={submitEdit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Consumable Name</label>
+                <input
+                  type="text"
+                  required
+                  className="mt-1 w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                  value={editForm.consumableName}
+                  onChange={(e) => setEditForm({ ...editForm, consumableName: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Specification</label>
+                <textarea
+                  required
+                  className="mt-1 w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                  rows="2"
+                  value={editForm.specification}
+                  onChange={(e) => setEditForm({ ...editForm, specification: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Quantity</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    className="mt-1 w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                    value={editForm.qty}
+                    onChange={(e) => setEditForm({ ...editForm, qty: Number(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Sprint No</label>
+                  <input
+                    type="text"
+                    required
+                    className="mt-1 w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                    value={editForm.sprintNo}
+                    onChange={(e) => setEditForm({ ...editForm, sprintNo: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Part Name</label>
+                <input
+                  type="text"
+                  required
+                  className="mt-1 w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                  value={editForm.partName}
+                  onChange={(e) => setEditForm({ ...editForm, partName: e.target.value })}
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setEditingBom(null)}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 shadow"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -547,7 +708,7 @@ function LabApprove() {
         </div>
       )}
     </div>)
-  
+
 }
 
 export default LabApprove
