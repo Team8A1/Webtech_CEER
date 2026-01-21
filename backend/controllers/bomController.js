@@ -218,14 +218,50 @@ const updateBOMRequestStatus = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Not authorized to update this request' });
         }
 
-        // Update fields if provided
-        if (slNo) bomRequest.slNo = slNo;
-        if (sprintNo) bomRequest.sprintNo = sprintNo;
-        if (date) bomRequest.date = date;
-        if (partName) bomRequest.partName = partName;
-        if (consumableName) bomRequest.consumableName = consumableName;
-        if (specification) bomRequest.specification = specification;
-        if (qty) bomRequest.qty = qty;
+        // Track changes for edit history
+        const changes = new Map();
+        const editableFields = ['slNo', 'sprintNo', 'date', 'partName', 'consumableName', 'specification', 'qty'];
+
+        // Update fields if provided and track changes
+        if (slNo && slNo !== bomRequest.slNo) {
+            changes.set('slNo', { oldValue: bomRequest.slNo, newValue: slNo });
+            bomRequest.slNo = slNo;
+        }
+        if (sprintNo && sprintNo !== bomRequest.sprintNo) {
+            changes.set('sprintNo', { oldValue: bomRequest.sprintNo, newValue: sprintNo });
+            bomRequest.sprintNo = sprintNo;
+        }
+        if (date && new Date(date).getTime() !== new Date(bomRequest.date).getTime()) {
+            changes.set('date', { oldValue: bomRequest.date, newValue: date });
+            bomRequest.date = date;
+        }
+        if (partName && partName !== bomRequest.partName) {
+            changes.set('partName', { oldValue: bomRequest.partName, newValue: partName });
+            bomRequest.partName = partName;
+        }
+        if (consumableName && consumableName !== bomRequest.consumableName) {
+            changes.set('consumableName', { oldValue: bomRequest.consumableName, newValue: consumableName });
+            bomRequest.consumableName = consumableName;
+        }
+        if (specification && specification !== bomRequest.specification) {
+            changes.set('specification', { oldValue: bomRequest.specification, newValue: specification });
+            bomRequest.specification = specification;
+        }
+        if (qty && qty !== bomRequest.qty) {
+            changes.set('qty', { oldValue: bomRequest.qty, newValue: qty });
+            bomRequest.qty = qty;
+        }
+
+        // Add to edit history if there were changes
+        if (changes.size > 0) {
+            bomRequest.editHistory.push({
+                editedBy: req.user._id,
+                editedByModel: 'Faculty',
+                editedByRole: 'guide',
+                editedAt: new Date(),
+                changes: changes
+            });
+        }
 
         // Update status if provided
         if (status) {

@@ -92,8 +92,58 @@ const rejectLabBOMRequest = async (req, res) => {
     }
 };
 
+const editLabBOMRequest = async (req, res) => {
+    try {
+        const { id, updates } = req.body;
+        const labInchargeId = req.user._id;
+
+        const bomRequest = await BOMRequest.findById(id);
+
+        if (!bomRequest) {
+            return res.status(404).json({ success: false, message: 'BOM Request not found' });
+        }
+
+        // Lab can only act if guide approved
+        if (!bomRequest.guideApproved) {
+            return res.status(400).json({ success: false, message: 'Guide has not approved yet' });
+        }
+
+        // Allowed fields to update
+        const allowedFields = ['consumableName', 'specification', 'qty', 'partName', 'sprintNo', 'length', 'width', 'thickness', 'weight'];
+
+        // Track changes for edit history
+        const changes = new Map();
+
+        for (const field of allowedFields) {
+            if (updates[field] !== undefined && updates[field] !== bomRequest[field]) {
+                changes.set(field, { oldValue: bomRequest[field], newValue: updates[field] });
+                bomRequest[field] = updates[field];
+            }
+        }
+
+        // Add to edit history if there were changes
+        if (changes.size > 0) {
+            bomRequest.editHistory.push({
+                editedBy: labInchargeId,
+                editedByModel: 'LabIncharge',
+                editedByRole: 'labIncharge',
+                editedAt: new Date(),
+                changes: Object.fromEntries(changes) // Convert Map to Object for Mongoose schema
+            });
+        }
+
+        await bomRequest.save();
+
+        res.status(200).json({ success: true, data: bomRequest, message: 'BOM Request Updated by Lab Incharge' });
+    } catch (error) {
+        console.error('Error updating BOM request by Lab:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
 module.exports = {
     getLabBOMRequests,
     approveLabBOMRequest,
-    rejectLabBOMRequest
+    rejectLabBOMRequest,
+    editLabBOMRequest
 };

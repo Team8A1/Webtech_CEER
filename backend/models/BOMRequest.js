@@ -91,7 +91,32 @@ const bomRequestSchema = new mongoose.Schema({
     rejectionReason: {
         type: String,
         default: ''
-    }
+    },
+    editHistory: [{
+        editedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            refPath: 'editHistory.editedByModel'
+        },
+        editedByModel: {
+            type: String,
+            enum: ['Faculty', 'LabIncharge']
+        },
+        editedByRole: {
+            type: String,
+            enum: ['guide', 'labIncharge']
+        },
+        editedAt: {
+            type: Date,
+            default: Date.now
+        },
+        changes: {
+            type: Map,
+            of: {
+                oldValue: mongoose.Schema.Types.Mixed,
+                newValue: mongoose.Schema.Types.Mixed
+            }
+        }
+    }]
 }, {
     timestamps: true
 });
