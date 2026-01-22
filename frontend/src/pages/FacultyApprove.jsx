@@ -245,8 +245,28 @@ function FacultyApprove() {
                   {/* Main Content */}
                   <div className="flex-1 p-6 min-w-0">
                     <div className="grid md:grid-cols-[3fr_2fr] gap-6">
-                      {/* Left Column - Consumable Details */}
+                      {/* Left Column - Student & Consumable Details */}
                       <div className="min-w-0 space-y-3">
+                        {/* Student Information */}
+                        <div className="grid grid-cols-[140px_1fr] items-start">
+                          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Student:</span>
+                          <div className="text-sm text-gray-900 font-medium">{bom.studentId?.name || 'N/A'}</div>
+                        </div>
+                        <div className="grid grid-cols-[140px_1fr] items-start">
+                          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">USN/Email:</span>
+                          <div className="text-sm text-blue-600 font-medium break-all">{bom.studentId?.usn || bom.studentId?.email || 'N/A'}</div>
+                        </div>
+                        {bom.teamId?.problemStatement && (
+                          <div className="grid grid-cols-[140px_1fr] items-start">
+                            <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Problem Statement:</span>
+                            <div className="text-sm text-gray-900 font-medium max-h-24 overflow-auto pb-2 italic">"{bom.teamId.problemStatement}"</div>
+                          </div>
+                        )}
+
+                        {/* Divider */}
+                        <div className="border-t border-gray-300 my-2"></div>
+
+                        {/* Consumable Details */}
                         <div className="grid grid-cols-[140px_1fr] items-start">
                           <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Consumable Name:</span>
                           <div className="text-sm text-gray-900 font-medium max-h-24 overflow-auto pb-2">{bom.consumableName}</div>

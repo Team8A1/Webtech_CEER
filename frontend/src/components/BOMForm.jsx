@@ -291,7 +291,7 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1, autofill = nu
               onChange={handleChange}
               className="hidden"
             />
-            <span className="text-sm font-medium text-stone-600 group-hover:text-stone-900">Notify Guide via Email</span>
+            <span className="text-sm font-medium text-stone-600 group-hover:text-stone-900">Notify via Email</span>
           </label>
         </div>
       </div>
