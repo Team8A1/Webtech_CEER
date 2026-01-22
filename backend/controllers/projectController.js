@@ -1,4 +1,25 @@
 const Project = require('../models/Project');
+const cloudinary = require('../config/cloudinary');
+const streamifier = require('streamifier');
+
+// Helper to upload to Cloudinary from buffer
+const uploadFromBuffer = (buffer) => {
+    return new Promise((resolve, reject) => {
+        const cld_upload_stream = cloudinary.uploader.upload_stream(
+            {
+                folder: "projects"
+            },
+            (error, result) => {
+                if (result) {
+                    resolve(result);
+                } else {
+                    reject(error);
+                }
+            }
+        );
+        streamifier.createReadStream(buffer).pipe(cld_upload_stream);
+    });
+};
 
 // @desc    Get all projects
 // @route   GET /api/projects
@@ -33,12 +54,21 @@ const createProject = async (req, res) => {
             });
         }
 
-        const newProject = await Project.create({
+        const projectData = {
             title,
             date,
             category,
             snippet
-        });
+        };
+
+        // Upload image if provided
+        if (req.file) {
+            const result = await uploadFromBuffer(req.file.buffer);
+            projectData.image = result.secure_url;
+            projectData.imageId = result.public_id;
+        }
+
+        const newProject = await Project.create(projectData);
 
         res.status(201).json({
             success: true,
@@ -69,10 +99,23 @@ const updateProject = async (req, res) => {
             });
         }
 
+        // Update basic fields
         if (title) project.title = title;
         if (date) project.date = date;
         if (category) project.category = category;
         if (snippet) project.snippet = snippet;
+
+        // Update image if new one is provided
+        if (req.file) {
+            // Delete old image from Cloudinary if it exists
+            if (project.imageId) {
+                await cloudinary.uploader.destroy(project.imageId);
+            }
+
+            const result = await uploadFromBuffer(req.file.buffer);
+            project.image = result.secure_url;
+            project.imageId = result.public_id;
+        }
 
         await project.save();
 
@@ -102,6 +145,11 @@ const deleteProject = async (req, res) => {
                 success: false,
                 message: 'Project not found'
             });
+        }
+
+        // Delete image from Cloudinary if it exists
+        if (project.imageId) {
+            await cloudinary.uploader.destroy(project.imageId);
         }
 
         await project.deleteOne();

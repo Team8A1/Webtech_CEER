@@ -19,6 +19,14 @@ const projectSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    image: {
+        type: String, // Cloudinary image URL
+        required: false
+    },
+    imageId: {
+        type: String, // Cloudinary public_id for deletion
+        required: false
+    },
     createdAt: {
         type: Date,
         default: Date.now

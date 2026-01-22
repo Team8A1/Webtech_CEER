@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Pencil, Trash2, X, ArrowLeft } from 'lucide-react';
 import api from '../utils/api';
+import ImageUploadZone from '../components/ImageUploadZone';
 
 const AdminProjects = () => {
     const navigate = useNavigate();
@@ -10,6 +11,7 @@ const AdminProjects = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingProject, setEditingProject] = useState(null);
     const [form, setForm] = useState({ title: '', date: '', category: '', snippet: '' });
+    const [imageFile, setImageFile] = useState(null);
 
     useEffect(() => {
         fetchProjects();
@@ -31,16 +33,31 @@ const AdminProjects = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const formData = new FormData();
+            formData.append('title', form.title);
+            formData.append('date', form.date);
+            formData.append('category', form.category);
+            formData.append('snippet', form.snippet);
+
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
             if (editingProject) {
-                await api.put(`/projects/${editingProject._id}`, form);
+                await api.put(`/projects/${editingProject._id}`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
                 alert('Project updated successfully');
             } else {
-                await api.post('/projects', form);
+                await api.post('/projects', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
                 alert('Project created successfully');
             }
             setShowModal(false);
             setEditingProject(null);
             setForm({ title: '', date: '', category: '', snippet: '' });
+            setImageFile(null);
             fetchProjects();
         } catch (error) {
             alert('Error saving project: ' + (error.response?.data?.message || error.message));
@@ -90,6 +107,7 @@ const AdminProjects = () => {
                             onClick={() => {
                                 setEditingProject(null);
                                 setForm({ title: '', date: '', category: '', snippet: '' });
+                                setImageFile(null);
                                 setShowModal(true);
                             }}
                             className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg"
@@ -118,6 +136,13 @@ const AdminProjects = () => {
                                 key={project._id}
                                 className="bg-white rounded-2xl p-6 border border-stone-200 hover:border-maroon-200 hover:shadow-lg transition-all"
                             >
+                                {project.image && (
+                                    <img
+                                        src={project.image}
+                                        alt={project.title}
+                                        className="w-full h-48 object-cover rounded-xl mb-4"
+                                    />
+                                )}
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-3">
                                         <span className="px-3 py-1 bg-maroon-100 text-maroon-700 text-sm font-semibold rounded-full">
@@ -160,6 +185,7 @@ const AdminProjects = () => {
                                 onClick={() => {
                                     setShowModal(false);
                                     setEditingProject(null);
+                                    setImageFile(null);
                                 }}
                                 className="p-2 hover:bg-stone-100 rounded-full transition-colors"
                             >
@@ -213,12 +239,18 @@ const AdminProjects = () => {
                                     placeholder="Brief description of the project"
                                 />
                             </div>
+                            <ImageUploadZone
+                                onImageSelect={setImageFile}
+                                existingImage={editingProject?.image}
+                                onRemove={() => setImageFile(null)}
+                            />
                             <div className="flex gap-3 pt-4">
                                 <button
                                     type="button"
                                     onClick={() => {
                                         setShowModal(false);
                                         setEditingProject(null);
+                                        setImageFile(null);
                                     }}
                                     className="flex-1 px-6 py-3 border border-stone-300 text-stone-700 rounded-xl hover:bg-stone-50 font-medium transition-colors"
                                 >

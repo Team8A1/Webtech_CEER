@@ -56,26 +56,55 @@ function OurProjects() {
           {newsItems.map((item, index) => (
             <div
               key={index}
-              className={`bg-slate-50 rounded-xl p-8 border border-slate-200 hover:border-maroon-700 transition-all duration-500 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+              className={`bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-maroon-700 hover:shadow-xl transition-all duration-500 cursor-pointer ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
                 }`}
               style={{ transitionDelay: `${index * 150}ms` }}
             >
-              <div className="flex items-center gap-4 mb-4">
-                <span className="px-4 py-1 bg-maroon-700 text-white text-sm font-semibold rounded-full">
-                  {item.category}
-                </span>
-                <span className="text-sm text-slate-500">{item.date}</span>
+              {/* Project Image */}
+              {item.image && (
+                <div className="relative h-64 overflow-hidden bg-slate-100">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <span className="px-4 py-1.5 bg-maroon-700 text-white text-sm font-semibold rounded-full shadow-lg">
+                      {item.category}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Project Content */}
+              <div className="p-8">
+                {!item.image && (
+                  <div className="flex items-center gap-4 mb-4">
+                    <span className="px-4 py-1 bg-maroon-700 text-white text-sm font-semibold rounded-full">
+                      {item.category}
+                    </span>
+                    <span className="text-sm text-slate-500">{item.date}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-2xl font-serif font-bold text-slate-900 hover:text-maroon-700 transition-colors">
+                    {item.title}
+                  </h3>
+                  {item.image && (
+                    <span className="text-sm text-slate-500">{item.date}</span>
+                  )}
+                </div>
+
+                <p className="text-slate-600 leading-relaxed mb-4">{item.snippet}</p>
+
+                <a href="#" className="text-maroon-700 font-semibold hover:text-maroon-800 inline-flex items-center gap-2 transition-colors">
+                  Read More
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
               </div>
-              <h3 className="text-2xl font-serif font-bold text-slate-900 mb-3 hover:text-maroon-700 transition-colors">
-                {item.title}
-              </h3>
-              <p className="text-slate-600 leading-relaxed mb-4">{item.snippet}</p>
-              <a href="#" className="text-maroon-700 font-semibold hover:text-maroon-800 inline-flex items-center gap-2 transition-colors">
-                Read More
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </a>
             </div>
           ))}
         </div>

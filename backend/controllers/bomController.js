@@ -47,21 +47,49 @@ const createBOMRequest = async (req, res) => {
         const problemStatement = student.problemStatement || 'N/A';
 
         const subject = `New BOM Request from ${studentName} (${studentUsn})`;
-        const text = `Student ${studentName} (USN: ${studentUsn}, Team: ${teamId}) has requested a new BOM item.\n\nItem: ${partName}\nQty: ${qty}\nSpecification: ${specification}\n\nPlease login to the dashboard to approve or reject.`;
+        const text = `Student ${studentName} (USN: ${studentUsn}, Team: ${teamId}) has requested a new BOM item.\n\nItem: ${partName}\nConsumable Name: ${consumableName}\nQty: ${qty}\nSpecification: ${specification}\n\nPlease login to the dashboard to approve or reject.`;
         const html = `
-      <h3>New BOM Request</h3>
-      <p><strong>Student:</strong> ${studentName}</p>
-      <p><strong>USN:</strong> ${studentUsn}</p>
-      <p><strong>Team ID:</strong> ${teamId}</p>
-      <p><strong>Problem Statement:</strong> ${problemStatement}</p>
-      <hr/>
-      <p><strong>Item:</strong> ${partName}</p>
-      <p><strong>Quantity:</strong> ${qty}</p>
-      <p><strong>Specification:</strong> ${specification}</p>
-      <br/>
-      <p>Please login to your faculty dashboard to review this request.</p>
-      <p> Enter Page : http://localhost:5173/login/faculty <p>
-      
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+        <h2 style="color: #1f2937; border-bottom: 3px solid #7f1d1d; padding-bottom: 10px; margin-bottom: 20px;">
+          New BOM Request
+        </h2>
+        
+        <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="margin-top: 0; color: #374151; font-size: 16px;">Student Information:</h3>
+          <p style="margin: 8px 0;"><strong>Student:</strong> ${studentName}</p>
+          <p style="margin: 8px 0;"><strong>USN:</strong> <a href="mailto:${studentUsn}" style="color: #7f1d1d; text-decoration: none;">${studentUsn}</a></p>
+          <p style="margin: 8px 0;"><strong>Team ID:</strong> ${teamId}</p>
+          <p style="margin: 8px 0;"><strong>Problem Statement:</strong> ${problemStatement}</p>
+        </div>
+        
+        <div style="background-color: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid #7f1d1d; margin-bottom: 20px;">
+          <h3 style="margin-top: 0; color: #7f1d1d; font-size: 16px;">Requested Item Details:</h3>
+          <p style="margin: 8px 0;"><strong>Item:</strong> ${partName}</p>
+          <p style="margin: 8px 0;"><strong>Consumable Name:</strong> ${consumableName}</p>
+          <p style="margin: 8px 0;"><strong>Quantity:</strong> ${qty}</p>
+          <p style="margin: 8px 0;"><strong>Specification:</strong> ${specification}</p>
+        </div>
+        
+        <p style="color: #4b5563; margin-bottom: 20px;">Please login to your faculty dashboard to review this request.</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="http://localhost:5173/login/faculty" 
+             style="background-color: #7f1d1d; 
+                    color: white; 
+                    padding: 12px 30px; 
+                    text-decoration: none; 
+                    border-radius: 6px; 
+                    display: inline-block; 
+                    font-weight: bold;
+                    font-size: 16px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            Review Request on Faculty Dashboard
+          </a>
+        </div>
+        
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+        <p style="color: #6b7280; font-size: 12px; text-align: center;">This is an automated notification from CEER Portal.</p>
+      </div>
     `;
 
         if (notifyGuide !== false) { // Default to true if not provided, or check explicitly
