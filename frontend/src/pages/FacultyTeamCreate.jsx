@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { BASE_URL } from '../utils/api';
 
 function FacultyTeamCreate() {
   const navigate = useNavigate()
@@ -24,7 +25,7 @@ function FacultyTeamCreate() {
   const fetchAvailableStudents = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await axios.get('http://localhost:8000/api/faculty/team/students', {
+      const response = await axios.get(`${BASE_URL}/api/faculty/team/students`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       if (response.data.success) {
@@ -97,7 +98,7 @@ function FacultyTeamCreate() {
     try {
       const token = localStorage.getItem('token')
       const response = await axios.post(
-        'http://localhost:8000/api/faculty/team/create',
+        `${BASE_URL}/api/faculty/team/create`,
         {
           teamName: projectTitle, // Using project title as team name for now
           problemStatement: projectTitle,

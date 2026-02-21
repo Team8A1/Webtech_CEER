@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Search, Info, User } from 'lucide-react';
 import StudentNavbar from '../components/StudentNavbar';
 import StudentFooter from '../components/StudentFooter';
+import { BASE_URL } from '../utils/api';
 
 function AvailableMachines() {
   const [equipment, setEquipment] = useState([]);
@@ -16,7 +17,7 @@ function AvailableMachines() {
 
   const fetchEquipment = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/equipment/list');
+      const response = await axios.get(`${BASE_URL}/api/equipment/list`);
       if (response.data.success) {
         setEquipment(response.data.data);
       }

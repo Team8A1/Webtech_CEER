@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { BookOpen, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { BASE_URL } from '../utils/api';
 
 const StudentInstructions = () => {
     const [activeTab, setActiveTab] = useState('locker');
@@ -23,7 +24,7 @@ const StudentInstructions = () => {
         setLoading(true);
         try {
             const title = activeTab === 'locker' ? 'Locker Instructions' : 'Thinkering Lab Policies';
-            const response = await axios.get(`http://localhost:8000/api/instructions/${title}`);
+            const response = await axios.get(`${BASE_URL}/api/instructions/${title}`);
             if (response.data.success) {
                 setContent(response.data.data.content);
             }

@@ -3,6 +3,7 @@ import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import axios from 'axios';
 import { Save, Loader2, BookOpen, ShieldCheck, Edit2 } from 'lucide-react';
+import { BASE_URL } from '../utils/api';
 
 const AdminInstructions = () => {
     const [activeTab, setActiveTab] = useState('locker');
@@ -86,7 +87,7 @@ const AdminInstructions = () => {
                 }
             } else {
                 // Fetch from server
-                const response = await axios.get(`http://localhost:8000/api/instructions/${title}`);
+                const response = await axios.get(`${BASE_URL}/api/instructions/${title}`);
                 if (response.data.success) {
                     const content = response.data.data.content || '';
                     if (quillInstance.current) {
@@ -138,7 +139,7 @@ const AdminInstructions = () => {
 
             const token = localStorage.getItem('token');
             const response = await axios.put(
-                `http://localhost:8000/api/instructions/${title}`,
+                `${BASE_URL}/api/instructions/${title}`,
                 { content },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

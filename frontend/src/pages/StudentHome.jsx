@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import StudentNavbar from '../components/StudentNavbar';
 import StudentFooter from '../components/StudentFooter';
+import { BASE_URL } from '../utils/api';
 
 // --- Assets & Mock Data ---
 const IMAGES = {
@@ -215,7 +216,7 @@ const StudentHome = () => {
     const fetchTeam = async () => {
       try {
         // 1. Try fetching from API first
-        const response = await axios.get('http://localhost:8000/api/student/team/details', {
+        const response = await axios.get(`${BASE_URL}/api/student/team/details`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -284,7 +285,7 @@ const StudentHome = () => {
     // Fetch Materials
     const fetchMaterials = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/material/list');
+        const response = await axios.get(`${BASE_URL}/api/material/list`);
         if (response.data.success) {
           setMaterials(response.data.data);
         }
@@ -296,7 +297,7 @@ const StudentHome = () => {
     // Fetch Equipments
     const fetchEquipments = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/equipment/list');
+        const response = await axios.get(`${BASE_URL}/api/equipment/list`);
         if (response.data.success) {
           setEquipments(response.data.data);
         }

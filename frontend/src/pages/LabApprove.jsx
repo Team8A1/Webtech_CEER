@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
 import { X } from 'lucide-react';
+import { BASE_URL } from '../utils/api';
 
 function LabApprove() {
   const [boms, setBoms] = useState([])
@@ -48,7 +49,7 @@ function LabApprove() {
   const load = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8000/api/lab/bom/list', {
+      const response = await axios.get(`${BASE_URL}/api/lab/bom/list`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
@@ -72,7 +73,7 @@ function LabApprove() {
     const interval = setInterval(async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8000/api/lab/bom/list', {
+        const response = await axios.get(`${BASE_URL}/api/lab/bom/list`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -100,7 +101,7 @@ function LabApprove() {
   const approve = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch('http://localhost:8000/api/lab/bom/approve', {
+      await axios.patch(`${BASE_URL}/api/lab/bom/approve`, {
         id
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -121,7 +122,7 @@ function LabApprove() {
   const confirmReject = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch('http://localhost:8000/api/lab/bom/reject', {
+      await axios.patch(`${BASE_URL}/api/lab/bom/reject`, {
         id: rejectingId,
         reason: rejectionReason
       }, {
@@ -153,7 +154,7 @@ function LabApprove() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.patch('http://localhost:8000/api/lab/bom/edit', {
+      await axios.patch(`${BASE_URL}/api/lab/bom/edit`, {
         id: editingBom._id || editingBom.id,
         updates: editForm
       }, {
@@ -186,7 +187,7 @@ function LabApprove() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:8000/api/lab/auth/change-password',
+      const response = await axios.post(`${BASE_URL}/api/lab/auth/change-password`,
         {
           email: user.email,
           oldPassword: passwordForm.currentPassword,

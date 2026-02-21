@@ -1,7 +1,16 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-// console.log(API_BASE_URL);
+// 🖥️  Local machine
+const LOCAL_URL = 'http://localhost:8000';
+
+// 🌐 Production (Render)
+const PROD_URL = 'https://webtech-ceer.onrender.com';
+
+// ✅ Toggle here — swap LOCAL_URL ↔ PROD_URL to switch environments
+export const BASE_URL = PROD_URL;
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || `${BASE_URL}/api`;
+
 
 
 const api = axios.create({

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { BASE_URL } from '../utils/api';
 
 function OurProjects() {
   const [isVisible, setIsVisible] = useState(false);
@@ -30,7 +31,7 @@ function OurProjects() {
     // Fetch projects from backend
     const fetchProjects = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/projects');
+        const response = await fetch(`${BASE_URL}/api/projects`);
         const data = await response.json();
         if (data.success) {
           setNewsItems(data.data);

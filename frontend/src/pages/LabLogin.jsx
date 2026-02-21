@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google'
 import BackToLoginButton from '../components/BackToLoginButton'
+import { BASE_URL } from '../utils/api';
 
 function LabLogin() {
   const [isVisible, setIsVisible] = useState(false)
@@ -22,7 +23,7 @@ function LabLogin() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:8000/api/lab/auth/login', {
+      const response = await fetch(`${BASE_URL}/api/lab/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +61,7 @@ function LabLogin() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:8000/api/lab/auth/google', {
+      const response = await fetch(`${BASE_URL}/api/lab/auth/google`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

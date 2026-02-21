@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X } from 'lucide-react';
+import { BASE_URL } from '../utils/api';
 
 function RecentEvents() {
     const [activeIndex, setActiveIndex] = useState(0);
@@ -11,7 +12,7 @@ function RecentEvents() {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/events');
+                const response = await axios.get(`${BASE_URL}/api/events`);
                 if (response.data.success && response.data.data.length > 0) {
                     // Sort events: active first, then inactive
                     const sortedEvents = response.data.data.sort((a, b) => {

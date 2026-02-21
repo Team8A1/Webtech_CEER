@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import BOMForm from '../components/BOMForm';
+import { BASE_URL } from '../utils/api';
 
 function FacultyApprove() {
   const [boms, setBoms] = useState([])
@@ -16,7 +17,7 @@ function FacultyApprove() {
   const load = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8000/api/faculty/bom/list', {
+      const response = await axios.get(`${BASE_URL}/api/faculty/bom/list`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
@@ -35,7 +36,7 @@ function FacultyApprove() {
     const interval = setInterval(async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8000/api/faculty/bom/list', {
+        const response = await axios.get(`${BASE_URL}/api/faculty/bom/list`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -63,7 +64,7 @@ function FacultyApprove() {
   const approve = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch('http://localhost:8000/api/faculty/bom/update', {
+      await axios.patch(`${BASE_URL}/api/faculty/bom/update`, {
         id,
         status: 'approved'
       }, {
@@ -85,7 +86,7 @@ function FacultyApprove() {
   const confirmReject = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch('http://localhost:8000/api/faculty/bom/update', {
+      await axios.patch(`${BASE_URL}/api/faculty/bom/update`, {
         id: rejectingId,
         status: 'rejected',
         reason: rejectionReason
@@ -105,7 +106,7 @@ function FacultyApprove() {
   const handleUpdate = async (bomData) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch('http://localhost:8000/api/faculty/bom/update', {
+      await axios.patch(`${BASE_URL}/api/faculty/bom/update`, {
         id: editingBOM._id || editingBOM.id,
         ...bomData
       }, {

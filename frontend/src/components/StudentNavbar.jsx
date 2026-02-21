@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, X, Wind, LogOut, KeyRound } from 'lucide-react';
 import axios from 'axios';
+import { BASE_URL } from '../utils/api';
 
 const StudentNavbar = ({ user }) => {
     const navigate = useNavigate();
@@ -17,7 +18,7 @@ const StudentNavbar = ({ user }) => {
     useEffect(() => {
         const checkInstructions = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/instructions/latest/update-time');
+                const response = await axios.get(`${BASE_URL}/api/instructions/latest/update-time`);
                 if (response.data.success && response.data.updatedAt) {
                     const lastSeen = localStorage.getItem('lastSeenInstructions');
                     if (!lastSeen || new Date(response.data.updatedAt) > new Date(lastSeen)) {
@@ -73,7 +74,7 @@ const StudentNavbar = ({ user }) => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.post('http://localhost:8000/api/student/auth/change-password',
+            const response = await axios.post(`${BASE_URL}/api/student/auth/change-password`,
                 {
                     email: user.email,
                     oldPassword: passwordForm.currentPassword,

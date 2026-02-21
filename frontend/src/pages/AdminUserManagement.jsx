@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Upload } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { BASE_URL } from '../utils/api';
 
 function AdminUserManagement() {
   const traverse = useNavigate()
@@ -71,7 +72,7 @@ function AdminUserManagement() {
       }
 
       try {
-        const response = await axios.post('http://localhost:8000/api/admin/register/students', { students })
+        const response = await axios.post(`${BASE_URL}/api/admin/register/students`, { students })
 
         if (response.data.success) {
           const results = response.data.results
@@ -119,7 +120,7 @@ function AdminUserManagement() {
       if (formData.role === 'student') {
         try {
           // Call Backend API for Students
-          const response = await axios.post('http://localhost:8000/api/admin/register/students', {
+          const response = await axios.post(`${BASE_URL}/api/admin/register/students`, {
             students: [{
               name: formData.name,
               email: formData.email,

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Wind, LogOut, KeyRound, X } from 'lucide-react';
 import axios from 'axios';
+import { BASE_URL } from '../utils/api';
 
 function FacultyNavbar({ user, onPasswordChange }) {
     const navigate = useNavigate();
@@ -46,7 +47,7 @@ function FacultyNavbar({ user, onPasswordChange }) {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.post(
-                'http://localhost:8000/api/faculty/auth/change-password',
+                `${BASE_URL}/api/faculty/auth/change-password`,
                 {
                     email: user?.email,
                     oldPassword: passwordForm.currentPassword,

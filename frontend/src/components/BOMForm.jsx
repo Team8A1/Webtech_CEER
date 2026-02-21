@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { Search, ChevronDown } from 'lucide-react'
+import { BASE_URL } from '../utils/api';
 
 function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1, autofill = null }) {
   const [form, setForm] = useState({
@@ -29,7 +30,7 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1, autofill = nu
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/material/list')
+        const response = await axios.get(`${BASE_URL}/api/material/list`)
         // Assuming response.data.data is the array of materials based on common pattern
         // or response.data if it's direct array. Let's check typical response format.
         // Usually standard is { success: true, data: [...] }

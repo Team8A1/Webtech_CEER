@@ -5,6 +5,7 @@ import axios from 'axios'
 import StudentNavbar from '../components/StudentNavbar'
 import StudentFooter from '../components/StudentFooter'
 import { ArrowLeft, FileText, Download, Trash2, Edit2 } from 'lucide-react'
+import { BASE_URL } from '../utils/api';
 
 function StudentBOMPage() {
   const navigate = useNavigate()
@@ -17,7 +18,7 @@ function StudentBOMPage() {
   const load = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8000/api/student/request/bom', {
+      const response = await axios.get(`${BASE_URL}/api/student/request/bom`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
@@ -39,13 +40,13 @@ function StudentBOMPage() {
       const token = localStorage.getItem('token');
       if (editing) {
         // Update existing BOM
-        await axios.put(`http://localhost:8000/api/student/request/bom/${editing._id || editing.id}`, bomData, {
+        await axios.put(`${BASE_URL}/api/student/request/bom/${editing._id || editing.id}`, bomData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert('BOM Request updated successfully!');
       } else {
         // Create new BOM
-        await axios.post('http://localhost:8000/api/student/request/bom', bomData, {
+        await axios.post(`${BASE_URL}/api/student/request/bom`, bomData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert('BOM Request sent successfully!');
@@ -64,7 +65,7 @@ function StudentBOMPage() {
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:8000/api/student/request/bom/${id}`, {
+      await axios.delete(`${BASE_URL}/api/student/request/bom/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('BOM Request deleted successfully');

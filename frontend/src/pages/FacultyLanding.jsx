@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
 import { X, KeyRound, Pencil, Plus, Trash2, Save } from 'lucide-react';
+import { BASE_URL } from '../utils/api';
 
 function FacultyLanding() {
   const navigate = useNavigate()
@@ -47,7 +48,7 @@ function FacultyLanding() {
   const fetchPendingBOMs = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8000/api/faculty/bom/list', {
+      const response = await axios.get(`${BASE_URL}/api/faculty/bom/list`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
@@ -63,7 +64,7 @@ function FacultyLanding() {
   const fetchTeams = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8000/api/faculty/team/list', {
+      const response = await axios.get(`${BASE_URL}/api/faculty/team/list`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
@@ -79,7 +80,7 @@ function FacultyLanding() {
   const fetchAvailableStudents = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8000/api/faculty/team/students', {
+      const response = await axios.get(`${BASE_URL}/api/faculty/team/students`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
@@ -130,7 +131,7 @@ function FacultyLanding() {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.put(
-        `http://localhost:8000/api/faculty/team/update/${selectedTeam._id}`,
+        `${BASE_URL}/api/faculty/team/update/${selectedTeam._id}`,
         {
           problemStatement: editData.problemStatement,
           members: editData.members
@@ -198,7 +199,7 @@ function FacultyLanding() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:8000/api/faculty/auth/change-password',
+      const response = await axios.post(`${BASE_URL}/api/faculty/auth/change-password`,
         {
           email: user.email,
           oldPassword: passwordForm.currentPassword,
