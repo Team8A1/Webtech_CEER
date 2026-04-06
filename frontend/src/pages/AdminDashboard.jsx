@@ -1503,6 +1503,9 @@ const AdminDashboard = () => {
                         .flatMap(f => (f.teams || []).flatMap(t => (t.members || []).map(m => ({
                           name: m.name || '',
                           usn: m.usn || '',
+                          email: m.email || '',
+                          division: m.division || '',
+                          batch: m.batch || '',
                           guide: f.faculty?.name || 'Unknown',
                           problemStatement: t.problemStatement || 'N/A'
                         }))))
@@ -1510,15 +1513,13 @@ const AdminDashboard = () => {
                           (s.name && s.name.toLowerCase().includes(studentSearchQuery.toLowerCase())) ||
                           (s.usn && s.usn.toLowerCase().includes(studentSearchQuery.toLowerCase()))
                         )
-                        .slice(0, 5) // Limit results
+                        .slice(0, 5)
                         .map((student, idx) => (
                           <div key={idx} className="p-4 bg-stone-50 rounded-xl border border-stone-100 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <div className="flex justify-between items-start mb-3">
-                              <div>
-                                <h4 className="font-bold text-stone-900">{student.name}</h4>
-                                <p className="text-xs font-mono text-stone-500">{student.usn}</p>
-                              </div>
-                              <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded uppercase">Student Found</span>
+                            <div className="mb-3">
+                              <h4 className="font-bold text-stone-900">{student.name}</h4>
+                              <p className="text-xs font-mono text-stone-500">{student.usn || 'No USN'}</p>
+                              {student.email && <p className="text-xs text-stone-400 mt-0.5">{student.email}</p>}
                             </div>
                             <div className="grid grid-cols-2 gap-4 text-sm mt-4">
                               <div>
@@ -1527,7 +1528,7 @@ const AdminDashboard = () => {
                               </div>
                               <div>
                                 <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-1">Division</p>
-                                <p className="text-stone-700 font-medium">N/A</p>
+                                <p className="text-stone-700 font-medium">{student.division || 'N/A'}{student.batch ? ` · ${student.batch}` : ''}</p>
                               </div>
                             </div>
                             <div className="mt-4 pt-4 border-t border-stone-200/50">
@@ -1536,6 +1537,7 @@ const AdminDashboard = () => {
                             </div>
                           </div>
                         ))}
+
                       {studentSearchQuery && facultiesData
                         .flatMap(f => (f.teams || []).flatMap(t => (t.members || [])))
                         .filter(s =>

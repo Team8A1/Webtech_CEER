@@ -66,14 +66,7 @@ function RoleSelection() {
           Back to Home
         </button>
       </div>
-      <div className="absolute top-6 right-6 z-20">
-        <button
-          onClick={() => navigate('/explorer-portal')}
-          className="px-4 py-2 bg-stone-900 text-white rounded-lg shadow-md hover:bg-maroon-700 transition-colors border border-stone-900 font-medium"
-        >
-          Explorer Portal
-        </button>
-      </div>
+
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img
