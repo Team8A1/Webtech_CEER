@@ -1582,7 +1582,7 @@ const AdminDashboard = () => {
 
                     {/* Actions (Top Right) */}
                     <div className="absolute top-4 right-4 flex gap-2 translate-y-[-20px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
-                      <button onClick={() => { setEditingEvent(event); setEventForm(event); setShowEventModal(true); }} className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-blue-600 hover:text-white transition-colors border border-white/20">
+                      <button onClick={() => { setEditingEvent(event); setEventForm({ title: event.title, date: event.date, category: event.category, image: null }); setShowEventModal(true); }} className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-blue-600 hover:text-white transition-colors border border-white/20">
                         <Edit2 size={18} />
                       </button>
                       <button onClick={() => handleToggleEventStatus(event._id, event.isActive)} className={`p-2.5 backdrop-blur-md rounded-full text-white transition-colors border border-white/20 ${event.isActive ? 'bg-yellow-600/50 hover:bg-yellow-700' : 'bg-green-600/50 hover:bg-green-700'}`}>
@@ -1907,11 +1907,23 @@ const AdminDashboard = () => {
                       <input
                         type="date"
                         required
-                        value={eventForm.date ? eventForm.date.split('-').reverse().join('-') : ''}
+                        value={(() => {
+                          if (!eventForm.date) return '';
+                          // Handle dd-mm-yyyy format → yyyy-mm-dd for HTML date input
+                          const parts = eventForm.date.split('-');
+                          if (parts.length === 3 && parts[2].length === 4) {
+                            // dd-mm-yyyy → yyyy-mm-dd
+                            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                          }
+                          return eventForm.date; // already in yyyy-mm-dd or other format
+                        })()}
                         onChange={e => {
-                          // Convert from yyyy-mm-dd to dd-mm-yyyy
-                          const [year, month, day] = e.target.value.split('-');
-                          setEventForm({ ...eventForm, date: `${day}-${month}-${year}` });
+                          // Convert from yyyy-mm-dd (HTML) to dd-mm-yyyy (stored format)
+                          const parts = e.target.value.split('-');
+                          if (parts.length === 3) {
+                            const [year, month, day] = parts;
+                            setEventForm({ ...eventForm, date: `${day}-${month}-${year}` });
+                          }
                         }}
                         className="w-full pl-11 pr-4 p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium"
                       />
