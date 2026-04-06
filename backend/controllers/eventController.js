@@ -161,8 +161,25 @@ const updateEvent = async (req, res) => {
 
         // Update basic fields
         if (title) event.title = title;
-        if (date) event.date = date;
         if (category) event.category = category;
+
+        // Update date and auto-reactivate if the new date is in the future
+        if (date) {
+            event.date = date;
+            // Parse dd-mm-yyyy format
+            const parts = date.split('-');
+            if (parts.length === 3 && parts[2].length === 4) {
+                const [day, month, year] = parts.map(Number);
+                const eventDate = new Date(year, month - 1, day);
+                eventDate.setHours(0, 0, 0, 0);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                // If new date is today or in the future, re-activate the event
+                if (eventDate >= today) {
+                    event.isActive = true;
+                }
+            }
+        }
 
         // Update image if new one is provided
         if (req.file) {
