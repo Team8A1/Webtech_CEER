@@ -1,12 +1,8 @@
 import axios from 'axios';
 
-// 🖥️  Local machine
 const LOCAL_URL = 'http://localhost:8000';
-
-// 🌐 Production (Render)
 const PROD_URL = 'https://webtech-ceer.onrender.com';
 
-// ✅ Toggle here — swap LOCAL_URL ↔ PROD_URL to switch environments
 export const BASE_URL = PROD_URL;
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || `${BASE_URL}/api`;
@@ -35,7 +31,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Don't redirect if it's a login attempt failure
       if (error.config.url.includes('/login') || error.config.url.includes('/auth') || error.config.url.includes('password')) {
         return Promise.reject(error);
       }

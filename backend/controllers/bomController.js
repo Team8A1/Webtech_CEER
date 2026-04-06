@@ -73,7 +73,7 @@ const createBOMRequest = async (req, res) => {
         <p style="color: #4b5563; margin-bottom: 20px;">Please login to your faculty dashboard to review this request.</p>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="http://localhost:5173/login/faculty" 
+          <a href="https://webtech-ceer.vercel.app/login/faculty" 
              style="background-color: #7f1d1d; 
                     color: white; 
                     padding: 12px 30px; 
@@ -349,7 +349,7 @@ const updateBOMRequestStatus = async (req, res) => {
                         }
                             
                             <p>Please login to your student dashboard to view the full details.</p>
-                            <p><a href="http://localhost:5173/login/student" style="background-color: #7f1d1d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">View Dashboard</a></p>
+                            <p><a href="https://webtech-ceer.vercel.app/login/student" style="background-color: #7f1d1d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">View Dashboard</a></p>
                             
                             <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
                             <p style="color: #6b7280; font-size: 12px;">This is an automated notification from CEER Portal.</p>
