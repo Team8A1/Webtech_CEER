@@ -14,6 +14,7 @@ const AdminInstructions = () => {
 
     const editorRef = useRef(null);
     const quillInstance = useRef(null);
+    const isInitializing = useRef(false);
 
     // Register Sizes and Fonts with more options
     const Size = Quill.import('attributors/style/size');
@@ -59,7 +60,8 @@ const AdminInstructions = () => {
 
             // Handle content changes
             quillInstance.current.on('text-change', (delta, oldDelta, source) => {
-                if (source === 'user') {
+                // Ignore events fired during programmatic content loading
+                if (source === 'user' && !isInitializing.current) {
                     setHasUnsavedChanges(true);
                     // Save to localStorage to preserve unsaved changes
                     const content = quillInstance.current.root.innerHTML;
@@ -71,6 +73,7 @@ const AdminInstructions = () => {
 
     const fetchContent = useCallback(async () => {
         setFetching(true);
+        isInitializing.current = true; // Block text-change from firing hasUnsavedChanges
         try {
             let title = '';
             if (activeTab === 'locker') title = 'Locker Instructions';
@@ -81,10 +84,15 @@ const AdminInstructions = () => {
             const unsavedContent = localStorage.getItem(`unsaved_${activeTab}`);
 
             if (unsavedContent) {
-                // Load unsaved content (don't set hasUnsavedChanges yet - only when user edits)
+                // Load unsaved content and mark as unsaved so user knows to save it
                 if (quillInstance.current) {
                     quillInstance.current.root.innerHTML = unsavedContent;
                 }
+                // Only mark as unsaved AFTER initialization is done
+                setTimeout(() => {
+                    isInitializing.current = false;
+                    setHasUnsavedChanges(true);
+                }, 100);
             } else {
                 // Fetch from server
                 const response = await axios.get(`${BASE_URL}/api/instructions/${title}`);
@@ -94,6 +102,7 @@ const AdminInstructions = () => {
                         quillInstance.current.root.innerHTML = content;
                     }
                 }
+                setTimeout(() => { isInitializing.current = false; }, 100);
             }
         } catch (error) {
             console.error('Error fetching instructions:', error);
@@ -101,8 +110,15 @@ const AdminInstructions = () => {
             const unsavedContent = localStorage.getItem(`unsaved_${activeTab}`);
             if (unsavedContent && quillInstance.current) {
                 quillInstance.current.root.innerHTML = unsavedContent;
-            } else if (quillInstance.current) {
-                quillInstance.current.root.innerHTML = '';
+                setTimeout(() => {
+                    isInitializing.current = false;
+                    setHasUnsavedChanges(true);
+                }, 100);
+            } else {
+                if (quillInstance.current) {
+                    quillInstance.current.root.innerHTML = '';
+                }
+                setTimeout(() => { isInitializing.current = false; }, 100);
             }
         } finally {
             setFetching(false);
