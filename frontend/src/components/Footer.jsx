@@ -21,7 +21,7 @@ function Footer() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <a href="https://www.google.com/maps/place/KLE+Technological+University" target="_blank" rel="noopener noreferrer" className="hover:text-maroon-400 transition-colors">KLE Technological University, Hubballi, Karnataka - 580031</a>
+              <a href="https://maps.app.goo.gl/rqYb9JL3btrz7SoT8" target="_blank" rel="noopener noreferrer" className="hover:text-maroon-400 transition-colors">KLE Technological University, Hubballi, Karnataka - 580031</a>
             </div>
           </div>
 

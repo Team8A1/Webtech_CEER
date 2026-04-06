@@ -10,7 +10,10 @@ function FacultyLanding() {
   const { logout } = useAuth();
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [pendingBOMCount, setPendingBOMCount] = useState(0);
+  // Initialize from cache so badge shows instantly on page open
+  const [pendingBOMCount, setPendingBOMCount] = useState(
+    () => parseInt(localStorage.getItem('faculty_pending_bom_count') || '0', 10)
+  );
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [allBOMs, setAllBOMs] = useState([]);
 
@@ -55,6 +58,8 @@ function FacultyLanding() {
         setAllBOMs(response.data.data);
         const pending = response.data.data.filter(b => !b.guideApproved && b.status !== 'rejected').length;
         setPendingBOMCount(pending);
+        // Cache so the badge shows instantly next time
+        localStorage.setItem('faculty_pending_bom_count', String(pending));
       }
     } catch (error) {
       console.error('Error fetching BOMs:', error);

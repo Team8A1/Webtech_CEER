@@ -6,12 +6,18 @@ import { BASE_URL } from '../utils/api';
 
 function FacultyApprove() {
   const [boms, setBoms] = useState([])
-  const [filter, setFilter] = useState('pending') // pending, approved, all, rejected
+  const [filter, setFilter] = useState('pending')
   const navigate = useNavigate()
   const previousPendingCountRef = useRef(0)
   const [editingBOM, setEditingBOM] = useState(null)
   const [rejectingId, setRejectingId] = useState(null)
   const [rejectionReason, setRejectionReason] = useState('')
+  const [toast, setToast] = useState(null) // { message, type: 'info'|'success'|'error' }
+
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
 
   const load = async () => {
@@ -42,12 +48,11 @@ function FacultyApprove() {
 
         if (response.data.success) {
           const fetchedBoms = response.data.data;
-          // Filter out rejected items from pending count
           const currentPendingCount = fetchedBoms.filter(b => !b.guideApproved && b.status !== 'rejected').length;
 
-          // POPUP alert if new pending BOMs appear (no sound, no voice)
+          // Non-intrusive toast instead of alert()
           if (currentPendingCount > previousPendingCountRef.current && currentPendingCount > 0) {
-            alert("New BOM requests pending for your approval.");
+            showToast(`🔔 ${currentPendingCount - previousPendingCountRef.current} new BOM request(s) pending your approval.`, 'info');
           }
 
           previousPendingCountRef.current = currentPendingCount;
@@ -56,7 +61,7 @@ function FacultyApprove() {
       } catch (error) {
         console.error("Error polling BOMs", error);
       }
-    }, 3000);
+    }, 30000); // Poll every 30 seconds instead of 3s
 
     return () => clearInterval(interval);
   }, []);
@@ -70,11 +75,11 @@ function FacultyApprove() {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      load(); // Reload to get updated status
-      alert('BOM Request Approved');
+      load();
+      showToast('✅ BOM Request Approved', 'success');
     } catch (error) {
       console.error('Error approving BOM:', error);
-      alert('Error approving request');
+      showToast('❌ Error approving request', 'error');
     }
   }
 
@@ -94,12 +99,12 @@ function FacultyApprove() {
         headers: { Authorization: `Bearer ${token}` }
       });
       load();
-      alert('BOM Request Rejected');
+      showToast('BOM Request Rejected', 'error');
       setRejectingId(null);
       setRejectionReason('');
     } catch (error) {
       console.error('Error rejecting BOM:', error);
-      alert('Error rejecting request');
+      showToast('❌ Error rejecting request', 'error');
     }
   }
 
@@ -114,10 +119,10 @@ function FacultyApprove() {
       });
       load();
       setEditingBOM(null);
-      alert('BOM Request Updated');
+      showToast('✅ BOM Request Updated', 'success');
     } catch (error) {
       console.error('Error updating BOM:', error);
-      alert('Error updating request');
+      showToast('❌ Error updating request', 'error');
     }
   }
 
@@ -135,6 +140,15 @@ function FacultyApprove() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-xl text-white text-sm font-semibold transition-all animate-in slide-in-from-top-2 duration-300 ${
+          toast.type === 'success' ? 'bg-green-600' :
+          toast.type === 'error' ? 'bg-red-600' : 'bg-stone-900'
+        }`}>
+          {toast.message}
+        </div>
+      )}
       {/* Header Section */}
       <div className="max-w-7xl mx-auto px-6 py-5">
         <div className="flex flex-wrap justify-between items-center gap-3 mb-12">

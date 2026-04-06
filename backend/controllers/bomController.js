@@ -318,8 +318,9 @@ const updateBOMRequestStatus = async (req, res) => {
             try {
                 const student = await User.findById(bomRequest.studentId);
                 if (student && student.email) {
-                    const faculty = await User.findById(req.user._id);
-                    const facultyName = faculty ? faculty.name : 'Your Faculty Guide';
+                    // BUG FIX: Use Faculty model, not User model
+                    const facultyDoc = await Faculty.findById(req.user._id);
+                    const facultyName = facultyDoc ? facultyDoc.name : 'Your Faculty Guide';
 
                     const statusText = status === 'approved' ? 'APPROVED' : 'REJECTED';
                     const statusColor = status === 'approved' ? '#16a34a' : '#dc2626';
