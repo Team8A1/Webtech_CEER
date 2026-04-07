@@ -142,10 +142,9 @@ function FacultyApprove() {
     <div className="min-h-screen bg-slate-50">
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-xl text-white text-sm font-semibold transition-all animate-in slide-in-from-top-2 duration-300 ${
-          toast.type === 'success' ? 'bg-green-600' :
-          toast.type === 'error' ? 'bg-red-600' : 'bg-stone-900'
-        }`}>
+        <div className={`fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-xl text-white text-sm font-semibold transition-all animate-in slide-in-from-top-2 duration-300 ${toast.type === 'success' ? 'bg-green-600' :
+            toast.type === 'error' ? 'bg-red-600' : 'bg-stone-900'
+          }`}>
           {toast.message}
         </div>
       )}

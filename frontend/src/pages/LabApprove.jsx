@@ -7,7 +7,7 @@ import { BASE_URL } from '../utils/api';
 
 function LabApprove() {
   const [boms, setBoms] = useState([])
-  const [filter, setFilter] = useState('pending') // pending, approved, all, rejected
+  const [filter, setFilter] = useState('pending')
   const [searchQuery, setSearchQuery] = useState('')
   const navigate = useNavigate()
   const previousPendingCountRef = useRef(0)

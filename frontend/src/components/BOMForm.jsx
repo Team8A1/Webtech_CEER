@@ -166,17 +166,21 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1, autofill = nu
       onSave(bomData);
     }
 
-    // reset only when creating new
-    if (!initial) setForm({
-      slNo: String(Number(nextSlNo) + 1).padStart(3, '0'), // Optimistically increment for next interaction until parent updates
+    // Reset form after both create AND edit
+    setSelectedMaterial(null);
+    setForm({
+      slNo: String(Number(nextSlNo) + 1).padStart(3, '0'),
       sprintNo: '1',
       date: new Date().toISOString().split('T')[0],
       partName: '',
       consumableName: '',
       specification: '',
       qty: '1',
+      length: '',
+      width: '',
+      weight: '',
       notifyGuide: true
-    })
+    });
   }
 
   return (
