@@ -22,7 +22,7 @@ function Hero() {
   }, [images.length])
 
   return (
-    <section className="relative h-[600px] bg-slate-900 overflow-hidden">
+    <section className="relative h-[500px] md:h-[600px] bg-slate-900 overflow-hidden">
       {images.map((image, index) => (
         <div
           key={index}
@@ -46,13 +46,13 @@ function Hero() {
           className={`max-w-3xl transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
         >
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-0 pb-0 leading-tight">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white mb-2 leading-tight">
             Welcome to CEER
           </h1>
           <p className="text-sm md:text-base text-slate-300 tracking-wider mt-0 pt-0">
             (Center For Engineering Education Research)
           </p>
-          <p className="text-xl md:text-2xl text-slate-200 mb-2 leading-relaxed">
+          <p className="text-lg md:text-2xl text-slate-200 mb-2 leading-relaxed">
             Access your portal, resources & community. Your gateway to academic excellence and student life at KLE Tech.
           </p>
 

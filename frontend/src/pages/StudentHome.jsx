@@ -67,7 +67,7 @@ const Hero = () => (
           Academic Portal
         </span>
       </div>
-      <h1 className="text-5xl md:text-7xl font-serif text-stone-900 mb-8 leading-tight drop-shadow-sm">
+      <h1 className="text-3xl sm:text-5xl md:text-7xl font-serif text-stone-900 mb-6 md:mb-8 leading-tight drop-shadow-sm px-2">
         Student <span className="italic text-red-700">Dashboard</span>
       </h1>
       <p className="text-stone-600 text-lg md:text-xl max-w-2xl mx-auto mb-12 font-light leading-relaxed">
@@ -98,7 +98,7 @@ const ToolCard = ({ tool, navigate }) => (
       <span className="text-xs text-white font-medium tracking-wide">{tool.rating}</span>
     </div>
 
-    <div className="absolute bottom-0 left-0 p-8 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+    <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
       <div className="flex items-center gap-2 mb-3 text-red-300">
         {tool.icon}
         <span className="text-xs uppercase tracking-widest font-medium">Analysis Tool</span>
@@ -123,7 +123,7 @@ const TeamSection = ({ team, loading }) => (
       <div className="flex justify-between items-end mb-16">
         <div>
           <span className="text-red-700 text-xs font-bold uppercase tracking-widest">Collaboration</span>
-          <h2 className="text-4xl font-serif text-stone-900 mt-4">Your Project Team</h2>
+          <h2 className="text-2xl md:text-4xl font-serif text-stone-900 mt-4">Your Project Team</h2>
         </div>
       </div>
 
@@ -139,7 +139,7 @@ const TeamSection = ({ team, loading }) => (
       ) : (
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Project Info Card */}
-          <div className="lg:col-span-2 bg-stone-50 p-10 rounded-3xl border border-stone-100 relative overflow-hidden group">
+          <div className="lg:col-span-2 bg-stone-50 p-6 md:p-10 rounded-3xl border border-stone-100 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-red-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
 
             <div className="relative z-10">
@@ -326,7 +326,7 @@ const StudentHome = () => {
           <div className="container mx-auto px-6">
             <div className="text-center mb-16 max-w-2xl mx-auto">
               <span className="text-red-700 text-xs font-bold uppercase tracking-widest">Academic Tools</span>
-              <h2 className="text-4xl md:text-5xl font-serif text-stone-900 mt-4 mb-6">Project Analysis</h2>
+              <h2 className="text-3xl md:text-5xl font-serif text-stone-900 mt-4 mb-6">Project Analysis</h2>
               <p className="text-stone-500 font-light text-lg">
                 Select a tool below to manage your project specifications and environmental impact.
               </p>
@@ -346,7 +346,7 @@ const StudentHome = () => {
             <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
               <div>
                 <span className="text-red-700 text-xs font-bold uppercase tracking-widest">Resources</span>
-                <h2 className="text-4xl font-serif text-stone-900 mt-4">Available Materials</h2>
+                <h2 className="text-2xl md:text-4xl font-serif text-stone-900 mt-4">Available Materials</h2>
               </div>
 
               {/* Search Bar and Filter */}
@@ -393,10 +393,10 @@ const StudentHome = () => {
                   <table className="w-full">
                     <thead className="sticky top-0 bg-stone-50 z-10">
                       <tr className="border-b border-stone-100">
-                        <th className="px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest w-24">Image</th>
-                        <th className="px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Name</th>
-                        <th className="px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Specs</th>
-                        <th className="px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Description</th>
+                        <th className="px-4 md:px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest w-20 md:w-24">Image</th>
+                        <th className="px-4 md:px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Name</th>
+                        <th className="px-4 md:px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Specs</th>
+                        <th className="px-4 md:px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest hidden sm:table-cell">Description</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-100">
@@ -417,8 +417,8 @@ const StudentHome = () => {
                         .sort((a, b) => a.name.localeCompare(b.name))
                         .map((material) => (
                           <tr key={material._id} onClick={() => setSelectedMaterial(material)} className="group hover:bg-stone-50/50 transition-colors cursor-pointer">
-                            <td className="px-8 py-5">
-                              <div className="w-16 h-16 rounded-lg bg-stone-100 overflow-hidden border border-stone-200">
+                            <td className="px-4 md:px-8 py-4 md:py-5">
+                              <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg bg-stone-100 overflow-hidden border border-stone-200">
                                 <img
                                   src={material.imageUrl}
                                   alt={material.name}
@@ -426,15 +426,15 @@ const StudentHome = () => {
                                 />
                               </div>
                             </td>
-                            <td className="px-8 py-5 align-top pt-6">
-                              <span className="font-serif text-lg text-stone-900 font-medium">{material.name}</span>
+                            <td className="px-4 md:px-8 py-4 md:py-5 align-top pt-5 md:pt-6">
+                              <span className="font-serif text-base md:text-lg text-stone-900 font-medium">{material.name}</span>
                             </td>
-                            <td className="px-8 py-5 align-top pt-6">
-                              <span className="inline-block px-3 py-1 bg-stone-100 text-stone-600 text-xs font-medium rounded-full border border-stone-200">
+                            <td className="px-4 md:px-8 py-4 md:py-5 align-top pt-5 md:pt-6">
+                              <span className="inline-block px-2 md:px-3 py-1 bg-stone-100 text-stone-600 text-[10px] md:text-xs font-medium rounded-full border border-stone-200 whitespace-nowrap">
                                 {material.dimension}
                               </span>
                             </td>
-                            <td className="px-8 py-5 align-top pt-6 max-w-xs">
+                            <td className="px-4 md:px-8 py-4 md:py-5 align-top pt-5 md:pt-6 max-w-xs hidden sm:table-cell">
                               <p className="text-sm text-stone-500 line-clamp-2 font-light leading-relaxed">
                                 {material.description}
                               </p>
@@ -473,7 +473,7 @@ const StudentHome = () => {
             <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
               <div>
                 <span className="text-red-700 text-xs font-bold uppercase tracking-widest">Lab Resources</span>
-                <h2 className="text-4xl font-serif text-stone-900 mt-4">Available Equipment</h2>
+                <h2 className="text-2xl md:text-4xl font-serif text-stone-900 mt-4">Available Equipment</h2>
               </div>
             </div>
 
@@ -563,11 +563,11 @@ const StudentHome = () => {
             onClick={() => setSelectedMaterial(null)}
           >
             <div
-              className="bg-white rounded-[2rem] max-w-3xl w-full h-[550px] flex flex-col md:flex-row overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 border border-white/20"
+              className="bg-white rounded-[2rem] max-w-3xl w-full h-auto md:h-[550px] flex flex-col md:flex-row overflow-hidden shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 border border-white/20 max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Image Section */}
-              <div className="md:w-5/12 h-full relative bg-stone-200 group overflow-hidden">
+              <div className="w-full md:w-5/12 h-64 md:h-full relative bg-stone-200 group overflow-hidden shrink-0">
                 <div className="absolute inset-0 bg-stone-300 animate-pulse" />
                 <img
                   src={selectedMaterial.imageUrl || 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80'}
@@ -601,7 +601,7 @@ const StudentHome = () => {
               </div>
 
               {/* Content Section */}
-              <div className="md:w-7/12 p-6 md:p-8 flex flex-col bg-white h-full relative">
+              <div className="w-full md:w-7/12 p-6 md:p-8 flex flex-col bg-white h-full relative overflow-y-auto">
                 <div className="flex justify-between items-start mb-4 shrink-0">
                   <div>
                     <div className="flex items-center gap-3 mb-2">
@@ -613,7 +613,7 @@ const StudentHome = () => {
                       </span>
                       <span className="text-xs font-medium text-stone-400">ID: {selectedMaterial._id.slice(-6).toUpperCase()}</span>
                     </div>
-                    <h3 className="text-3xl font-serif text-stone-900 leading-tight truncate pr-4">
+                    <h3 className="text-2xl md:text-3xl font-serif text-stone-900 leading-tight truncate pr-4">
                       {selectedMaterial.name}
                     </h3>
                   </div>

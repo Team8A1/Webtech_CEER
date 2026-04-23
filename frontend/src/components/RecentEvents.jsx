@@ -111,10 +111,10 @@ function RecentEvents() {
                     <div className="inline-block mb-0">
 
                     </div>
-                    <h2 className="text-5xl md:text-6xl mt-2 font-serif font-bold text-maroon-700 mb-4">
+                    <h2 className="text-3xl sm:text-5xl md:text-6xl mt-2 font-serif font-bold text-maroon-700 mb-4">
                         Recent Events
                     </h2>
-                    <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                    <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto px-4">
                         Explore the vibrant moments and memorable experiences from our campus
                     </p>
                 </div>
@@ -123,7 +123,7 @@ function RecentEvents() {
                     {/* Left Arrow */}
                     <button
                         onClick={handlePrevious}
-                        className="absolute left-0 md:left-4 z-20 w-14 h-14 flex items-center justify-center bg-white/80 backdrop-blur-sm text-slate-800 hover:bg-white hover:text-maroon-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+                        className="absolute left-2 md:left-4 z-20 w-10 h-10 md:w-14 md:h-14 flex items-center justify-center bg-white/80 backdrop-blur-sm text-slate-800 hover:bg-white hover:text-maroon-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
                         aria-label="Previous event"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,8 +138,8 @@ function RecentEvents() {
                                 key={index}
                                 onClick={() => setSelectedEvent(event)}
                                 className={`transition-all duration-700 ease-out relative cursor-pointer ${position === 'center'
-                                    ? 'w-80 md:w-[350px] h-[420px] md:h-[480px] scale-100 opacity-100 z-10'
-                                    : 'w-52 md:w-60 h-[340px] md:h-[380px] scale-90 opacity-50'
+                                    ? 'w-[280px] sm:w-80 md:w-[350px] h-[380px] md:h-[480px] scale-100 opacity-100 z-10'
+                                    : 'hidden md:block md:w-60 h-[380px] scale-90 opacity-50'
                                     }`}
                             >
                                 <div className="relative w-full h-full rounded-[2rem] overflow-hidden border border-slate-200/50 shadow-2xl transition-shadow duration-300 bg-white">
@@ -193,7 +193,7 @@ function RecentEvents() {
                     {/* Right Arrow */}
                     <button
                         onClick={handleNext}
-                        className="absolute right-0 md:right-4 z-20 w-14 h-14 flex items-center justify-center bg-white/80 backdrop-blur-sm text-slate-800 hover:bg-white hover:text-maroon-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+                        className="absolute right-2 md:right-4 z-20 w-10 h-10 md:w-14 md:h-14 flex items-center justify-center bg-white/80 backdrop-blur-sm text-slate-800 hover:bg-white hover:text-maroon-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
                         aria-label="Next event"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

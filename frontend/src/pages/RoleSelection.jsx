@@ -56,7 +56,7 @@ function RoleSelection() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-between p-20 relative">
+    <div className="min-h-screen bg-stone-50 flex flex-col lg:flex-row items-center justify-center lg:justify-between p-6 md:p-12 lg:p-20 relative overflow-x-hidden">
       {/* Back to Home button (top-right) */}
       <div className="absolute top-6 left-6 z-20">
         <button
@@ -80,7 +80,7 @@ function RoleSelection() {
       <div className="relative z-10 w-full max-w-2xl">
         {/* Title Section */}
         <div className="mb-12">
-          <h1 className="text-5xl font-serif text-stone-900 mb-4">
+          <h1 className="text-3xl md:text-5xl font-serif text-stone-900 mb-4">
             Welcome to CEER Portal
           </h1>
           <p className="text-lg text-stone-600 mb-2 font-light">
@@ -92,13 +92,13 @@ function RoleSelection() {
         </div>
 
         {/* Role Selection Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
           {roles.map((role, index) => (
             <button
               key={role.title}
               onClick={() => handleRoleClick(role.path)}
               className={`
-                bg-white p-8 
+                bg-white p-6 md:p-8 
                 transition-all duration-300 ease-out
                 shadow-lg hover:shadow-xl
                 hover:scale-105 hover:-translate-y-1
@@ -123,7 +123,7 @@ function RoleSelection() {
       </div>
 
       {/* Right Side - Information Panel */}
-      <div className="hidden lg:block w-full max-w-lg relative z-10 ml-20">
+      <div className="hidden lg:block w-full max-w-lg relative z-10 lg:ml-20 mt-12 lg:mt-0">
         <div className="space-y-8">
           <div className="space-y-4">
             <h2 className="text-5xl font-serif text-stone-900">

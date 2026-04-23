@@ -48,9 +48,9 @@ function OurProjects() {
   return (
     <section ref={sectionRef} className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-14">
-          <h2 className="text-4xl font-serif font-bold text-slate-900 mb-4">Our Projects</h2>
-          <p className="text-xl text-slate-600">Innovative solutions built by our students</p>
+        <div className="text-center mb-10 md:mb-14">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-4 px-4">Our Projects</h2>
+          <p className="text-lg md:text-xl text-slate-600 px-4">Innovative solutions built by our students</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -63,7 +63,7 @@ function OurProjects() {
             >
               {/* Project Image */}
               {item.image && (
-                <div className="relative h-64 overflow-hidden bg-slate-100">
+                <div className="relative h-48 sm:h-64 overflow-hidden bg-slate-100">
                   <img
                     src={item.image}
                     alt={item.title}
@@ -78,7 +78,7 @@ function OurProjects() {
               )}
 
               {/* Project Content */}
-              <div className="p-8">
+              <div className="p-6 md:p-8">
                 {!item.image && (
                   <div className="flex items-center gap-4 mb-4">
                     <span className="px-4 py-1 bg-maroon-700 text-white text-sm font-semibold rounded-full">
@@ -88,8 +88,8 @@ function OurProjects() {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-2xl font-serif font-bold text-slate-900 hover:text-maroon-700 transition-colors">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-2">
+                  <h3 className="text-xl md:text-2xl font-serif font-bold text-slate-900 hover:text-maroon-700 transition-colors">
                     {item.title}
                   </h3>
                   {item.image && (

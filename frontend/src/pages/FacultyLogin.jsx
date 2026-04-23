@@ -89,7 +89,7 @@ function FacultyLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-between p-20 relative">
+    <div className="min-h-screen bg-stone-50 flex flex-col lg:flex-row items-center justify-center lg:justify-between p-6 md:p-12 lg:p-20 relative overflow-x-hidden">
       <BackToLoginButton />
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
@@ -101,11 +101,11 @@ function FacultyLogin() {
       </div>
 
       {/* Left Side - Login Form */}
-      <div className="w-full max-w-sm relative z-10">
+      <div className="w-full max-w-[340px] sm:max-w-sm relative z-10">
         <div className="bg-white p-6 shadow-lg">
           {/* Title */}
           <div className="mb-6">
-            <h1 className="text-3xl font-serif text-stone-900">
+            <h1 className="text-2xl sm:text-3xl font-serif text-stone-900">
               Faculty Login
             </h1>
             <p className="text-sm text-stone-600 mt-2">
@@ -233,7 +233,7 @@ function FacultyLogin() {
       </div>
 
       {/* Right Side - Welcome Panel */}
-      <div className="hidden lg:block w-full max-w-lg relative z-10 ml-20">
+      <div className="hidden lg:block w-full max-w-lg relative z-10 lg:ml-20 mt-12 lg:mt-0">
         <div className="space-y-8">
           <div className="space-y-4">
             <h2 className="text-5xl font-serif text-stone-900">
