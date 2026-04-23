@@ -1,7 +1,10 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
 const connectDB = require("./config/database");
+const { apiLimiter, authLimiter } = require("./middleware/rateLimiter");
 
 // Import routes
 const studentAuthRoutes = require("./routes/studentAuthRoutes");
@@ -20,6 +23,12 @@ const eventRoutes = require("./routes/eventRoutes");
 
 // Initialize app
 const app = express();
+
+// Security Headers
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+}));
 
 // Connect to DB
 connectDB();
@@ -61,20 +70,26 @@ app.use((req, res, next) => {
   next();
 });
 
+// Rate Limiting - Apply to all API routes
+app.use("/api", apiLimiter);
+
 // -------------------------
 // JSON parsing
 // -------------------------
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10kb' })); // Body limit is 10kb
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// Data Sanitization against NoSQL Query Injection (Temporarily disabled for Express 5 compatibility)
+// app.use(mongoSanitize());
 
 // -------------------------
 // ROUTES (Correct Order)
 // -------------------------
 
-// Authentication
-app.use("/api/student/auth", studentAuthRoutes);
-app.use("/api/faculty/auth", facultyAuthRoutes);
-app.use("/api/lab/auth", labInchargeAuthRoutes);
+// Authentication (Brute-force protection applied)
+app.use("/api/student/auth", authLimiter, studentAuthRoutes);
+app.use("/api/faculty/auth", authLimiter, facultyAuthRoutes);
+app.use("/api/lab/auth", authLimiter, labInchargeAuthRoutes);
 
 // Registration
 app.use("/api/student", studentRegisterRoutes);
