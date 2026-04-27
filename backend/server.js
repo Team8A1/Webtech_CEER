@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
+const mongoose = require("mongoose");
 const connectDB = require("./config/database");
 const { apiLimiter, authLimiter } = require("./middleware/rateLimiter");
 
@@ -121,7 +122,6 @@ app.get("/", (req, res) => {
 app.get("/test", (req, res) => {
   res.sendFile(__dirname + "/test-google-auth.html");
 });
-console.log("EMAIL_USER:", process.env.EMAIL_USER);
 // -------------------------
 // Health Check
 // -------------------------
@@ -130,6 +130,8 @@ app.get("/api/health", (req, res) => {
     success: true,
     message: "Server is running",
     timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV,
+    database: mongoose.connection.readyState === 1 ? "Connected" : "Disconnected"
   });
 });
 

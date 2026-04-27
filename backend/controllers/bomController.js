@@ -8,7 +8,6 @@ const { sendEmail } = require('../utils/emailUtil');
 const createBOMRequest = async (req, res) => {
     try {
         const { slNo, sprintNo, date, partName, consumableName, specification, qty, length, width, weight, notifyGuide } = req.body;
-        console.log("weight is ", weight);
 
         const studentId = req.user._id;
 
@@ -92,11 +91,32 @@ const createBOMRequest = async (req, res) => {
       </div>
     `;
 
-        if (notifyGuide !== false) { // Default to true if not provided, or check explicitly
+        if (notifyGuide !== false) {
             if (guideEmail) {
                 await sendEmail(guideEmail, subject, text, html);
             } else {
                 console.log(`Guide for ${studentName} has no email.`);
+            }
+
+            // Also send a copy to the student for their records (the "Sent box" requirement)
+            if (student.email) {
+                const studentSubject = `Copy: BOM Request Submitted - ${partName}`;
+                const studentHtml = `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <h2 style="color: #7f1d1d;">BOM Request Submitted</h2>
+                        <p>Dear ${studentName},</p>
+                        <p>This is a copy of your BOM request submitted on ${new Date().toLocaleDateString()}.</p>
+                        <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <p><strong>Item:</strong> ${partName}</p>
+                            <p><strong>Quantity:</strong> ${qty}</p>
+                            <p><strong>Guide:</strong> ${student.guideId ? student.guideId.name : 'N/A'}</p>
+                        </div>
+                        <p>You will be notified once your guide reviews the request.</p>
+                        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+                        <p style="font-size: 12px; color: #6b7280;">CEER Portal Automated Notification</p>
+                    </div>
+                `;
+                await sendEmail(student.email, studentSubject, text, studentHtml);
             }
         }
 

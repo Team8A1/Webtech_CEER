@@ -1,9 +1,11 @@
 const nodemailer = require('nodemailer');
 
-const sendEmail = async (to, subject, text, html) => {
+const sendEmail = async (to, subject, text, html, bcc = null) => {
   try {
     const transporter = nodemailer.createTransport({
-      service: 'gmail', // You might want to make this configurable via env
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+      port: process.env.EMAIL_PORT || 587,
+      secure: process.env.EMAIL_PORT == 465, // true for 465, false for other ports
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -11,15 +13,16 @@ const sendEmail = async (to, subject, text, html) => {
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"CEER Portal" <${process.env.EMAIL_USER}>`,
       to: to,
+      bcc: bcc || process.env.EMAIL_USER, // BCC the system account by default to keep a record in the "Sent" folder
+      replyTo: process.env.EMAIL_USER,
       subject: subject,
       text: text,
       html: html,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent: ' + info.response);
     return info;
   } catch (error) {
     console.error('Error sending email:', error);
