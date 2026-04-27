@@ -57,13 +57,16 @@ function RoleSelection() {
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col lg:flex-row items-center justify-center lg:justify-between p-6 md:p-12 lg:p-20 relative overflow-x-hidden">
-      {/* Back to Home button (top-right) */}
-      <div className="absolute top-6 left-6 z-20">
+      {/* Back to Home button - absolute top-left, always */}
+      <div className="absolute top-4 left-4 z-20">
         <button
           onClick={() => navigate('/')}
-          className="px-4 py-2 bg-white text-stone-900 rounded-lg shadow-sm hover:bg-stone-100 transition-colors border border-stone-300"
+          className="group flex items-center gap-2 px-4 py-2 bg-white text-stone-900 rounded-lg shadow-sm hover:bg-stone-100 transition-all duration-300 border border-stone-200 hover:border-stone-400"
         >
-          Back to Home
+          <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span className="text-sm font-medium">Back to Home</span>
         </button>
       </div>
 
@@ -76,8 +79,8 @@ function RoleSelection() {
         />
       </div>
 
-      {/* Left Side - Role Selection */}
-      <div className="relative z-10 w-full max-w-2xl">
+      {/* Left Side - Role Selection — add top padding on mobile so content clears the button */}
+      <div className="relative z-10 w-full max-w-2xl pt-14 lg:pt-0">
         {/* Title Section */}
         <div className="mb-12">
           <h1 className="text-3xl md:text-5xl font-serif text-stone-900 mb-4">
@@ -86,9 +89,6 @@ function RoleSelection() {
           <p className="text-lg text-stone-600 mb-2 font-light">
             Select your role to continue
           </p>
-          {/* <p className="text-sm text-stone-500 tracking-wider">
-            CENTER FOR ENGINEERING EDUCATION RESEARCH
-          </p> */}
         </div>
 
         {/* Role Selection Grid */}

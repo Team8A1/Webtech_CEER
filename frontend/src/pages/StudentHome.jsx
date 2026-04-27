@@ -94,9 +94,7 @@ const ToolCard = ({ tool, navigate }) => (
     />
     <div className="absolute inset-0 bg-gradient-to-t from-stone-900/90 via-stone-900/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 
-    <div className="absolute top-6 right-6 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30 flex items-center gap-1 shadow-sm">
-      <span className="text-xs text-white font-medium tracking-wide">{tool.rating}</span>
-    </div>
+
 
     <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
       <div className="flex items-center gap-2 mb-3 text-red-300">
@@ -190,6 +188,21 @@ const StudentHome = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchFilter, setSearchFilter] = useState('both'); // 'name', 'description', or 'both'
   const equipmentScrollRef = useRef(null);
+  const [selectedForBOM, setSelectedForBOM] = useState([]); // max 5
+
+  const toggleSelectMaterial = (material, e) => {
+    e.stopPropagation();
+    const isSelected = selectedForBOM.some(m => m._id === material._id);
+    if (isSelected) {
+      setSelectedForBOM(prev => prev.filter(m => m._id !== material._id));
+    } else if (selectedForBOM.length < 5) {
+      setSelectedForBOM(prev => [...prev, material]);
+    }
+  };
+
+  const handleBulkBOMRequest = () => {
+    navigate('/student/bom', { state: { bulkMaterials: selectedForBOM } });
+  };
 
   const scrollEquipment = (direction) => {
     if (equipmentScrollRef.current) {
@@ -397,6 +410,7 @@ const StudentHome = () => {
                         <th className="px-4 md:px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Name</th>
                         <th className="px-4 md:px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Specs</th>
                         <th className="px-4 md:px-8 py-5 text-left text-xs font-bold text-stone-500 uppercase tracking-widest hidden sm:table-cell">Description</th>
+                        <th className="px-4 md:px-8 py-5 text-center text-xs font-bold text-stone-500 uppercase tracking-widest w-20">Select</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-100">
@@ -416,7 +430,7 @@ const StudentHome = () => {
                         })
                         .sort((a, b) => a.name.localeCompare(b.name))
                         .map((material) => (
-                          <tr key={material._id} onClick={() => setSelectedMaterial(material)} className="group hover:bg-stone-50/50 transition-colors cursor-pointer">
+                          <tr key={material._id} onClick={() => setSelectedMaterial(material)} className={`group transition-colors cursor-pointer ${selectedForBOM.some(m => m._id === material._id) ? 'bg-red-50/60 hover:bg-red-50' : 'hover:bg-stone-50/50'}`}>
                             <td className="px-4 md:px-8 py-4 md:py-5">
                               <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg bg-stone-100 overflow-hidden border border-stone-200">
                                 <img
@@ -438,6 +452,27 @@ const StudentHome = () => {
                               <p className="text-sm text-stone-500 line-clamp-2 font-light leading-relaxed">
                                 {material.description}
                               </p>
+                            </td>
+                            {/* Select button */}
+                            <td className="px-4 md:px-8 py-4 md:py-5 text-center" onClick={e => e.stopPropagation()}>
+                              {selectedForBOM.some(m => m._id === material._id) ? (
+                                <button
+                                  onClick={e => toggleSelectMaterial(material, e)}
+                                  className="w-8 h-8 rounded-full bg-red-700 text-white flex items-center justify-center mx-auto hover:bg-red-800 transition-colors shadow-sm"
+                                  title="Deselect"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={e => toggleSelectMaterial(material, e)}
+                                  disabled={selectedForBOM.length >= 5}
+                                  className="w-8 h-8 rounded-full border-2 border-stone-300 text-stone-400 flex items-center justify-center mx-auto hover:border-red-400 hover:text-red-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                  title={selectedForBOM.length >= 5 ? 'Max 5 items' : 'Select for BOM'}
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                </button>
+                              )}
                             </td>
                           </tr>
                         ))}
@@ -553,6 +588,33 @@ const StudentHome = () => {
       </main>
 
       <StudentFooter />
+
+      {/* Floating Bulk Request Bar */}
+      {selectedForBOM.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 md:gap-4 bg-stone-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-stone-700 animate-in slide-in-from-bottom-4 duration-300">
+          {/* Selected pills */}
+          <div className="flex items-center gap-1.5">
+            {selectedForBOM.map((m, i) => (
+              <span key={m._id} className="w-2 h-2 rounded-full bg-red-500"></span>
+            ))}
+            <span className="ml-2 text-sm font-semibold">{selectedForBOM.length}/5</span>
+          </div>
+          <span className="text-stone-400 text-sm hidden md:inline">materials selected</span>
+          <button
+            onClick={handleBulkBOMRequest}
+            className="px-5 py-2 bg-red-700 text-white rounded-xl font-bold text-sm hover:bg-red-600 transition-colors shadow-lg"
+          >
+            Request in BOM →
+          </button>
+          <button
+            onClick={() => setSelectedForBOM([])}
+            className="p-1.5 text-stone-400 hover:text-white rounded-full hover:bg-stone-700 transition-colors"
+            title="Clear selection"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+      )}
 
       {/* Material Details Modal */}
       {/* Material Details Modal */}

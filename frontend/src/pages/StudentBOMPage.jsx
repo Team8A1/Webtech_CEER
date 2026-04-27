@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import BOMForm from '../components/BOMForm'
+import BulkBOMForm from '../components/BulkBOMForm'
 import axios from 'axios'
 import StudentNavbar from '../components/StudentNavbar'
 import StudentFooter from '../components/StudentFooter'
@@ -14,6 +15,14 @@ function StudentBOMPage() {
   const [editing, setEditing] = useState(null)
   const [user, setUser] = useState(null)
   const [filter, setFilter] = useState('pending')
+  const inventoryRef = useRef(null)
+
+  const handleFilterChange = (newFilter) => {
+    setFilter(newFilter)
+    if (inventoryRef.current) {
+      inventoryRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
 
   const load = async () => {
     try {
@@ -59,6 +68,29 @@ function StudentBOMPage() {
     } catch (error) {
       console.error('Error saving BOM:', error);
       alert(error.response?.data?.message || 'Error saving BOM request');
+    }
+  }
+
+  const handleBulkSave = async (itemsPayload) => {
+    try {
+      const token = localStorage.getItem('token');
+      let successCount = 0;
+      for (const bomData of itemsPayload) {
+        try {
+          await axios.post(`${BASE_URL}/api/student/request/bom`, bomData, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          successCount++;
+        } catch (err) {
+          console.error('Error saving BOM item:', bomData.slNo, err);
+        }
+      }
+      alert(`${successCount} of ${itemsPayload.length} BOM requests submitted successfully!`);
+      load();
+      navigate(location.pathname, { replace: true, state: {} });
+    } catch (error) {
+      console.error('Error in bulk BOM save:', error);
+      alert('Error submitting bulk BOM requests');
     }
   }
 
@@ -182,25 +214,25 @@ function StudentBOMPage() {
 
       <main className="flex-grow pt-24 pb-12">
         {/* Header Section */}
-        <section className="relative px-6 mb-16">
+        <section className="relative px-4 md:px-6 mb-8 md:mb-16">
           <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-end gap-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-6">
               <div>
-                <div className="inline-block mb-4 px-3 py-1 border border-stone-200 rounded-full bg-stone-50">
+                <div className="inline-block mb-3 md:mb-4 px-3 py-1 border border-stone-200 rounded-full bg-stone-50">
                   <span className="text-xs text-stone-500 uppercase tracking-widest font-medium">
                     Project Management
                   </span>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-serif text-stone-900 mb-4">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif text-stone-900 mb-3 md:mb-4">
                   Bill of <span className="italic text-red-700">Materials</span>
                 </h1>
-                <p className="text-stone-500 text-lg max-w-xl font-light">
+                <p className="text-stone-500 text-base md:text-lg max-w-xl font-light">
                   Manage your project inventory, track specifications, and monitor approval statuses in real-time.
                 </p>
               </div>
               <button
                 onClick={() => navigate('/student/dashboard')}
-                className="group flex items-center gap-2 px-6 py-3 bg-white border border-stone-200 rounded-full hover:border-red-700 hover:text-red-700 transition-all duration-300"
+                className="group flex items-center gap-2 px-4 md:px-6 py-2.5 md:py-3 bg-white border border-stone-200 rounded-full hover:border-red-700 hover:text-red-700 transition-all duration-300 self-start md:self-auto shrink-0"
               >
                 <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                 <span className="text-sm tracking-widest font-medium">BACK TO DASHBOARD</span>
@@ -209,32 +241,57 @@ function StudentBOMPage() {
           </div>
         </section>
 
-        <div className="container mx-auto px-6">
-          <div className="grid lg:grid-cols-12 gap-12">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="grid lg:grid-cols-12 gap-6 lg:gap-12">
 
             {/* Form Section */}
             <div className="lg:col-span-4">
-              <div className="bg-stone-50 p-8 rounded-3xl border border-stone-100 sticky top-32">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-red-700 shadow-sm">
-                    <FileText className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-2xl font-serif text-stone-900">
-                    {editing ? 'Edit Item' : 'Add Item'}
-                  </h2>
-                </div>
-                <BOMForm
-                  onSave={handleSave}
-                  initial={editing}
-                  onCancel={() => setEditing(null)}
-                  nextSlNo={boms.length + 1}
-                  autofill={location.state?.autofill}
-                />
+              <div className="bg-stone-50 p-5 md:p-8 rounded-2xl md:rounded-3xl border border-stone-100 lg:sticky lg:top-32">
+
+                {location.state?.bulkMaterials?.length > 0 ? (
+                  /* === BULK MODE === */
+                  <>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-red-700 shadow-sm">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-serif text-stone-900 leading-tight">Bulk Request</h2>
+                        <p className="text-xs text-stone-400">{location.state.bulkMaterials.length} items selected</p>
+                      </div>
+                    </div>
+                    <BulkBOMForm
+                      materials={location.state.bulkMaterials}
+                      nextSlNo={boms.length + 1}
+                      onSaveAll={handleBulkSave}
+                      onCancel={() => navigate(location.pathname, { replace: true, state: {} })}
+                    />
+                  </>
+                ) : (
+                  /* === SINGLE MODE === */
+                  <>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-red-700 shadow-sm">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <h2 className="text-2xl font-serif text-stone-900">
+                        {editing ? 'Edit Item' : 'Add Item'}
+                      </h2>
+                    </div>
+                    <BOMForm
+                      onSave={handleSave}
+                      initial={editing}
+                      onCancel={() => setEditing(null)}
+                      nextSlNo={boms.length + 1}
+                      autofill={location.state?.autofill}
+                    />
+                  </>
+                )}
               </div>
             </div>
 
             {/* Table Section */}
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-8" ref={inventoryRef}>
               <div className="flex flex-col gap-6 mb-8">
                 <div className="flex justify-between items-center">
                   <h2 className="text-2xl font-serif text-stone-900">Inventory List</h2>
@@ -250,10 +307,10 @@ function StudentBOMPage() {
                 </div>
 
                 {/* Filter Tabs */}
-                <div className="flex gap-2 p-1 bg-stone-100 rounded-xl w-fit">
+                <div className="flex gap-1 md:gap-2 p-1 bg-stone-100 rounded-xl w-fit overflow-x-auto max-w-full">
                   <button
-                    onClick={() => setFilter('pending')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${filter === 'pending'
+                    onClick={() => handleFilterChange('pending')}
+                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-300 whitespace-nowrap ${filter === 'pending'
                       ? 'bg-white text-stone-900 shadow-sm'
                       : 'text-stone-500 hover:text-stone-700'
                       }`}
@@ -261,8 +318,8 @@ function StudentBOMPage() {
                     Pending
                   </button>
                   <button
-                    onClick={() => setFilter('approved')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${filter === 'approved'
+                    onClick={() => handleFilterChange('approved')}
+                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-300 whitespace-nowrap ${filter === 'approved'
                       ? 'bg-white text-green-700 shadow-sm'
                       : 'text-stone-500 hover:text-stone-700'
                       }`}
@@ -270,8 +327,8 @@ function StudentBOMPage() {
                     Approved
                   </button>
                   <button
-                    onClick={() => setFilter('rejected')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${filter === 'rejected'
+                    onClick={() => handleFilterChange('rejected')}
+                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-300 whitespace-nowrap ${filter === 'rejected'
                       ? 'bg-white text-red-700 shadow-sm'
                       : 'text-stone-500 hover:text-stone-700'
                       }`}
@@ -279,8 +336,8 @@ function StudentBOMPage() {
                     Rejected
                   </button>
                   <button
-                    onClick={() => setFilter('all')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${filter === 'all'
+                    onClick={() => handleFilterChange('all')}
+                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-300 whitespace-nowrap ${filter === 'all'
                       ? 'bg-white text-stone-900 shadow-sm'
                       : 'text-stone-500 hover:text-stone-700'
                       }`}
@@ -309,20 +366,29 @@ function StudentBOMPage() {
                     <table className="w-full">
                       <thead>
                         <tr className="bg-stone-50 border-b border-stone-100">
+                          <th className="px-4 py-4 text-center text-xs font-bold text-stone-500 uppercase tracking-widest w-16">SL</th>
                           <th className="px-6 py-4 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Details</th>
                           <th className="px-6 py-4 text-left text-xs font-bold text-stone-500 uppercase tracking-widest">Specs</th>
                           <th className="px-6 py-4 text-center text-xs font-bold text-stone-500 uppercase tracking-widest">Status</th>
-                          <th className="px-6 py-4 text-right text-xs font-bold text-stone-500 uppercase tracking-widest">{filter === 'rejected' ? 'Reason' : 'Actions'}</th>
+                          <th className="px-6 py-4 text-right text-xs font-bold text-stone-500 uppercase tracking-widest">
+                            {filter === 'rejected' ? 'Reason' : ''}
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-stone-100">
                         {filteredBoms.map((bom) => (
                           <tr key={bom._id || bom.id} className="group hover:bg-stone-50/50 transition-colors">
+                            {/* SL Column */}
+                            <td className="px-4 py-5 text-center">
+                              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-stone-100 text-stone-700 text-xs font-bold font-mono border border-stone-200">
+                                {bom.slNo}
+                              </span>
+                            </td>
                             <td className="px-6 py-5">
                               <div className="flex flex-col">
-                                <div className="font-serif text-lg text-stone-900 font-medium w-[30ch] overflow-auto pb-2 whitespace-nowrap">{bom.partName}</div>
+                                <div className="font-serif text-lg text-stone-900 font-medium max-w-[28ch] truncate">{bom.partName}</div>
                                 <span className="text-xs text-stone-400 uppercase tracking-wider mt-1">
-                                  {bom.slNo} • Sprint {bom.sprintNo} • {new Date(bom.date).toLocaleDateString()}
+                                  Sprint {bom.sprintNo} • {new Date(bom.date).toLocaleDateString()}
                                 </span>
                               </div>
                             </td>
@@ -354,35 +420,59 @@ function StudentBOMPage() {
                                 )}
                               </div>
                             </td>
+                            {/* STATUS COLUMN */}
                             <td className="px-6 py-5">
                               <div className="flex flex-col gap-2 items-center">
                                 {bom.status === 'rejected' ? (
-                                  <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border bg-red-50 text-red-700 border-red-100">
-                                    Rejected
-                                  </span>
+                                  <>
+                                    {/* Guide badge */}
+                                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
+                                      bom.guideApproved
+                                        ? 'bg-green-50 text-green-700 border-green-100'
+                                        : 'bg-red-50 text-red-700 border-red-100'
+                                    }`}>
+                                      Guide: {bom.guideApproved ? 'Approved' : 'Rejected'}
+                                    </span>
+                                    {/* Lab badge — only show if guide approved (meaning lab was the one who rejected) */}
+                                    {bom.guideApproved && (
+                                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border bg-red-50 text-red-700 border-red-100">
+                                        Lab: Rejected
+                                      </span>
+                                    )}
+                                  </>
                                 ) : (
                                   <>
                                     <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${bom.guideApproved
                                       ? 'bg-green-50 text-green-700 border-green-100'
                                       : 'bg-stone-100 text-stone-500 border-stone-200'
-                                      }`}>
+                                    }`}>
                                       Guide: {bom.guideApproved ? 'Approved' : 'Pending'}
                                     </span>
                                     <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${bom.labApproved
                                       ? 'bg-green-50 text-green-700 border-green-100'
                                       : 'bg-stone-100 text-stone-500 border-stone-200'
-                                      }`}>
+                                    }`}>
                                       Lab: {bom.labApproved ? 'Approved' : 'Pending'}
                                     </span>
                                   </>
                                 )}
                               </div>
                             </td>
+
+                            {/* LAST COLUMN: Reason (rejected) | nothing (approved) | Actions (pending) */}
                             <td className="px-6 py-5 text-right">
                               {bom.status === 'rejected' ? (
-                                <div className="text-sm text-red-600 font-medium w-[30ch] overflow-auto pb-2 whitespace-nowrap ml-auto">
-                                  {bom.rejectionReason || 'No reason provided'}
+                                <div className="flex flex-col gap-1 items-end">
+                                  <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
+                                    Rejected by {bom.rejectedBy === 'lab' ? 'Lab In-Charge' : 'Faculty Guide'}
+                                  </span>
+                                  <div className="text-sm text-red-600 font-medium text-right">
+                                    {bom.rejectionReason || 'No reason provided'}
+                                  </div>
                                 </div>
+                              ) : bom.guideApproved && bom.labApproved ? (
+                                // Fully approved — no actions
+                                null
                               ) : (
                                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                   {!bom.guideApproved && bom.status !== 'rejected' && (

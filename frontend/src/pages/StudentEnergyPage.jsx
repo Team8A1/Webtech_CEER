@@ -39,25 +39,25 @@ function StudentEnergyPage() {
 
       <main className="flex-grow pt-24 pb-12">
         {/* Header Section */}
-        <section className="relative px-6 mb-12">
+        <section className="relative px-4 md:px-6 mb-8 md:mb-12">
           <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-end gap-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-6">
               <div>
-                <div className="inline-block mb-4 px-3 py-1 border border-orange-200 rounded-full bg-orange-50">
+                <div className="inline-block mb-3 md:mb-4 px-3 py-1 border border-orange-200 rounded-full bg-orange-50">
                   <span className="text-xs text-orange-700 uppercase tracking-widest font-medium">
                     Analysis Report
                   </span>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-serif text-stone-900 mb-4">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif text-stone-900 mb-3 md:mb-4">
                   Embodied <span className="italic text-orange-600">Energy</span>
                 </h1>
-                <p className="text-stone-500 text-lg max-w-xl font-light">
+                <p className="text-stone-500 text-base md:text-lg max-w-xl font-light">
                   Detailed breakdown of energy consumption for your approved BOM materials.
                 </p>
               </div>
               <button
                 onClick={() => navigate('/student/dashboard')}
-                className="group flex items-center gap-2 px-6 py-3 bg-white border border-stone-200 rounded-full hover:border-orange-600 hover:text-orange-600 transition-all duration-300"
+                className="group flex items-center gap-2 px-4 md:px-6 py-2.5 md:py-3 bg-white border border-stone-200 rounded-full hover:border-orange-600 hover:text-orange-600 transition-all duration-300 shrink-0 self-start md:self-auto"
               >
                 <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                 <span className="text-sm tracking-widest font-medium">BACK TO DASHBOARD</span>
@@ -66,7 +66,7 @@ function StudentEnergyPage() {
           </div>
         </section>
 
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-4 md:px-6">
           <div className="bg-white rounded-3xl border border-stone-100 shadow-xl overflow-hidden">
 
             {loading ? (
@@ -119,8 +119,8 @@ function StudentEnergyPage() {
                 </div>
 
                 {/* Totals Section */}
-                <div className="bg-stone-900 p-8 text-white">
-                  <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div className="bg-stone-900 p-6 md:p-8 text-white">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">
                     <div className="flex items-center gap-3">
                       <div className="p-3 bg-white/10 rounded-full backdrop-blur-sm">
                         <Zap className="w-6 h-6 text-orange-400" />
@@ -131,8 +131,8 @@ function StudentEnergyPage() {
                       </div>
                     </div>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-5xl font-serif font-bold">{totalEnergy.toFixed(3)}</span>
-                      <span className="text-xl text-orange-400 font-medium">MJ</span>
+                      <span className="text-4xl md:text-5xl font-serif font-bold">{totalEnergy.toFixed(3)}</span>
+                      <span className="text-lg md:text-xl text-orange-400 font-medium">MJ</span>
                     </div>
                   </div>
                 </div>

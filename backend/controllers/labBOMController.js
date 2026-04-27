@@ -79,6 +79,7 @@ const rejectLabBOMRequest = async (req, res) => {
         bomRequest.labApprovedBy = labInchargeId;
         bomRequest.labApprovedAt = Date.now();
         bomRequest.status = 'rejected';
+        bomRequest.rejectedBy = 'lab';
         if (reason) {
             bomRequest.rejectionReason = reason;
         }

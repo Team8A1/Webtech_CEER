@@ -92,6 +92,11 @@ const bomRequestSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    rejectedBy: {
+        type: String,
+        enum: ['guide', 'lab', ''],
+        default: ''
+    },
     editHistory: [{
         editedBy: {
             type: mongoose.Schema.Types.ObjectId,

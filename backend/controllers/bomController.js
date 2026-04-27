@@ -140,15 +140,39 @@ const getStudentBOMRequests = async (req, res) => {
         const student = await User.findById(req.user._id);
 
         let requests;
+        let teamId;
 
         // If student is part of a team, get all BOMs for that team
         if (student && student.teamId) {
-            requests = await BOMRequest.find({ teamId: student.teamId })
+            teamId = student.teamId;
+            requests = await BOMRequest.find({ teamId })
                 .populate('studentId', 'name email')
-                .sort({ createdAt: -1 });
+                .sort({ createdAt: 1 }); // ascending: oldest = SL 01
         } else {
             // If not in a team, get only their own BOMs
-            requests = await BOMRequest.find({ studentId: req.user._id }).sort({ createdAt: -1 });
+            requests = await BOMRequest.find({ studentId: req.user._id })
+                .sort({ createdAt: 1 });
+            teamId = null;
+        }
+
+        // Auto-heal: renumber SL numbers if they are not already sequential
+        // This fixes any legacy data with wrong SL numbers silently on load
+        const needsRenumber = requests.some(
+            (item, index) => item.slNo !== String(index + 1).padStart(2, '0')
+        );
+        if (needsRenumber && requests.length > 0) {
+            const bulkOps = requests.map((item, index) => ({
+                updateOne: {
+                    filter: { _id: item._id },
+                    update: { $set: { slNo: String(index + 1).padStart(2, '0') } }
+                }
+            }));
+            await BOMRequest.bulkWrite(bulkOps);
+            // Update the in-memory requests to reflect new slNos before responding
+            requests = requests.map((item, index) => {
+                item.slNo = String(index + 1).padStart(2, '0');
+                return item;
+            });
         }
 
         res.status(200).json({ success: true, data: requests });
@@ -241,7 +265,20 @@ const deleteBOMRequest = async (req, res) => {
 
         await bomRequest.deleteOne();
 
-        res.status(200).json({ success: true, message: 'BOM Request deleted' });
+        // Renumber all remaining BOM items for this TEAM sequentially
+        const teamId = bomRequest.teamId;
+        const remaining = await BOMRequest.find({ teamId }).sort({ createdAt: 1 });
+        const bulkOps = remaining.map((item, index) => ({
+            updateOne: {
+                filter: { _id: item._id },
+                update: { $set: { slNo: String(index + 1).padStart(2, '0') } }
+            }
+        }));
+        if (bulkOps.length > 0) {
+            await BOMRequest.bulkWrite(bulkOps);
+        }
+
+        res.status(200).json({ success: true, message: 'BOM Request deleted and items renumbered' });
     } catch (error) {
         console.error('Error deleting BOM request:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
@@ -323,8 +360,9 @@ const updateBOMRequestStatus = async (req, res) => {
             } else if (status === 'rejected') {
                 bomRequest.guideApproved = false;
                 bomRequest.guideApprovedAt = null;
-                // Reset lab approval if rejected by guide (though unlikely to be lab approved if guide hasn't)
+                // Reset lab approval if rejected by guide
                 bomRequest.labApproved = false;
+                bomRequest.rejectedBy = 'guide';
                 if (reason) {
                     bomRequest.rejectionReason = reason;
                 }

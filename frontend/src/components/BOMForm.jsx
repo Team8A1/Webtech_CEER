@@ -5,7 +5,7 @@ import { BASE_URL } from '../utils/api';
 
 function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1, autofill = null }) {
   const [form, setForm] = useState({
-    slNo: initial ? initial.slNo : String(nextSlNo).padStart(3, '0'), // Auto-increment or use initial
+    slNo: initial ? initial.slNo : String(nextSlNo).padStart(2, '0'), // Auto-increment or use initial
     sprintNo: '1',
     date: new Date().toISOString().split('T')[0],
     partName: '',
@@ -64,7 +64,7 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1, autofill = nu
     } else if (autofill) {
       setForm(prev => ({
         ...prev,
-        slNo: String(nextSlNo).padStart(3, '0'),
+        slNo: String(nextSlNo).padStart(2, '0'),
         consumableName: autofill.consumableName || '',
         specification: autofill.specification || ''
       }))
@@ -72,7 +72,7 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1, autofill = nu
       // If not editing, update slNo when nextSlNo changes
       setForm(prev => ({
         ...prev,
-        slNo: String(nextSlNo).padStart(3, '0')
+        slNo: String(nextSlNo).padStart(2, '0')
       }))
     }
   }, [initial, nextSlNo, autofill])
@@ -169,7 +169,7 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1, autofill = nu
     // Reset form after both create AND edit
     setSelectedMaterial(null);
     setForm({
-      slNo: String(Number(nextSlNo) + 1).padStart(3, '0'),
+      slNo: String(Number(nextSlNo) + 1).padStart(2, '0'),
       sprintNo: '1',
       date: new Date().toISOString().split('T')[0],
       partName: '',
@@ -185,10 +185,10 @@ function BOMForm({ onSave, initial = null, onCancel, nextSlNo = 1, autofill = nu
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">SL. No</label>
-          <input name="slNo" value={form.slNo} onChange={handleChange} placeholder="001" required className="p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-red-100 focus:border-red-400 outline-none transition-all" />
+          <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">SL. No <span className="normal-case text-stone-400 font-normal">(auto)</span></label>
+          <input name="slNo" value={form.slNo} readOnly disabled placeholder="01" className="p-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-400 font-mono cursor-not-allowed select-none outline-none" />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Sprint No</label>

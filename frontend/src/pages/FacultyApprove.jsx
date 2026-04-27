@@ -258,6 +258,13 @@ function FacultyApprove() {
                   {/* Main Content */}
                   {/* Main Content */}
                   <div className="flex-1 p-6 min-w-0">
+                    {/* SL Number Badge */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-700 text-xs font-bold font-mono border border-gray-300">
+                        {bom.slNo}
+                      </span>
+                      <span className="text-xs text-gray-400 font-semibold uppercase tracking-widest">SL. No</span>
+                    </div>
                     <div className="grid md:grid-cols-[3fr_2fr] gap-6">
                       {/* Left Column - Student & Consumable Details */}
                       <div className="min-w-0 space-y-3">
