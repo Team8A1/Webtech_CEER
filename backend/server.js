@@ -111,12 +111,17 @@ app.use("/api/instructions", require("./routes/instruction.routes"));
 app.use("/api/projects", require("./routes/projectRoutes"));
 
 // -------------------------
-// Test Route
+// Root Route
+// -------------------------
+app.get("/", (req, res) => {
+  res.send("Server is running");
+});
+
 // -------------------------
 app.get("/test", (req, res) => {
   res.sendFile(__dirname + "/test-google-auth.html");
 });
-
+console.log("EMAIL_USER:", process.env.EMAIL_USER);
 // -------------------------
 // Health Check
 // -------------------------
