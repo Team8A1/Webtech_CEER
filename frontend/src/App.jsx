@@ -17,6 +17,7 @@ import FacultyMyTeams from './pages/FacultyMyTeams'
 import FacultyTeamApproval from './pages/FacultyTeamApproval'
 import FacultyTeamCreate from './pages/FacultyTeamCreate'
 import FacultyApprove from './pages/FacultyApprove'
+import FacultyTeamBOMQueue from './pages/FacultyTeamBOMQueue'
 import LabApprove from './pages/LabApprove'
 import AvailableMaterials from './pages/AvailableMaterials'
 import AvailableMachines from './pages/AvailableMachines'
@@ -40,6 +41,11 @@ function App() {
         <Route path="/faculty/approve" element={
           <ProtectedRoute allowedRoles={['faculty']}>
             <FacultyApprove />
+          </ProtectedRoute>
+        } />
+        <Route path="/faculty/approve/:teamId" element={
+          <ProtectedRoute allowedRoles={['faculty']}>
+            <FacultyTeamBOMQueue />
           </ProtectedRoute>
         } />
         <Route path="/lab/approve" element={

@@ -203,7 +203,8 @@ function StudentBOMPage() {
     if (filter === 'pending') return boms.filter(b => !b.guideApproved && b.status !== 'rejected')
     if (filter === 'approved') return boms.filter(b => b.guideApproved && b.status !== 'rejected')
     if (filter === 'rejected') return boms.filter(b => b.status === 'rejected')
-    return boms
+    // 'all' = only approved + rejected (no pending)
+    return boms.filter(b => b.guideApproved || b.status === 'rejected')
   }
 
   const filteredBoms = getFilteredBOMs()
@@ -319,21 +320,31 @@ function StudentBOMPage() {
                   </button>
                   <button
                     onClick={() => handleFilterChange('approved')}
-                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-300 whitespace-nowrap ${filter === 'approved'
+                    className={`flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-300 whitespace-nowrap ${filter === 'approved'
                       ? 'bg-white text-green-700 shadow-sm'
                       : 'text-stone-500 hover:text-stone-700'
                       }`}
                   >
                     Approved
+                    {boms.filter(b => b.guideApproved && b.status !== 'rejected').length > 0 && (
+                      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold">
+                        {boms.filter(b => b.guideApproved && b.status !== 'rejected').length}
+                      </span>
+                    )}
                   </button>
                   <button
                     onClick={() => handleFilterChange('rejected')}
-                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-300 whitespace-nowrap ${filter === 'rejected'
+                    className={`flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-300 whitespace-nowrap ${filter === 'rejected'
                       ? 'bg-white text-red-700 shadow-sm'
                       : 'text-stone-500 hover:text-stone-700'
                       }`}
                   >
                     Rejected
+                    {boms.filter(b => b.status === 'rejected').length > 0 && (
+                      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-100 text-red-700 text-[10px] font-bold">
+                        {boms.filter(b => b.status === 'rejected').length}
+                      </span>
+                    )}
                   </button>
                   <button
                     onClick={() => handleFilterChange('all')}

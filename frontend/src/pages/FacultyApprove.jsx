@@ -1,452 +1,214 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import BOMForm from '../components/BOMForm';
-import { BASE_URL } from '../utils/api';
+import { BASE_URL } from '../utils/api'
+
+const TEAM_COLORS = [
+  { bg: 'bg-rose-50',   border: 'border-rose-200',   accent: '#8B1538', pill: 'bg-rose-100 text-rose-800',   hover: 'hover:border-rose-400' },
+  { bg: 'bg-blue-50',   border: 'border-blue-200',   accent: '#1d4ed8', pill: 'bg-blue-100 text-blue-800',   hover: 'hover:border-blue-400' },
+  { bg: 'bg-emerald-50',border: 'border-emerald-200',accent: '#15803d', pill: 'bg-emerald-100 text-emerald-800',hover:'hover:border-emerald-400'},
+  { bg: 'bg-amber-50',  border: 'border-amber-200',  accent: '#b45309', pill: 'bg-amber-100 text-amber-800',  hover: 'hover:border-amber-400'  },
+]
 
 function FacultyApprove() {
-  const [boms, setBoms] = useState([])
-  const [filter, setFilter] = useState('pending')
   const navigate = useNavigate()
-  const previousPendingCountRef = useRef(0)
-  const [editingBOM, setEditingBOM] = useState(null)
-  const [rejectingId, setRejectingId] = useState(null)
-  const [rejectionReason, setRejectionReason] = useState('')
-  const [toast, setToast] = useState(null) // { message, type: 'info'|'success'|'error' }
+  const [boms, setBoms] = useState([])
+  const [loading, setLoading] = useState(true)
+  const previousPendingRef = useRef(0)
+  const [toast, setToast] = useState(null)
 
-  const showToast = (message, type = 'info') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
-  };
-
+  const showToast = (msg, type = 'info') => {
+    setToast({ msg, type })
+    setTimeout(() => setToast(null), 4000)
+  }
 
   const load = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${BASE_URL}/api/faculty/bom/list`, {
+      const token = localStorage.getItem('token')
+      const res = await axios.get(`${BASE_URL}/api/faculty/bom/list`, {
         headers: { Authorization: `Bearer ${token}` }
-      });
-      if (response.data.success) {
-        setBoms(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error loading BOMs:', error);
+      })
+      if (res.data.success) setBoms(res.data.data)
+    } catch (e) {
+      console.error('Error loading BOMs:', e)
+    } finally {
+      setLoading(false)
     }
   }
 
+  useEffect(() => { load() }, [])
+
+  // Poll every 30 s for new requests
   useEffect(() => {
-    load();
+    const id = setInterval(async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const res = await axios.get(`${BASE_URL}/api/faculty/bom/list`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (res.data.success) {
+          const fetched = res.data.data
+          const cur = fetched.filter(b => !b.guideApproved && b.status !== 'rejected').length
+          if (cur > previousPendingRef.current && cur > 0) {
+            showToast(`🔔 ${cur - previousPendingRef.current} new BOM request(s) pending.`, 'info')
+          }
+          previousPendingRef.current = cur
+          setBoms(fetched)
+        }
+      } catch (e) { console.error('Poll error', e) }
+    }, 30000)
+    return () => clearInterval(id)
   }, [])
 
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${BASE_URL}/api/faculty/bom/list`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (response.data.success) {
-          const fetchedBoms = response.data.data;
-          const currentPendingCount = fetchedBoms.filter(b => !b.guideApproved && b.status !== 'rejected').length;
-
-          // Non-intrusive toast instead of alert()
-          if (currentPendingCount > previousPendingCountRef.current && currentPendingCount > 0) {
-            showToast(`🔔 ${currentPendingCount - previousPendingCountRef.current} new BOM request(s) pending your approval.`, 'info');
-          }
-
-          previousPendingCountRef.current = currentPendingCount;
-          setBoms(fetchedBoms);
-        }
-      } catch (error) {
-        console.error("Error polling BOMs", error);
+  // Build unique team list from boms
+  const teams = useMemo(() => {
+    const map = new Map()
+    boms.forEach(b => {
+      if (b.teamId?._id && !map.has(b.teamId._id)) {
+        map.set(b.teamId._id, b.teamId.problemStatement || 'Unnamed Team')
       }
-    }, 30000); // Poll every 30 seconds instead of 3s
+    })
+    return Array.from(map, ([id, label], idx) => ({ id, label, colorIdx: idx % TEAM_COLORS.length }))
+  }, [boms])
 
-    return () => clearInterval(interval);
-  }, []);
+  // Per-team counts
+  const teamStats = useMemo(() => {
+    const stats = {}
+    boms.forEach(b => {
+      const tid = b.teamId?._id
+      if (!tid) return
+      if (!stats[tid]) stats[tid] = { total: 0, pending: 0, approved: 0, rejected: 0 }
+      stats[tid].total++
+      if (!b.guideApproved && b.status !== 'rejected') stats[tid].pending++
+      else if (b.guideApproved) stats[tid].approved++
+      else if (b.status === 'rejected') stats[tid].rejected++
+    })
+    return stats
+  }, [boms])
 
-  const approve = async (id) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.patch(`${BASE_URL}/api/faculty/bom/update`, {
-        id,
-        status: 'approved'
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      load();
-      showToast('✅ BOM Request Approved', 'success');
-    } catch (error) {
-      console.error('Error approving BOM:', error);
-      showToast('❌ Error approving request', 'error');
-    }
-  }
-
-  const handleRejectClick = (id) => {
-    setRejectingId(id)
-    setRejectionReason('')
-  }
-
-  const confirmReject = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.patch(`${BASE_URL}/api/faculty/bom/update`, {
-        id: rejectingId,
-        status: 'rejected',
-        reason: rejectionReason
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      load();
-      showToast('BOM Request Rejected', 'error');
-      setRejectingId(null);
-      setRejectionReason('');
-    } catch (error) {
-      console.error('Error rejecting BOM:', error);
-      showToast('❌ Error rejecting request', 'error');
-    }
-  }
-
-  const handleUpdate = async (bomData) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.patch(`${BASE_URL}/api/faculty/bom/update`, {
-        id: editingBOM._id || editingBOM.id,
-        ...bomData
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      load();
-      setEditingBOM(null);
-      showToast('✅ BOM Request Updated', 'success');
-    } catch (error) {
-      console.error('Error updating BOM:', error);
-      showToast('❌ Error updating request', 'error');
-    }
-  }
-
-  const getFilteredBOMs = () => {
-    if (filter === 'pending') return boms.filter(b => !b.guideApproved && b.status !== 'rejected')
-    if (filter === 'approved') return boms.filter(b => b.guideApproved && b.status !== 'rejected')
-    if (filter === 'rejected') return boms.filter(b => b.status === 'rejected')
-    return boms
-  }
-
-  const filteredBoms = getFilteredBOMs()
-  const pendingCount = boms.filter(b => !b.guideApproved && b.status !== 'rejected').length
-  const approvedCount = boms.filter(b => b.guideApproved).length
-  const rejectedCount = boms.filter(b => b.status === 'rejected').length
+  const totalPending = boms.filter(b => !b.guideApproved && b.status !== 'rejected').length
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Toast Notification */}
+      {/* Toast */}
       {toast && (
-        <div className={`fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-xl text-white text-sm font-semibold transition-all animate-in slide-in-from-top-2 duration-300 ${toast.type === 'success' ? 'bg-green-600' :
-            toast.type === 'error' ? 'bg-red-600' : 'bg-stone-900'
-          }`}>
-          {toast.message}
+        <div className={`fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-xl text-white text-sm font-semibold
+          ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'error' ? 'bg-red-600' : 'bg-stone-900'}`}>
+          {toast.msg}
         </div>
       )}
-      {/* Header Section */}
-      <div className="max-w-7xl mx-auto px-6 py-5">
-        <div className="flex flex-wrap justify-between items-center gap-3 mb-12">
+
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        {/* Nav */}
+        <div className="flex items-center justify-between mb-12">
           <button
             onClick={() => navigate('/faculty')}
-            className="px-6 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-colors"
+            className="px-5 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-colors"
           >
-            Back to Dashboard
+            🏠 Home
           </button>
+          {totalPending > 0 && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-full">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-sm font-semibold text-red-700">{totalPending} pending across all teams</span>
+            </div>
+          )}
         </div>
 
-        {/* Page Title */}
-        <div className="mb-16 md:mb-20 max-w-4xl">
-          <p className="text-sm font-bold tracking-widest text-gray-500 uppercase mb-4">
-            BOM Management
-          </p>
-          <h2 className="text-2xl md:text-4xl lg:text-6xl font-serif font-medium leading-[1.1] tracking-tight mb-8" style={{ color: 'rgb(139, 21, 56)' }}>
+        {/* Header */}
+        <div className="mb-12">
+          <p className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-3">BOM Management</p>
+          <h1 className="text-4xl md:text-5xl font-serif font-medium leading-tight tracking-tight mb-4"
+            style={{ color: 'rgb(139, 21, 56)' }}>
             Guide Approval Queue
-          </h2>
-          <p className="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-3xl font-light">
-            Review and approve Bill of Materials submitted by your students.
+          </h1>
+          <p className="text-lg text-gray-500 font-light">
+            Select a team to review their Bill of Materials requests.
           </p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-          <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-            <div className="text-4xl font-serif font-bold text-gray-900 mb-2">{boms.length}</div>
-            <div className="text-sm text-gray-600 font-medium">Total BOMs</div>
+        {/* Team Cards */}
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900 mb-4" />
+            <p className="text-gray-500">Loading teams...</p>
           </div>
-          <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-            <div className="text-4xl font-serif font-bold" style={{ color: 'rgb(139, 21, 56)' }}>{pendingCount}</div>
-            <div className="text-sm text-gray-600 font-medium">Pending Review</div>
-          </div>
-          <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-            <div className="text-4xl font-serif font-bold text-green-600">{approvedCount}</div>
-            <div className="text-sm text-gray-600 font-medium">Approved</div>
-          </div>
-          <div className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-            <div className="text-4xl font-serif font-bold text-red-600">{rejectedCount}</div>
-            <div className="text-sm text-gray-600 font-medium">Rejected</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Content Section */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Filter Tabs */}
-        <div className="flex gap-4 mb-8">
-          <button
-            onClick={() => setFilter('pending')}
-            className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'pending'
-              ? 'bg-blue-600 text-white shadow-lg'
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
-          >
-            Pending ({pendingCount})
-          </button>
-          <button
-            onClick={() => setFilter('approved')}
-            className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'approved'
-              ? 'bg-green-600 text-white shadow-lg'
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
-          >
-            Approved ({approvedCount})
-          </button>
-          <button
-            onClick={() => setFilter('rejected')}
-            className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'rejected'
-              ? 'bg-red-600 text-white shadow-lg'
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
-          >
-            Rejected ({rejectedCount})
-          </button>
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'all'
-              ? 'bg-indigo-600 text-white shadow-lg'
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
-          >
-            All ({boms.length})
-          </button>
-        </div>
-
-        {/* BOM Cards */}
-        {filteredBoms.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-md border border-gray-200 p-12 text-center">
-            <div className="text-6xl mb-4">✓</div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">All BOMs Reviewed!</h3>
-            <p className="text-gray-600">
-              {filter === 'pending' ? 'No pending BOMs for approval.' : `No ${filter} BOMs to display.`}
-            </p>
+        ) : teams.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-300">
+            <div className="text-5xl mb-4">📭</div>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No BOM requests yet</h3>
+            <p className="text-gray-500">Once your students submit BOM requests, they will appear here.</p>
           </div>
         ) : (
-          <div className="grid gap-6">
-            {filteredBoms.map((bom, idx) => (
-              <div
-                key={bom._id || bom.id}
-                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200 overflow-hidden"
-              >
-                <div className="flex items-stretch">
-                  {/* Left Status Indicator */}
-                  <div className={`w-1 ${bom.guideApproved ? 'bg-green-500' : (bom.status === 'rejected' ? 'bg-red-500' : 'bg-yellow-500')}`}></div>
+          <div className="flex flex-col gap-4">
+            {teams.map((team) => {
+              const c = TEAM_COLORS[team.colorIdx]
+              const s = teamStats[team.id] || { total: 0, pending: 0, approved: 0, rejected: 0 }
+              const hasPending = s.pending > 0
 
-                  {/* Main Content */}
-                  {/* Main Content */}
-                  <div className="flex-1 p-6 min-w-0">
-                    {/* SL Number Badge */}
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-700 text-xs font-bold font-mono border border-gray-300">
-                        {bom.slNo}
-                      </span>
-                      <span className="text-xs text-gray-400 font-semibold uppercase tracking-widest">SL. No</span>
-                    </div>
-                    <div className="grid md:grid-cols-[3fr_2fr] gap-6">
-                      {/* Left Column - Student & Consumable Details */}
-                      <div className="min-w-0 space-y-3">
-                        {/* Student Information */}
-                        <div className="grid grid-cols-[140px_1fr] items-start">
-                          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Student:</span>
-                          <div className="text-sm text-gray-900 font-medium">{bom.studentId?.name || 'N/A'}</div>
-                        </div>
-                        <div className="grid grid-cols-[140px_1fr] items-start">
-                          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">USN/Email:</span>
-                          <div className="text-sm text-blue-600 font-medium break-all">{bom.studentId?.usn || bom.studentId?.email || 'N/A'}</div>
-                        </div>
-                        {bom.teamId?.problemStatement && (
-                          <div className="grid grid-cols-[140px_1fr] items-start">
-                            <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Problem Statement:</span>
-                            <div className="text-sm text-gray-900 font-medium max-h-24 overflow-auto pb-2 italic">"{bom.teamId.problemStatement}"</div>
-                          </div>
+              return (
+                <button
+                  key={team.id}
+                  onClick={() => navigate(`/faculty/approve/${team.id}`)}
+                  className={`w-full text-left bg-white border-2 ${c.border} ${c.hover} rounded-2xl p-6 transition-all duration-200 hover:shadow-lg group relative overflow-hidden`}
+                >
+                  {/* Colour accent strip */}
+                  <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl" style={{ backgroundColor: c.accent }} />
+
+                  <div className="pl-4 flex items-center justify-between gap-6">
+                    {/* Left: team info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
+                        <h2 className="text-lg font-semibold text-gray-900 group-hover:text-gray-700 transition-colors line-clamp-2">
+                          {team.label}
+                        </h2>
+                        {hasPending && (
+                          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                            {s.pending} New Request{s.pending > 1 ? 's' : ''}
+                          </span>
                         )}
-
-                        {/* Divider */}
-                        <div className="border-t border-gray-300 my-2"></div>
-
-                        {/* Consumable Details */}
-                        <div className="grid grid-cols-[140px_1fr] items-start">
-                          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Consumable Name:</span>
-                          <div className="text-sm text-gray-900 font-medium max-h-24 overflow-auto pb-2">{bom.consumableName}</div>
-                        </div>
-                        <div className="grid grid-cols-[140px_1fr] items-start">
-                          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Specification:</span>
-                          <div className="text-sm text-gray-900 font-medium max-h-24 overflow-auto pb-2">{bom.specification}</div>
-                        </div>
-                        <div className="grid grid-cols-[140px_1fr] items-start">
-                          <span className="text-sm font-semibold text-gray-600">Quantity:</span>
-                          <span className="text-sm text-gray-900 font-medium">{bom.qty}</span>
-                        </div>
-                        <div className="grid grid-cols-[140px_1fr] items-start">
-                          <span className="text-sm font-semibold text-gray-600">Date:</span>
-                          <span className="text-sm text-gray-900 font-medium">{new Date(bom.date).toLocaleDateString()}</span>
-                        </div>
-
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                          <div className="text-xs text-gray-600">
-                            Created: {new Date(bom.createdAt).toLocaleDateString()} at {new Date(bom.createdAt).toLocaleTimeString()}
-                          </div>
-                        </div>
                       </div>
 
-                      {/* Right Column - Project Info & Status */}
-                      <div className="min-w-0">
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-[140px_1fr] items-start">
-                            <span className="text-sm font-semibold text-gray-600">Part Name:</span>
-                            <div className="text-sm text-gray-900 font-medium max-h-24 overflow-auto pb-2">{bom.partName || 'Unnamed Part'}</div>
-                          </div>
-                          <div className="grid grid-cols-[140px_1fr] items-start">
-                            <span className="text-sm font-semibold text-gray-600">Sprint:</span>
-                            <div className="text-sm text-gray-900 font-medium max-h-24 overflow-auto pb-2">{bom.sprintNo}</div>
-                          </div>
-                        </div>
+                      {/* Mini stats row */}
+                      <div className="flex items-center gap-4 text-sm">
+                        <span className="text-gray-500">{s.total} total</span>
+                        <span className="text-gray-300">•</span>
+                        <span className={s.pending > 0 ? 'font-semibold text-red-600' : 'text-gray-400'}>
+                          {s.pending} pending
+                        </span>
+                        <span className="text-gray-300">•</span>
+                        <span className="text-green-600">{s.approved} approved</span>
+                        <span className="text-gray-300">•</span>
+                        <span className="text-gray-500">{s.rejected} rejected</span>
+                      </div>
+                    </div>
 
-                        {/* Approval Status */}
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                          <div className="space-y-2">
-                            <div className="grid grid-cols-[140px_1fr] items-center">
-                              <span className="text-sm font-semibold text-gray-600">Guide Approval:</span>
-                              <span className={`px-3 py-1 rounded-full text-xs font-bold w-fit ${bom.guideApproved
-                                ? 'bg-green-100 text-green-800'
-                                : (bom.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')
-                                }`}>
-                                {bom.guideApproved ? '✓ Approved' : (bom.status === 'rejected' ? '✗ Rejected' : '⏳ Pending')}
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-[140px_1fr] items-center">
-                              <span className="text-sm font-semibold text-gray-600">Lab Approval:</span>
-                              <span className={`px-3 py-1 rounded-full text-xs font-bold w-fit ${bom.labApproved
-                                ? 'bg-green-100 text-green-800'
-                                : (bom.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')
-                                }`}>
-                                {bom.labApproved ? '✓ Approved' : (bom.status === 'rejected' ? '✗ Rejected' : '⏳ Pending')}
-                              </span>
-                            </div>
-                          </div>
+                    {/* Right: arrow + pending badge */}
+                    <div className="flex items-center gap-4 flex-shrink-0">
+                      {hasPending && (
+                        <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center shadow-md animate-pulse">
+                          <span className="text-white text-sm font-bold">{s.pending}</span>
                         </div>
+                      )}
+                      {!hasPending && (
+                        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                          <span className="text-green-600 text-lg">✓</span>
+                        </div>
+                      )}
+                      <div className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center group-hover:bg-gray-100 transition-colors">
+                        <svg className="w-4 h-4 text-gray-500 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
                       </div>
                     </div>
                   </div>
-
-                  {/* Action Button */}
-                  <div className="flex items-center px-6 py-4 border-l border-gray-200 bg-gray-50">
-                    {!bom.guideApproved && bom.status !== 'rejected' ? (
-                      <div className="flex flex-col gap-2">
-                        <button
-                          onClick={() => approve(bom._id || bom.id)}
-                          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors shadow"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => setEditingBOM(bom)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors shadow"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleRejectClick(bom._id || bom.id)}
-                          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors shadow"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        {bom.status === 'rejected' ? (
-                          <>
-                            <div className="text-3xl mb-2 text-red-600">✗</div>
-                            <span className="text-xs font-semibold text-red-700">Rejected</span>
-                          </>
-                        ) : (
-                          <>
-                            <div className="text-3xl mb-2 text-green-600">✓</div>
-                            <span className="text-xs font-semibold text-green-700">Approved</span>
-                            <div className="text-xs text-gray-600 mt-1">
-                              {new Date(bom.guideApprovedAt).toLocaleDateString()}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+                </button>
+              )
+            })}
           </div>
         )}
       </div>
-
-      {/* Edit Modal */}
-      {editingBOM && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-2xl font-serif font-bold mb-4" style={{ color: 'rgb(139, 21, 56)' }}>Edit BOM Request</h2>
-              <BOMForm
-                initial={editingBOM}
-                onSave={handleUpdate}
-                onCancel={() => setEditingBOM(null)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Reject Modal */}
-      {rejectingId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-xl font-serif font-bold mb-4" style={{ color: 'rgb(139, 21, 56)' }}>Reject Request</h3>
-            <p className="text-gray-600 mb-4">Please provide a reason for rejecting this request (Optional).</p>
-            <textarea
-              className="w-full p-3 border border-gray-300 rounded mb-4 focus:ring-2 focus:ring-red-500 outline-none"
-              rows="4"
-              placeholder="Reason for rejection (Optional)..."
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-            ></textarea>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setRejectingId(null)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmReject}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              >
-                Reject Request
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
