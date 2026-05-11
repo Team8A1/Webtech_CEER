@@ -74,7 +74,7 @@ const updateEquipment = async (req, res) => {
 
         // Handle image update if a new file is uploaded
         if (req.file) {
-            // Delete old image from Cloudinary
+            // Delete old image from Cloudinary only if it exists
             if (equipment.imageId) {
                 await cloudinary.uploader.destroy(equipment.imageId);
             }
@@ -112,13 +112,9 @@ const deleteEquipment = async (req, res) => {
     try {
         const { id } = req.params;
         const equipment = await Equipment.findById(id);
+        if (!equipment) return res.status(404).json({ success: false, message: 'Equipment not found' });
 
-        if (!equipment) {
-            return res.status(404).json({ success: false, message: 'Equipment not found' });
-        }
-
-        // Delete image from Cloudinary
-        await cloudinary.uploader.destroy(equipment.imageId);
+        if (equipment.imageId) await cloudinary.uploader.destroy(equipment.imageId);
 
         await Equipment.findByIdAndDelete(id);
 
@@ -193,7 +189,7 @@ const bulkImportEquipment = async (req, res) => {
                 stream
                     .pipe(csv())
                     .on('data', (row) => {
-                        // Map CSV columns to model. Expect headers: Name, Specification, Description, Quantity
+                        // Map CSV columns to model. Expect headers: Name, Specification, Description, AdditionalInfo, InCharge
                         if (row.Name) {
                             equipmentList.push({
                                 name: row.Name,
@@ -201,7 +197,8 @@ const bulkImportEquipment = async (req, res) => {
                                 description: row.Description || '',
                                 additionalInfo: row.AdditionalInfo || '',
                                 inCharge: row.InCharge || 'Lab Incharge',
-                                imageUrl: row.Image || 'https://via.placeholder.com/150?text=No+Image'
+                                imageUrl: 'https://placehold.co/300x200?text=No+Image',
+                                imageId: ''
                             });
                         }
                     })

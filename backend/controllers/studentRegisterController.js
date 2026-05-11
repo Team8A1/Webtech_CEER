@@ -42,7 +42,7 @@ const registerStudent = async (req, res) => {
       division: division ? division.toUpperCase() : undefined,
       usn,
       batch,
-      password: password || 'Student@123',
+      password: password || 'student@123',
       role: 'student',
       mustChangePassword: true,
       isActive: true,

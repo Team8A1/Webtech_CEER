@@ -8,7 +8,8 @@ const {
     loginAdmin,
     changePassword,
     getMaterialStats,
-    getImpactStats
+    getImpactStats,
+    getAllStudents
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -26,5 +27,6 @@ router.post('/register/faculty', registerBulkFaculty);
 router.post('/change-password', changePassword);
 router.get('/material-stats', getMaterialStats);
 router.get('/impact-stats', getImpactStats);
+router.get('/students', getAllStudents);
 
 module.exports = router;

@@ -280,33 +280,61 @@ const changePassword = async (req, res) => {
 
 const getMaterialStats = async (req, res) => {
     try {
-        const { materials, timeline } = req.query;
+        const { materials, timeline, month, year } = req.query;
         if (!materials) {
             return res.status(400).json({ success: false, message: 'Material identifiers are required' });
         }
 
         const materialList = materials.split(',').map(m => m.trim());
 
-        let startDate;
+        let startDate, endDate;
         const now = new Date();
         const dateCopy = new Date(now);
 
         switch (timeline) {
             case 'today':
                 startDate = new Date(dateCopy.setHours(0, 0, 0, 0));
+                endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
                 break;
             case 'thisweek':
                 startDate = new Date(dateCopy.setDate(dateCopy.getDate() - dateCopy.getDay()));
                 startDate.setHours(0, 0, 0, 0);
+                endDate = null;
                 break;
-            case 'thismonth':
-                startDate = new Date(dateCopy.getFullYear(), dateCopy.getMonth(), 1);
+            case 'thismonth': {
+                const m = month ? parseInt(month) - 1 : now.getMonth(); // 0-indexed
+                const y = year ? parseInt(year) : now.getFullYear();
+                startDate = new Date(y, m, 1);
+                endDate   = new Date(y, m + 1, 1); // first day of next month
                 break;
+            }
             case 'thisyear':
                 startDate = new Date(dateCopy.getFullYear(), 0, 1);
+                endDate = null;
                 break;
             default:
-                startDate = new Date(0); // All time
+                startDate = new Date(0);
+                endDate = null;
+        }
+
+        // Build date label and sortKey based on timeline
+        let labelExpr, sortKeyExpr;
+        if (timeline === 'today') {
+            // Today: show one bar for the whole day per material (no hourly breakdown)
+            labelExpr   = { $dateToString: { format: "%d-%m-%Y", date: "$labApprovedAt" } };
+            sortKeyExpr = { $dateToString: { format: "%Y-%m-%d", date: "$labApprovedAt" } };
+        } else if (timeline === 'thisyear') {
+            labelExpr   = { $dateToString: { format: "%m-%Y", date: "$labApprovedAt" } };
+            sortKeyExpr = { $dateToString: { format: "%Y-%m",  date: "$labApprovedAt" } };
+        } else if (timeline === 'thismonth') {
+            // Group into "Week 1" … "Week 5"
+            const weekNum = { $ceil: { $divide: [{ $dayOfMonth: "$labApprovedAt" }, 7] } };
+            labelExpr   = { $concat: ["Week ", { $toString: weekNum }] };
+            sortKeyExpr = { $toString: weekNum };
+        } else {
+            // thisweek — one bar per day, sort chronologically
+            labelExpr   = { $dateToString: { format: "%d-%m-%Y", date: "$labApprovedAt" } };
+            sortKeyExpr = { $dateToString: { format: "%Y-%m-%d", date: "$labApprovedAt" } };
         }
 
         const stats = await BOMRequest.aggregate([
@@ -314,47 +342,47 @@ const getMaterialStats = async (req, res) => {
                 $match: {
                     consumableName: { $in: materialList },
                     labApproved: true,
-                    labApprovedAt: { $gte: startDate }
+                    labApprovedAt: endDate
+                        ? { $gte: startDate, $lt: endDate }
+                        : { $gte: startDate }
                 }
             },
             {
                 $project: {
                     qty: 1,
                     consumableName: 1,
-                    date: {
-                        $dateToString: {
-                            format: timeline === 'today' ? "%H:00" : (timeline === 'thisyear' ? "%m-%Y" : "%d-%m-%Y"),
-                            date: "$labApprovedAt"
-                        }
-                    }
+                    label:   labelExpr,
+                    sortKey: sortKeyExpr
                 }
             },
             {
                 $group: {
                     _id: {
-                        time: "$date",
+                        label:   "$label",
+                        sortKey: "$sortKey",
                         material: "$consumableName"
                     },
                     totalQuantity: { $sum: "$qty" }
                 }
             },
             {
-                $sort: { "_id.time": 1 }
+                $sort: { "_id.sortKey": 1 }
             }
         ]);
 
-        // Transform results into a format Recharts handles easily:
-        // [{ time: '...', material1: qty, material2: qty }]
+        // Transform into Recharts format: [{ time: 'Week 1', Material: qty, ... }]
         const timeMap = {};
         stats.forEach(item => {
-            const { time, material } = item._id;
-            if (!timeMap[time]) {
-                timeMap[time] = { time };
+            const { label, sortKey, material } = item._id;
+            if (!timeMap[sortKey]) {
+                timeMap[sortKey] = { time: label, _sortKey: sortKey };
             }
-            timeMap[time][material] = item.totalQuantity;
+            timeMap[sortKey][material] = item.totalQuantity;
         });
 
-        const formattedStats = Object.values(timeMap).sort((a, b) => a.time.localeCompare(b.time));
+        const formattedStats = Object.values(timeMap)
+            .sort((a, b) => a._sortKey.localeCompare(b._sortKey))
+            .map(({ _sortKey, ...rest }) => rest);
 
         res.status(200).json({ success: true, data: formattedStats, materials: materialList });
     } catch (error) {
@@ -442,6 +470,49 @@ const getImpactStats = async (req, res) => {
     }
 };
 
+// Get all registered students with their team/guide info
+const getAllStudents = async (req, res) => {
+    try {
+        // All students from User collection
+        const allStudents = await User.find({ role: 'student' })
+            .select('name email usn division batch teamId')
+            .lean();
+
+        // All teams (to map guide and problem statement)
+        const teams = await Team.find({})
+            .populate('guide', 'name')
+            .select('members guide problemStatement')
+            .lean();
+
+        // Build a map: studentId -> { guide, problemStatement }
+        const studentTeamMap = {};
+        teams.forEach(team => {
+            (team.members || []).forEach(memberId => {
+                const id = memberId.toString();
+                studentTeamMap[id] = {
+                    guide: team.guide?.name || 'Unassigned',
+                    problemStatement: team.problemStatement || 'N/A'
+                };
+            });
+        });
+
+        const enriched = allStudents.map(s => ({
+            name: s.name || '',
+            email: s.email || '',
+            usn: s.usn || '',
+            division: s.division || '',
+            batch: s.batch || '',
+            guide: studentTeamMap[s._id.toString()]?.guide || 'No team assigned',
+            problemStatement: studentTeamMap[s._id.toString()]?.problemStatement || 'N/A'
+        }));
+
+        res.status(200).json({ success: true, data: enriched });
+    } catch (error) {
+        console.error('Error fetching all students:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
 module.exports = {
     getDashboardData,
     registerBulkStudents,
@@ -450,5 +521,6 @@ module.exports = {
     loginAdmin,
     changePassword,
     getMaterialStats,
-    getImpactStats
+    getImpactStats,
+    getAllStudents
 };

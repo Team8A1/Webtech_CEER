@@ -23,7 +23,8 @@ import {
   Activity,
   ExternalLink,
   Menu,
-  Briefcase
+  Briefcase,
+  Download
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AdminInstructions from './AdminInstructions';
@@ -51,6 +52,7 @@ const AdminDashboard = () => {
   const [equipmentsData, setEquipmentsData] = useState([]);
   const [eventsData, setEventsData] = useState([]);
   const [labInchargesData, setLabInchargesData] = useState([]);
+  const [allStudentsData, setAllStudentsData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // UI States
@@ -60,6 +62,7 @@ const AdminDashboard = () => {
   const [activeStaffTab, setActiveStaffTab] = useState('faculty');
   const [labSearchTerm, setLabSearchTerm] = useState('');
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
+  const [studentSearchType, setStudentSearchType] = useState('name'); // 'name' | 'usn'
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 
@@ -95,6 +98,10 @@ const AdminDashboard = () => {
   const [statSearchTerm, setStatSearchTerm] = useState('');
   const [showStatDropdown, setShowStatDropdown] = useState(false);
   const [selectedStatTimeline, setSelectedStatTimeline] = useState('thisweek');
+  const [selectedStatMonth, setSelectedStatMonth] = useState(new Date().getMonth() + 1);
+  const [selectedStatYear, setSelectedStatYear] = useState(new Date().getFullYear());
+  const [showTimelineMenu, setShowTimelineMenu] = useState(false);
+  const [showMonthFlyout, setShowMonthFlyout] = useState(false);
   const [statsData, setStatsData] = useState([]);
   const [impactData, setImpactData] = useState([]);
   const [statsLoading, setStatsLoading] = useState(false);
@@ -105,7 +112,7 @@ const AdminDashboard = () => {
 
   const fetchInitialData = async () => {
     setLoading(true);
-    await Promise.all([fetchDashboardData(), fetchMaterials(), fetchEvents(), fetchEquipments(), fetchLabIncharges()]);
+    await Promise.all([fetchDashboardData(), fetchMaterials(), fetchEvents(), fetchEquipments(), fetchLabIncharges(), fetchAllStudents()]);
     setLoading(false);
   };
 
@@ -144,6 +151,13 @@ const AdminDashboard = () => {
     } catch (error) { console.error('Error fetching lab incharges:', error); }
   };
 
+  const fetchAllStudents = async () => {
+    try {
+      const response = await api.get('/admin/students');
+      if (response.data.success) setAllStudentsData(response.data.data);
+    } catch (error) { console.error('Error fetching all students:', error); }
+  };
+
   const fetchMaterialStats = async () => {
     if (selectedStatMaterials.length === 0) {
       setStatsData([]);
@@ -152,7 +166,11 @@ const AdminDashboard = () => {
     setStatsLoading(true);
     try {
       const mats = selectedStatMaterials.join(',');
-      const response = await api.get(`/admin/material-stats?materials=${encodeURIComponent(mats)}&timeline=${selectedStatTimeline}`);
+      let url = `/admin/material-stats?materials=${encodeURIComponent(mats)}&timeline=${selectedStatTimeline}`;
+      if (selectedStatTimeline === 'thismonth') {
+        url += `&month=${selectedStatMonth}&year=${selectedStatYear}`;
+      }
+      const response = await api.get(url);
       if (response.data.success) {
         setStatsData(response.data.data);
       }
@@ -179,7 +197,7 @@ const AdminDashboard = () => {
       fetchMaterialStats();
       fetchImpactStats();
     }
-  }, [selectedStatMaterials, selectedStatTimeline, activeTab]);
+  }, [selectedStatMaterials, selectedStatTimeline, selectedStatMonth, selectedStatYear, activeTab]);
 
   useEffect(() => {
     if (materialsData.length > 0 && selectedStatMaterials.length === 0) {
@@ -262,7 +280,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleToggleEventStatus = async (id, currentStatus) => {
+  const handleToggleEventStatus = async (id) => {
     try {
       await api.patch(`/events/${id}/toggle-status`);
       fetchEvents();
@@ -591,62 +609,8 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="group relative bg-white/60 backdrop-blur-xl p-6 rounded-3xl border border-white/50 shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="p-3 bg-stone-100 rounded-2xl text-stone-700 shadow-inner group-hover:scale-110 transition-transform duration-300">
-                        <Users size={24} />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">Total Staff</p>
-                        <h3 className="text-3xl font-serif text-stone-900">{facultiesData.length}</h3>
-                      </div>
-                    </div>
-                    <div className="w-full bg-stone-200/50 rounded-full h-1.5 overflow-hidden">
-                      <div className="bg-stone-800 h-full rounded-full transition-all duration-1000 group-hover:w-[80%]" style={{ width: '75%' }}></div>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="group relative bg-white/60 backdrop-blur-xl p-6 rounded-3xl border border-white/50 shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="p-3 bg-red-50 rounded-2xl text-red-600 shadow-inner group-hover:scale-110 transition-transform duration-300">
-                        <Calendar size={24} />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">Active Events</p>
-                        <h3 className="text-3xl font-serif text-stone-900">{eventsData.length}</h3>
-                      </div>
-                    </div>
-                    <div className="w-full bg-red-100/50 rounded-full h-1.5 overflow-hidden">
-                      <div className="bg-red-500 h-full rounded-full transition-all duration-1000 group-hover:w-[50%]" style={{ width: '45%' }}></div>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="group relative bg-white/60 backdrop-blur-xl p-6 rounded-3xl border border-white/50 shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="p-3 bg-indigo-50 rounded-2xl text-indigo-600 shadow-inner group-hover:scale-110 transition-transform duration-300">
-                        <Package size={24} />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">Resources</p>
-                        <h3 className="text-3xl font-serif text-stone-900">{materialsData.length + equipmentsData.length}</h3>
-                      </div>
-                    </div>
-                    <div className="w-full bg-indigo-100/50 rounded-full h-1.5 overflow-hidden">
-                      <div className="bg-indigo-500 h-full rounded-full transition-all duration-1000 group-hover:w-[65%]" style={{ width: '60%' }}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* Quick Actions */}
               <div>
@@ -922,7 +886,7 @@ const AdminDashboard = () => {
                                   <h3 className="text-base font-bold text-stone-900 group-hover:text-blue-700 transition-colors font-serif truncate">
                                     {lab.name}
                                   </h3>
-                                  <p className="text-xs text-stone-500 truncate mb-1">{lab.email}</p>
+                                  {lab.email && <p className="text-xs text-stone-500 truncate mb-1">{lab.email}</p>}
                                   {lab.labName && (
                                     <span className="inline-block bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-100">
                                       {lab.labName}
@@ -957,7 +921,10 @@ const AdminDashboard = () => {
                   <div>
                     <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">Total Students</p>
                     <p className="text-3xl font-bold text-blue-900">
-                      {facultiesData.reduce((acc, f) => acc + f.teams.reduce((sum, t) => sum + t.members.length, 0), 0)}
+                      {allStudentsData.length}
+                    </p>
+                    <p className="text-xs text-blue-500 mt-1">
+                      {facultiesData.reduce((acc, f) => acc + f.teams.reduce((sum, t) => sum + t.members.length, 0), 0)} in teams
                     </p>
                   </div>
                   <div className="p-3 bg-blue-200 rounded-xl">
@@ -1049,7 +1016,7 @@ const AdminDashboard = () => {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                   <h3 className="text-xl font-serif text-stone-900">Material Provisioning Statistics</h3>
 
-                  <div className="flex flex-wrap gap-4 w-full md:w-auto">
+                  <div className="flex flex-wrap gap-4 w-full md:w-auto mr-6">
                     {/* Searchable Multi-Select Dropdown */}
                     <div className="flex flex-col gap-1.5 min-w-[300px] relative">
                       <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider ml-1">Select Materials</label>
@@ -1076,6 +1043,25 @@ const AdminDashboard = () => {
                             />
                           </div>
                           <div className="max-h-48 overflow-y-auto space-y-1 custom-scrollbar">
+                            {/* Select All row */}
+                            <label className="flex items-center gap-2 p-2 hover:bg-stone-50 rounded-lg cursor-pointer transition-colors group border-b border-stone-100 mb-1 pb-2">
+                              <input
+                                type="checkbox"
+                                className="accent-maroon-700 h-4 w-4 rounded"
+                                checked={materialsData.length > 0 && selectedStatMaterials.length === materialsData.length}
+                                ref={el => { if (el) el.indeterminate = selectedStatMaterials.length > 0 && selectedStatMaterials.length < materialsData.length; }}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedStatMaterials(materialsData.map(m => m.name));
+                                  } else {
+                                    setSelectedStatMaterials([]);
+                                  }
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <span className="text-xs font-bold text-stone-800 group-hover:text-stone-900">All Materials</span>
+                            </label>
+
                             {materialsData.filter(m => m.name.toLowerCase().includes(statSearchTerm.toLowerCase())).map(m => (
                               <label key={m._id} className="flex items-center gap-2 p-2 hover:bg-stone-50 rounded-lg cursor-pointer transition-colors group">
                                 <input
@@ -1097,7 +1083,10 @@ const AdminDashboard = () => {
                               <div className="text-center py-4 text-xs text-stone-400">No materials found</div>
                             )}
                           </div>
-                          <div className="mt-3 pt-3 border-t border-stone-100 flex justify-end">
+                          <div className="mt-3 pt-3 border-t border-stone-100 flex justify-between items-center">
+                            <span className="text-[10px] text-stone-400">
+                              {selectedStatMaterials.length} of {materialsData.length} selected
+                            </span>
                             <button
                               onClick={() => setShowStatDropdown(false)}
                               className="text-[10px] font-bold text-maroon-700 uppercase tracking-widest hover:text-maroon-800 transition-colors"
@@ -1109,20 +1098,92 @@ const AdminDashboard = () => {
                       )}
                     </div>
 
-                    {/* Timeline Dropdown */}
-                    <div className="flex flex-col gap-1.5 min-w-[150px]">
-                      <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider ml-1">Timeline</label>
-                      <select
-                        value={selectedStatTimeline}
-                        onChange={(e) => setSelectedStatTimeline(e.target.value)}
-                        className="w-full p-2.5 bg-white border border-stone-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-maroon-500/20 outline-none transition-all"
-                      >
-                        <option value="today">Today</option>
-                        <option value="thisweek">This Week</option>
-                        <option value="thismonth">This Month</option>
-                        <option value="thisyear">This Year</option>
-                      </select>
-                    </div>
+                    {/* Timeline Custom Dropdown */}
+                    {(() => {
+                      const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                      const YEARS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+                      const labels = { today: 'Today', thisweek: 'This Week', thismonth: `${MONTHS[selectedStatMonth - 1]} ${selectedStatYear}`, thisyear: 'This Year' };
+                      return (
+                        <div className="flex flex-col gap-1.5 min-w-[160px] relative" onMouseLeave={() => { setShowTimelineMenu(false); setShowMonthFlyout(false); }}>
+                          <label className="text-[10px] font-bold text-stone-400 uppercase tracking-wider ml-1">Timeline</label>
+
+                          {/* Trigger */}
+                          <div
+                            className="w-full p-2.5 bg-white border border-stone-200 rounded-xl text-sm font-medium cursor-pointer flex justify-between items-center hover:border-stone-300 transition-all select-none"
+                            onMouseEnter={() => setShowTimelineMenu(true)}
+                          >
+                            <span>{labels[selectedStatTimeline]}</span>
+                            <ChevronDown size={14} className="text-stone-400" />
+                          </div>
+
+                          {/* Dropdown menu */}
+                          {showTimelineMenu && (
+                            <div className="absolute top-full left-0 mt-1 bg-white border border-stone-200 rounded-xl shadow-xl z-[200] py-1 min-w-[160px] animate-in fade-in zoom-in-95 duration-150">
+                              {[
+                                { value: 'today', label: 'Today' },
+                                { value: 'thisweek', label: 'This Week' },
+                                { value: 'thisyear', label: 'This Year' },
+                              ].map(({ value, label }) => (
+                                <div
+                                  key={value}
+                                  className={`px-4 py-2 text-sm cursor-pointer transition-colors ${selectedStatTimeline === value ? 'bg-stone-900 text-white font-semibold' : 'hover:bg-stone-50 text-stone-700'}`}
+                                  onClick={() => { setSelectedStatTimeline(value); setShowTimelineMenu(false); }}
+                                >
+                                  {label}
+                                </div>
+                              ))}
+
+                              {/* Month option with flyout */}
+                              <div
+                                className={`px-4 py-2 text-sm cursor-pointer flex justify-between items-center transition-colors relative ${selectedStatTimeline === 'thismonth' ? 'bg-stone-900 text-white font-semibold' : 'hover:bg-stone-50 text-stone-700'}`}
+                                onMouseEnter={() => setShowMonthFlyout(true)}
+                                onMouseLeave={() => setShowMonthFlyout(false)}
+                                onClick={() => setSelectedStatTimeline('thismonth')}
+                              >
+                                <span>Month</span>
+                                <ChevronRight size={14} className="opacity-50" />
+
+                                {/* Month flyout panel */}
+                                {showMonthFlyout && (
+                                  <div
+                                    className="absolute right-full top-0 mr-1 bg-white border border-stone-200 rounded-xl shadow-2xl z-[300] p-3 w-[220px] animate-in fade-in slide-in-from-right-1 duration-150"
+                                    onClick={e => e.stopPropagation()}
+                                  >
+                                    {/* Year pills */}
+                                    <div className="flex gap-1 mb-3">
+                                      {YEARS.map(y => (
+                                        <button
+                                          key={y}
+                                          onClick={() => { setSelectedStatYear(y); setSelectedStatTimeline('thismonth'); }}
+                                          className={`flex-1 text-[10px] font-bold py-1 rounded-lg transition-colors ${selectedStatYear === y ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'}`}
+                                        >
+                                          {y}
+                                        </button>
+                                      ))}
+                                    </div>
+                                    {/* Month grid */}
+                                    <div className="grid grid-cols-4 gap-1">
+                                      {MONTHS.map((m, i) => (
+                                        <button
+                                          key={m}
+                                          onClick={() => { setSelectedStatMonth(i + 1); setSelectedStatTimeline('thismonth'); setShowMonthFlyout(false); setShowTimelineMenu(false); }}
+                                          className={`text-xs font-semibold py-1.5 rounded-lg transition-colors ${selectedStatMonth === i + 1 && selectedStatTimeline === 'thismonth'
+                                              ? 'bg-maroon-700 text-white'
+                                              : 'hover:bg-stone-100 text-stone-600'
+                                            }`}
+                                        >
+                                          {m}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -1143,6 +1204,20 @@ const AdminDashboard = () => {
                             tickLine={false}
                             tick={{ fill: '#78716c', fontSize: 11 }}
                             dy={15}
+                            tickFormatter={(value) => {
+                              // thisweek: "05-05-2025" → "Mon 5"
+                              if (/^\d{2}-\d{2}-\d{4}$/.test(value)) {
+                                const [d, m, y] = value.split('-');
+                                const date = new Date(`${y}-${m}-${d}`);
+                                return date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
+                              }
+                              // thisyear: "05-2025" → "May"
+                              if (/^\d{2}-\d{4}$/.test(value)) {
+                                const [m, y] = value.split('-');
+                                return new Date(`${y}-${m}-01`).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                              }
+                              return value; // "Week 1", "09:00" — already readable
+                            }}
                           />
                           <YAxis
                             axisLine={false}
@@ -1150,15 +1225,17 @@ const AdminDashboard = () => {
                             tick={{ fill: '#78716c', fontSize: 11 }}
                           />
                           <Tooltip
-                            shared={false}
                             cursor={{ fill: '#f5f5f4' }}
                             contentStyle={{
-                              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                              backgroundColor: 'rgba(255, 255, 255, 0.97)',
                               borderRadius: '12px',
-                              border: 'none',
+                              border: '1px solid #e7e5e4',
                               boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                              fontSize: '12px'
+                              fontSize: '12px',
+                              padding: '10px 14px'
                             }}
+                            labelStyle={{ fontWeight: 700, color: '#1c1917', marginBottom: 6, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                            formatter={(value, name) => [`${value} units`, name]}
                           />
                           <Legend
                             iconType="circle"
@@ -1189,56 +1266,7 @@ const AdminDashboard = () => {
                   </div>
                 </div>
 
-                {/* Environmental Impact Graph */}
-                <div className="bg-white/60 backdrop-blur-xl p-8 rounded-3xl border border-white/50 shadow-sm mt-8">
-                  <div className="flex justify-between items-center mb-8">
-                    <div>
-                      <h3 className="text-xl font-serif text-stone-900">Environmental Tracking</h3>
-                      <p className="text-xs text-stone-500 mt-1 uppercase tracking-widest font-bold">Total Embodied Energy Usage (MJ)</p>
-                    </div>
-                  </div>
 
-                  <div className="h-[300px] w-full">
-                    {impactData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={impactData}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                          <XAxis
-                            dataKey="date"
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: '#94a3b8', fontSize: 10 }}
-                          />
-                          <YAxis
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: '#94a3b8', fontSize: 10 }}
-                          />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: 'white',
-                              borderRadius: '12px',
-                              border: 'none',
-                              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                            }}
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="totalEnergy"
-                            stroke="#881337"
-                            strokeWidth={3}
-                            dot={{ fill: '#881337', strokeWidth: 2, r: 4, stroke: '#fff' }}
-                            activeDot={{ r: 6, strokeWidth: 0 }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-full w-full flex items-center justify-center text-stone-400 text-sm italic">
-                        Insufficient data to generate impact report
-                      </div>
-                    )}
-                  </div>
-                </div>
               </div>
             </div>
           )}
@@ -1299,7 +1327,7 @@ const AdminDashboard = () => {
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Password</label>
-                        <input type="text" required value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })}
+                        <input type="password" required value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })}
                           className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-maroon-500 focus:ring-4 focus:ring-maroon-500/10 transition-all font-medium" />
                       </div>
 
@@ -1395,10 +1423,12 @@ const AdminDashboard = () => {
 
                                 try {
                                   const response = await api.post('/admin/register/students', { students });
-                                  const { success, results } = response.data;
+                                  const { results } = response.data;
                                   setBulkResults(results);
                                   setBulkType('student');
                                   setShowBulkResultsModal(true);
+                                  fetchAllStudents();
+                                  fetchDashboardData();
                                 } catch (err) {
                                   console.error('Bulk upload failed:', err);
                                   alert('Bulk upload failed: ' + (err.response?.data?.message || err.message));
@@ -1478,78 +1508,193 @@ const AdminDashboard = () => {
 
 
               {/* Student Lookup Section */}
-              {userType === 'studentLookup' && (
-                <div className="mt-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
-                      <Search size={20} />
-                    </div>
-                    <h3 className="text-xl font-serif text-stone-800">Student Lookup</h3>
-                  </div>
-                  <div className="relative mb-6">
-                    <input
-                      type="text"
-                      placeholder="Search by student name or USN..."
-                      className="w-full pl-11 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-maroon-700/20 transition-all"
-                      value={studentSearchQuery}
-                      onChange={(e) => setStudentSearchQuery(e.target.value)}
-                    />
-                    <Search className="w-5 h-5 text-stone-400 absolute left-4 top-3.5" />
-                  </div>
+              {userType === 'studentLookup' && (() => {
+                // Derive available divisions from loaded student data
+                const availableDivisions = [...new Set(
+                  allStudentsData.map(s => s.division).filter(Boolean)
+                )].sort();
 
-                  {studentSearchQuery && (
-                    <div className="space-y-4">
-                      {facultiesData
-                        .flatMap(f => (f.teams || []).flatMap(t => (t.members || []).map(m => ({
-                          name: m.name || '',
-                          usn: m.usn || '',
-                          email: m.email || '',
-                          division: m.division || '',
-                          batch: m.batch || '',
-                          guide: f.faculty?.name || 'Unknown',
-                          problemStatement: t.problemStatement || 'N/A'
-                        }))))
-                        .filter(s =>
-                          (s.name && s.name.toLowerCase().includes(studentSearchQuery.toLowerCase())) ||
-                          (s.usn && s.usn.toLowerCase().includes(studentSearchQuery.toLowerCase()))
-                        )
-                        .slice(0, 5)
-                        .map((student, idx) => (
-                          <div key={idx} className="p-4 bg-stone-50 rounded-xl border border-stone-100 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <div className="mb-3">
-                              <h4 className="font-bold text-stone-900">{student.name}</h4>
-                              <p className="text-xs font-mono text-stone-500">{student.usn || 'No USN'}</p>
-                              {student.email && <p className="text-xs text-stone-400 mt-0.5">{student.email}</p>}
-                            </div>
-                            <div className="grid grid-cols-2 gap-4 text-sm mt-4">
-                              <div>
-                                <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-1">Guide</p>
-                                <p className="text-stone-700 font-medium">Prof. {student.guide}</p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-1">Division</p>
-                                <p className="text-stone-700 font-medium">{student.division || 'N/A'}{student.batch ? ` · ${student.batch}` : ''}</p>
-                              </div>
-                            </div>
-                            <div className="mt-4 pt-4 border-t border-stone-200/50">
-                              <p className="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-1">Problem Statement</p>
-                              <p className="text-stone-600 text-sm italic leading-relaxed">{student.problemStatement}</p>
-                            </div>
-                          </div>
-                        ))}
+                // Compute results based on mode
+                let matchedStudents = [];
+                if (studentSearchType === 'division') {
+                  matchedStudents = studentSearchQuery
+                    ? allStudentsData.filter(s => s.division === studentSearchQuery)
+                    : [];
+                } else {
+                  matchedStudents = studentSearchQuery
+                    ? allStudentsData.filter(s =>
+                      studentSearchType === 'name'
+                        ? (s.name && s.name.toLowerCase().includes(studentSearchQuery.toLowerCase()))
+                        : (s.usn && s.usn.toLowerCase().includes(studentSearchQuery.toLowerCase()))
+                    )
+                    : [];
+                }
 
-                      {studentSearchQuery && facultiesData
-                        .flatMap(f => (f.teams || []).flatMap(t => (t.members || [])))
-                        .filter(s =>
-                          (s.name && s.name.toLowerCase().includes(studentSearchQuery.toLowerCase())) ||
-                          (s.usn && s.usn.toLowerCase().includes(studentSearchQuery.toLowerCase()))
-                        ).length === 0 && (
-                          <p className="text-center text-stone-400 text-sm py-4">No matching student found</p>
-                        )}
+                return (
+                  <div className="mt-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                        <Search size={20} />
+                      </div>
+                      <h3 className="text-xl font-serif text-stone-800">Student Lookup</h3>
                     </div>
-                  )}
-                </div>
-              )}
+
+                    {/* Search Type Toggle */}
+                    <div className="flex flex-wrap gap-2 mb-5">
+                      {[
+                        { key: 'name', label: 'Search by Name' },
+                        { key: 'usn', label: 'Search by USN' },
+                        { key: 'division', label: 'Browse by Division' },
+                      ].map(({ key, label }) => (
+                        <button
+                          key={key}
+                          onClick={() => { setStudentSearchType(key); setStudentSearchQuery(''); }}
+                          className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold border transition-all ${studentSearchType === key
+                              ? 'bg-stone-900 text-white border-stone-900 shadow'
+                              : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400'
+                            }`}
+                        >
+                          {label}
+                          {key === 'division' && (
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${studentSearchType === 'division'
+                                ? 'bg-white/20 text-white'
+                                : 'bg-stone-100 text-stone-600'
+                              }`}>
+                              {allStudentsData.length}
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Name / USN text input */}
+                    {studentSearchType !== 'division' && (
+                      <div className="relative mb-4">
+                        <input
+                          type="text"
+                          placeholder={studentSearchType === 'name' ? 'Enter student name...' : 'Enter USN (e.g. 01FE23BCS164)...'}
+                          className="w-full pl-11 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-maroon-700/20 transition-all"
+                          value={studentSearchQuery}
+                          onChange={(e) => setStudentSearchQuery(e.target.value)}
+                        />
+                        <Search className="w-5 h-5 text-stone-400 absolute left-4 top-3.5" />
+                      </div>
+                    )}
+
+                    {/* Division pills */}
+                    {studentSearchType === 'division' && (
+                      <div className="mb-5">
+                        <p className="text-xs text-stone-400 font-semibold uppercase tracking-wider mb-3">Select a Division</p>
+                        <div className="flex flex-wrap gap-2">
+                          {availableDivisions.length === 0 ? (
+                            <p className="text-sm text-stone-400">No divisions found in data</p>
+                          ) : (
+                            availableDivisions.map(div => (
+                              <button
+                                key={div}
+                                onClick={() => setStudentSearchQuery(studentSearchQuery === div ? '' : div)}
+                                className={`px-5 py-2 rounded-xl text-sm font-bold border transition-all ${studentSearchQuery === div
+                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-md'
+                                    : 'bg-white text-stone-600 border-stone-200 hover:border-indigo-300 hover:text-indigo-600'
+                                  }`}
+                              >
+                                Division {div}
+                                {studentSearchQuery === div && (
+                                  <span className="ml-2 bg-white/20 text-white text-xs px-1.5 py-0.5 rounded-full">
+                                    {matchedStudents.length}
+                                  </span>
+                                )}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Result count */}
+                    {studentSearchQuery && (
+                      <p className="text-xs text-stone-400 mb-4 font-medium">
+                        {matchedStudents.length === 0
+                          ? studentSearchType === 'division'
+                            ? `No students found in Division ${studentSearchQuery}`
+                            : `No students found matching that ${studentSearchType === 'name' ? 'name' : 'USN'}`
+                          : `Showing ${matchedStudents.length} student${matchedStudents.length !== 1 ? 's' : ''}${studentSearchType === 'division' ? ` in Division ${studentSearchQuery}` : ''}`
+                        }
+                      </p>
+                    )}
+
+                    {matchedStudents.length > 0 && (
+                      <div className="mt-2">
+                        {/* Export button */}
+                        <div className="flex justify-between items-center mb-3">
+                          <p className="text-xs text-stone-400 font-medium">
+                            {matchedStudents.length} student{matchedStudents.length !== 1 ? 's' : ''}{studentSearchType === 'division' ? ` · Division ${studentSearchQuery}` : ''}
+                          </p>
+                          <button
+                            onClick={() => {
+                              const headers = ['#', 'Name', 'USN', 'Email', 'Division', 'Batch', 'Guide', 'Problem Statement'];
+                              const rows = matchedStudents.map((s, i) => [
+                                i + 1, s.name, s.usn || '', s.email || '', s.division || '', s.batch || '', s.guide || '', s.problemStatement || ''
+                              ]);
+                              const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+                              const blob = new Blob([csv], { type: 'text/csv' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `Division_${studentSearchQuery || 'Students'}.csv`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-maroon-700 border border-maroon-200 rounded-lg hover:bg-maroon-50 transition-colors"
+                          >
+                            <Download size={13} /> Export CSV
+                          </button>
+                        </div>
+
+                        {/* Table */}
+                        <div className="overflow-x-auto rounded-xl border border-stone-200 shadow-sm">
+                          <table className="min-w-full text-sm">
+                            <thead>
+                              <tr className="bg-stone-800 text-white">
+                                {['#', 'Name', 'USN', 'Email', 'Div', 'Batch', 'Guide', 'Problem Statement'].map(h => (
+                                  <th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest whitespace-nowrap first:rounded-tl-xl last:rounded-tr-xl">
+                                    {h}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {matchedStudents.map((student, idx) => (
+                                <tr
+                                  key={idx}
+                                  className={`border-t border-stone-100 transition-colors hover:bg-maroon-50/40 ${idx % 2 === 0 ? 'bg-white' : 'bg-stone-50/60'}`}
+                                >
+                                  <td className="px-4 py-3 text-stone-400 font-mono text-xs">{idx + 1}</td>
+                                  <td className="px-4 py-3 font-semibold text-stone-900 whitespace-nowrap">{student.name}</td>
+                                  <td className="px-4 py-3 font-mono text-xs text-stone-500 whitespace-nowrap">{student.usn || <span className="text-stone-300 italic">—</span>}</td>
+                                  <td className="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">{student.email || <span className="text-stone-300 italic">—</span>}</td>
+                                  <td className="px-4 py-3 text-center">
+                                    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">{student.division || '—'}</span>
+                                  </td>
+                                  <td className="px-4 py-3 text-stone-500 text-xs text-center">{student.batch || '—'}</td>
+                                  <td className="px-4 py-3 text-stone-600 text-xs whitespace-nowrap">{student.guide || <span className="italic text-stone-300">No guide</span>}</td>
+                                  <td className="px-4 py-3 text-stone-500 text-xs max-w-[220px] truncate" title={student.problemStatement}>
+                                    {student.problemStatement || <span className="italic text-stone-300">N/A</span>}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {studentSearchQuery && matchedStudents.length === 0 && (
+                      <p className="text-center text-stone-400 text-sm py-8">No matching student found</p>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -1617,7 +1762,31 @@ const AdminDashboard = () => {
           {
             activeTab === 'materials' && (
               <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
-                <div className="flex justify-end mb-8">
+                <div className="flex justify-end gap-3 mb-8">
+                  {/* Bulk Upload */}
+                  <label className="flex items-center gap-2 px-5 py-3 bg-white border border-stone-200 text-stone-700 rounded-xl hover:border-maroon-300 hover:text-maroon-700 transition-all cursor-pointer font-medium text-sm shadow-sm">
+                    <Upload size={18} />
+                    Bulk Import CSV
+                    <input
+                      type="file"
+                      accept=".csv"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        const fd = new FormData();
+                        fd.append('file', file);
+                        try {
+                          const res = await api.post('/material/bulk', fd);
+                          if (res.data.success) {
+                            alert(`✅ Imported ${res.data.count} material(s)`);
+                            fetchMaterials();
+                          } else alert('Import failed: ' + res.data.message);
+                        } catch (err) { alert('Import error: ' + (err.response?.data?.message || err.message)); }
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
                   <button
                     onClick={() => {
                       setEditingMaterial(null);
@@ -1630,13 +1799,26 @@ const AdminDashboard = () => {
                   </button>
                 </div>
 
+                {/* CSV template hint */}
+                <p className="text-[10px] text-stone-400 -mt-5 mb-6 text-right">
+                  CSV columns: <span className="font-mono">Name, Dimension, Description, Density, EmbodiedEnergy, CarbonFootprintFactor, FixedDimension, FormType</span>
+                  <span className="ml-2 text-stone-300">· Image added via Edit after import</span>
+                </p>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {materialsData.map(material => (
-                    <div key={material._id} className="group relative h-72 bg-stone-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500">
+                    <div key={material._id} className="group relative h-72 bg-stone-800 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500">
                       {/* Background */}
                       <div className="absolute inset-0">
-                        <img src={material.imageUrl} alt={material.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/20 to-black/20 opacity-80 group-hover:opacity-90 transition-opacity" />
+                        {material.imageUrl ? (
+                          <img
+                            src={material.imageUrl}
+                            alt={material.name}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90"
+                            onError={e => { e.target.style.display = 'none'; }}
+                          />
+                        ) : null}
+                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/40 to-stone-800/60" />
                       </div>
 
                       {/* Actions */}
@@ -1668,33 +1850,31 @@ const AdminDashboard = () => {
           {
             activeTab === 'equipment' && (
               <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
-                {/* Drag & Drop Zone */}
-                {/* <div
-                  className={`mb-8 border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all duration-300 cursor-pointer group ${isDragging ? 'border-maroon-500 bg-maroon-50' : 'border-stone-200 bg-stone-50/50 hover:bg-stone-50 hover:border-maroon-200'}`}
-                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-                  onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
-                  onDrop={handleBulkUpload}
-                  onClick={() => document.getElementById('bulk-upload-input').click()}
-                >
-                  <input
-                    id="bulk-upload-input"
-                    type="file"
-                    accept=".pdf,.csv"
-                    className="hidden"
-                    onChange={handleBulkUpload}
-                  />
-                  <div className="p-4 bg-white rounded-full text-maroon-700 shadow-sm mb-3 group-hover:scale-110 transition-transform duration-300">
-                    <Upload size={32} />
-                      </div>
-                  <h3 className="font-serif text-lg text-stone-900 mb-1">Bulk Import Equipment</h3>
-                  <p className="text-stone-500 text-sm mb-4">Drag & drop PDF/CSV or click to browse</p>
-                  <div className="flex gap-2">
-                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-white px-2 py-1 rounded border border-stone-200">.PDF</span>
-                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-white px-2 py-1 rounded border border-stone-200">.CSV</span>
-                      </div>
-                    </div> */}
-
-                <div className="flex justify-end mb-8">
+                <div className="flex justify-end gap-3 mb-8">
+                  {/* Bulk Upload */}
+                  <label className="flex items-center gap-2 px-5 py-3 bg-white border border-stone-200 text-stone-700 rounded-xl hover:border-maroon-300 hover:text-maroon-700 transition-all cursor-pointer font-medium text-sm shadow-sm">
+                    <Upload size={18} />
+                    Bulk Import CSV
+                    <input
+                      type="file"
+                      accept=".csv"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        const fd = new FormData();
+                        fd.append('file', file);
+                        try {
+                          const res = await api.post('/equipment/import', fd);
+                          if (res.data.success) {
+                            alert(`✅ Imported ${res.data.count} equipment item(s)`);
+                            fetchEquipments();
+                          } else alert('Import failed: ' + res.data.message);
+                        } catch (err) { alert('Import error: ' + (err.response?.data?.message || err.message)); }
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
                   <button
                     onClick={() => setShowEquipmentModal(true)}
                     className="flex items-center gap-2 px-6 py-3 bg-maroon-700 text-white rounded-xl hover:bg-maroon-800 transition-all shadow-lg shadow-maroon-900/20 active:scale-[0.98] font-medium"
@@ -1702,6 +1882,12 @@ const AdminDashboard = () => {
                     <Plus size={20} /> Add Equipment
                   </button>
                 </div>
+
+                {/* CSV template hint */}
+                <p className="text-[10px] text-stone-400 -mt-5 mb-6 text-right">
+                  CSV columns: <span className="font-mono">Name, Specification, Description, AdditionalInfo, InCharge</span>
+                  <span className="ml-2 text-stone-300">· Image added via Edit after import</span>
+                </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {equipmentsData.map(item => (
@@ -1711,8 +1897,15 @@ const AdminDashboard = () => {
                       className="group relative h-80 bg-stone-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer"
                     >
                       {/* Background */}
-                      <div className="absolute inset-0 bg-white">
-                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-110" />
+                      <div className="absolute inset-0 bg-stone-900">
+                        {item.imageUrl && (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.name}
+                            className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-110 opacity-80"
+                            onError={e => { e.target.style.display = 'none'; }}
+                          />
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/40 to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
                       </div>
 
@@ -1748,7 +1941,6 @@ const AdminDashboard = () => {
                           <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">In Charge: {item.inCharge}</p>
                         </div>
                         <h3 className="text-2xl font-serif text-white mb-2">{item.name}</h3>
-
                         <div className="text-xs text-red-400 font-bold mt-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 uppercase tracking-wider">
                           View details <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                         </div>
@@ -1963,7 +2155,7 @@ const AdminDashboard = () => {
                     <input type="text" placeholder="Person In Charge" required value={equipmentForm.inCharge} onChange={e => setEquipmentForm({ ...equipmentForm, inCharge: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
                     <input type="text" placeholder="Specification" value={equipmentForm.specification} onChange={e => setEquipmentForm({ ...equipmentForm, specification: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium placeholder:text-stone-400" />
                     <textarea placeholder="Description" required value={equipmentForm.description} onChange={e => setEquipmentForm({ ...equipmentForm, description: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
-                    <textarea placeholder="Additional Information (Optional)" value={equipmentForm.additionalInfo} onChange={e => setEquipmentForm({ ...equipmentForm, additionalInfo: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
+                    <textarea placeholder="Add link" value={equipmentForm.additionalInfo} onChange={e => setEquipmentForm({ ...equipmentForm, additionalInfo: e.target.value })} className="w-full p-3.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-maroon-500/20 focus:border-maroon-500 transition-all font-medium h-28 resize-none placeholder:text-stone-400" />
 
                     <div
                       className="border-2 border-dashed border-stone-200 rounded-xl p-8 text-center hover:bg-stone-50 hover:border-maroon-200 transition-colors relative group"

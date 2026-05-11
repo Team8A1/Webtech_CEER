@@ -9,10 +9,12 @@ function LabApprove() {
   const [boms, setBoms] = useState([])
   const [filter, setFilter] = useState('pending')
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedDivision, setSelectedDivision] = useState('')
   const navigate = useNavigate()
   const previousPendingCountRef = useRef(0)
   const [rejectingId, setRejectingId] = useState(null)
-  const [rejectionReason, setRejectionReason] = useState('')
+  const [selectedReason, setSelectedReason] = useState('')
+  const [customReason, setCustomReason] = useState('')
 
   // Edit State
   const [editingBom, setEditingBom] = useState(null);
@@ -79,14 +81,8 @@ function LabApprove() {
 
         if (response.data.success) {
           const fetchedBoms = response.data.data;
-          // Filter out rejected items from pending count
           const currentPendingCount = fetchedBoms.filter(b => !b.labApproved && b.status !== 'rejected').length;
-
-          // Pop-up alert instead of sound/voice
-          if (currentPendingCount > previousPendingCountRef.current && currentPendingCount > 0) {
-            alert("New BOM requests pending.");
-          }
-
+          // Silent update — no alert popup
           previousPendingCountRef.current = currentPendingCount;
           setBoms(fetchedBoms);
         }
@@ -116,22 +112,29 @@ function LabApprove() {
 
   const handleRejectClick = (id) => {
     setRejectingId(id)
-    setRejectionReason('')
+    setSelectedReason('')
+    setCustomReason('')
   }
 
   const confirmReject = async () => {
+    const finalReason = selectedReason === 'Other (please specify)' ? customReason.trim() : selectedReason;
+    if (!finalReason) {
+      alert('Please provide a rejection reason.');
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
       await axios.patch(`${BASE_URL}/api/lab/bom/reject`, {
         id: rejectingId,
-        reason: rejectionReason
+        reason: finalReason
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       load();
       alert('BOM Request Rejected by Lab');
       setRejectingId(null);
-      setRejectionReason('');
+      setSelectedReason('');
+      setCustomReason('');
     } catch (error) {
       console.error('Error rejecting BOM:', error);
       alert('Error rejecting request');
@@ -228,6 +231,12 @@ function LabApprove() {
     if (filter === 'pending') filtered = filtered.filter(b => !b.labApproved && b.status !== 'rejected')
     else if (filter === 'approved') filtered = filtered.filter(b => b.labApproved && b.status !== 'rejected')
     else if (filter === 'rejected') filtered = filtered.filter(b => b.status === 'rejected')
+    else if (filter === 'all') filtered = filtered.filter(b => b.labApproved || b.status === 'rejected')
+
+    // Apply division filter
+    if (selectedDivision) {
+      filtered = filtered.filter(b => (b.studentId?.division || '') === selectedDivision);
+    }
 
     // Apply search filter
     if (searchQuery.trim()) {
@@ -247,6 +256,21 @@ function LabApprove() {
   const pendingCount = boms.filter(b => !b.labApproved && b.status !== 'rejected').length
   const approvedCount = boms.filter(b => b.labApproved && b.status !== 'rejected').length
   const rejectedCount = boms.filter(b => b.status === 'rejected').length
+  const allCount = approvedCount + rejectedCount
+
+  // All unique divisions from the CURRENT tab's unfiltered data (before division filter)
+  const getTabBoms = () => {
+    if (filter === 'pending') return boms.filter(b => !b.labApproved && b.status !== 'rejected');
+    if (filter === 'approved') return boms.filter(b => b.labApproved && b.status !== 'rejected');
+    if (filter === 'rejected') return boms.filter(b => b.status === 'rejected');
+    return boms.filter(b => b.labApproved || b.status === 'rejected');
+  };
+  const tabBoms = getTabBoms();
+  const divisionsInTab = [...new Set(tabBoms.map(b => b.studentId?.division || '').filter(Boolean))].sort();
+
+  // Which divisions have at least one pending BOM (across ALL tabs)
+  const pendingBoms = boms.filter(b => !b.labApproved && b.status !== 'rejected');
+  const divisionsWithPending = new Set(pendingBoms.map(b => b.studentId?.division || '').filter(Boolean));
 
   return (
     <div className="p-8">
@@ -289,44 +313,93 @@ function LabApprove() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-4 mb-8">
+      <div className="flex gap-4 mb-5">
         <button
-          onClick={() => setFilter('pending')}
-          className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'pending'
+          onClick={() => { setFilter('pending'); setSelectedDivision(''); }}
+          className={`relative px-6 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${filter === 'pending'
             ? 'bg-blue-600 text-white shadow-lg'
             : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
+          }`}
         >
           Pending ({pendingCount})
+          {pendingCount > 0 && (
+            <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+          )}
         </button>
         <button
-          onClick={() => setFilter('approved')}
+          onClick={() => { setFilter('approved'); setSelectedDivision(''); }}
           className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'approved'
             ? 'bg-green-600 text-white shadow-lg'
             : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
+          }`}
         >
           Approved ({approvedCount})
         </button>
         <button
-          onClick={() => setFilter('rejected')}
+          onClick={() => { setFilter('rejected'); setSelectedDivision(''); }}
           className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'rejected'
             ? 'bg-red-600 text-white shadow-lg'
             : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
+          }`}
         >
           Rejected ({rejectedCount})
         </button>
         <button
-          onClick={() => setFilter('all')}
+          onClick={() => { setFilter('all'); setSelectedDivision(''); }}
           className={`px-6 py-2 rounded-lg font-semibold transition-all ${filter === 'all'
             ? 'bg-indigo-600 text-white shadow-lg'
             : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
+          }`}
         >
-          All ({boms.length})
+          All ({allCount})
         </button>
       </div>
+
+      {/* Division Filter Dropdown */}
+      {divisionsInTab.length > 0 && (
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Division:</span>
+          <div className="relative">
+            <select
+              value={selectedDivision}
+              onChange={e => setSelectedDivision(e.target.value)}
+              className="pl-4 pr-8 py-2 border border-gray-300 rounded-lg text-sm font-medium bg-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none cursor-pointer"
+            >
+              <option value="">All Divisions</option>
+              {divisionsInTab.map(div => (
+                <option key={div} value={div}>
+                  {divisionsWithPending.has(div) ? '🔴 ' : ''} Division {div}
+                </option>
+              ))}
+            </select>
+          </div>
+          {/* Division pills */}
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedDivision('')}
+              className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                selectedDivision === '' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500'
+              }`}
+            >
+              All
+            </button>
+            {divisionsInTab.map(div => (
+              <button
+                key={div}
+                onClick={() => setSelectedDivision(selectedDivision === div ? '' : div)}
+                className={`px-3 py-1 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 ${
+                  selectedDivision === div ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
+                }`}
+              >
+                {divisionsWithPending.has(div) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block"></span>
+                )}
+                Div {div}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Search Input */}
       <div className="mb-6">
@@ -512,8 +585,11 @@ function LabApprove() {
             {/* Dropdown for predefined reasons */}
             <select
               className="w-full p-3 border border-gray-300 rounded mb-4 focus:ring-2 focus:ring-red-500 outline-none bg-white"
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
+              value={selectedReason}
+              onChange={(e) => {
+                setSelectedReason(e.target.value);
+                setCustomReason('');
+              }}
             >
               <option value="">-- Select a reason --</option>
               {predefinedReasons.map((reason) => (
@@ -524,26 +600,29 @@ function LabApprove() {
             </select>
 
             {/* Custom reason input - shown only when "Other" is selected */}
-            {rejectionReason === 'Other (please specify)' && (
+            {selectedReason === 'Other (please specify)' && (
               <textarea
                 className="w-full p-3 border border-gray-300 rounded mb-4 focus:ring-2 focus:ring-red-500 outline-none"
                 rows="3"
                 placeholder="Please specify the reason..."
-                value={rejectionReason === 'Other (please specify)' ? '' : rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
+                value={customReason}
+                onChange={(e) => setCustomReason(e.target.value)}
               ></textarea>
             )}
 
             <div className="flex justify-end gap-3">
               <button
-                onClick={() => setRejectingId(null)}
+                onClick={() => { setRejectingId(null); setSelectedReason(''); setCustomReason(''); }}
                 className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmReject}
-                disabled={!rejectionReason}
+                disabled={
+                  !selectedReason ||
+                  (selectedReason === 'Other (please specify)' && !customReason.trim())
+                }
                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 Reject Request
