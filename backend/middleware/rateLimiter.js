@@ -9,7 +9,7 @@ const apiLimiter = rateLimit({
     max: 100, // Limit each IP to 100 requests per windowMs
     message: {
         success: false,
-        message: 'Too many requests from this IP, please try again after ${windowMs / 60 / 1000} minutes'
+        message: `Too many requests from this IP, please try again after ${windowMs / 60 / 1000} minutes`
     },
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
@@ -24,7 +24,7 @@ const authLimiter = rateLimit({
     max: 100, // Limit each IP to 10 requests per windowMs (login/register/password change)
     message: {
         success: false,
-        message: 'Too many authentication attempts, please try again after 1 minutes'
+        message: `Too many authentication attempts, please try again after ${windowMs / 60 / 1000} minutes`
     },
     standardHeaders: true,
     legacyHeaders: false,

@@ -21,6 +21,12 @@ const bomRoutes = require("./routes/bomRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const materialRoutes = require("./routes/materialRoutes");
 const eventRoutes = require("./routes/eventRoutes");
+// new added 
+const energyRoutes = require("./routes/energyRoutes");
+const carbonRoutes = require("./routes/carbonRoutes");
+const equipmentRoutes = require("./routes/equipmentRoutes");
+const instructionRoutes = require("./routes/instruction.routes");
+const projectRoutes = require("./routes/projectRoutes");
 
 // Initialize app
 const app = express();
@@ -105,11 +111,13 @@ app.use("/api", bomRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/material", materialRoutes);
 app.use("/api/events", eventRoutes);
-app.use("/api/energy", require("./routes/energyRoutes"));
-app.use("/api/carbon", require("./routes/carbonRoutes"));
-app.use("/api/equipment", require("./routes/equipmentRoutes"));
-app.use("/api/instructions", require("./routes/instruction.routes"));
-app.use("/api/projects", require("./routes/projectRoutes"));
+
+app.use("/api/energy", energyRoutes);
+app.use("/api/carbon", carbonRoutes);
+app.use("/api/equipment", equipmentRoutes);
+app.use("/api/instructions", instructionRoutes);
+
+app.use("/api/projects", projectRoutes);
 
 // -------------------------
 // Root Route
