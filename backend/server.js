@@ -122,9 +122,9 @@ app.use("/api/projects", projectRoutes);
 // -------------------------
 // Root Route
 // -------------------------
-app.get("/", (req, res) => {
-  res.send("Server is running");
-});
+// app.get("/", (req, res) => {
+//   res.send("Server is running");
+// });
 
 // -------------------------
 app.get("/test", (req, res) => {
