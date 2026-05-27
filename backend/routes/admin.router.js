@@ -10,8 +10,8 @@ const {
     getMaterialStats,
     getImpactStats,
     getAllStudents
-} = require('../controllers/adminController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+} = require('../controllers/admin.controller');
+const { protect, authorize } = require('../middleware/authMiddleware.middleware');
 
 // Auth Routes
 router.post('/login', loginAdmin);

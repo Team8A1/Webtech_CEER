@@ -7,8 +7,8 @@ const {
     updateBOMRequestStatus,
     updateBOMRequest,
     deleteBOMRequest
-} = require('../controllers/bomController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+} = require('../controllers/bom.controller');
+const { protect, authorize } = require('../middleware/authMiddleware.middleware');
 
 // Student Routes
 router.post('/student/request/bom', protect, authorize('student'), createBOMRequest);
@@ -21,7 +21,7 @@ router.get('/faculty/bom/list', protect, authorize('faculty'), getFacultyBOMRequ
 router.patch('/faculty/bom/update', protect, authorize('faculty'), updateBOMRequestStatus);
 
 // Lab Routes
-const { getLabBOMRequests, approveLabBOMRequest, rejectLabBOMRequest, editLabBOMRequest } = require('../controllers/labBOMController');
+const { getLabBOMRequests, approveLabBOMRequest, rejectLabBOMRequest, editLabBOMRequest } = require('../controllers/labBOM.controller');
 router.get('/lab/bom/list', protect, authorize('labIncharge'), getLabBOMRequests);
 router.patch('/lab/bom/approve', protect, authorize('labIncharge'), approveLabBOMRequest);
 router.patch('/lab/bom/reject', protect, authorize('labIncharge'), rejectLabBOMRequest);

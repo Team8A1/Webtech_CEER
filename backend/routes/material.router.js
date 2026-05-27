@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { addMaterial, getMaterials, deleteMaterial, updateMaterial, bulkImportMaterials } = require('../controllers/materialController');
+const { addMaterial, getMaterials, deleteMaterial, updateMaterial, bulkImportMaterials } = require('../controllers/material.controller');
 
 // Multer config for memory storage
 const storage = multer.memoryStorage();

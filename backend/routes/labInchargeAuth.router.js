@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { googleAuth, loginWithPassword, logout, changePassword } = require('../controllers/labInchargeAuthController');
+const { googleAuth, loginWithPassword, logout, changePassword } = require('../controllers/labInchargeAuth.controller');
 
 // normal login 
 router.post('/login', loginWithPassword);

@@ -1,5 +1,5 @@
-const Event = require('../models/Event');
-const cloudinary = require('../config/cloudinary');
+const Event = require('../models/event.model');
+const cloudinary = require('../config/cloudinary.config');
 const streamifier = require('streamifier');
 
 // Helper to upload to Cloudinary from buffer

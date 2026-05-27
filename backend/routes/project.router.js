@@ -6,7 +6,7 @@ const {
     createProject,
     updateProject,
     deleteProject
-} = require('../controllers/projectController');
+} = require('../controllers/project.controller');
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();

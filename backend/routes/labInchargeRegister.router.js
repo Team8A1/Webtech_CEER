@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerLabIncharge, getAllLabIncharges } = require('../controllers/labInchargeRegisterController');
+const { registerLabIncharge, getAllLabIncharges } = require('../controllers/labInchargeRegister.controller');
 
 /**
  * @route   POST /api/lab/register

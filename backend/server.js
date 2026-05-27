@@ -4,36 +4,36 @@ const cors = require("cors");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const mongoose = require("mongoose");
-const connectDB = require("./config/database");
-const { apiLimiter, authLimiter } = require("./middleware/rateLimiter");
+const connectDB = require("./config/database.config");
+const { apiLimiter, authLimiter } = require("./middleware/rateLimiter.middleware");
 
 // auth and registration routess
 
-const studentAuthRoutes = require("./routes/studentAuthRoutes");
-const studentRegisterRoutes = require("./routes/studentRegisterRoutes");
-const facultyAuthRoutes = require("./routes/facultyAuthRoutes");
-const labInchargeAuthRoutes = require("./routes/labInchargeAuthRoutes");
-const facultyRegisterRoutes = require("./routes/facultyRegisterRoutes");
-const labInchargeRegisterRoutes = require("./routes/labInchargeRegisterRoutes");
+const studentAuthRoutes = require("./routes/studentAuth.router");
+const studentRegisterRoutes = require("./routes/studentRegister.router");
+const facultyAuthRoutes = require("./routes/facultyAuth.router");
+const labInchargeAuthRoutes = require("./routes/labInchargeAuth.router");
+const facultyRegisterRoutes = require("./routes/facultyRegister.router");
+const labInchargeRegisterRoutes = require("./routes/labInchargeRegister.router");
 
 // 
-const facultyRoutes = require("./routes/facultyRoutes");
-const labRoutes = require("./routes/labRoutes");
-const teamRoutes = require("./routes/teamRoutes");
-const bomRoutes = require("./routes/bomRoutes");
-const adminRoutes = require("./routes/adminRoutes");
+const facultyRoutes = require("./routes/faculty.router");
+const labRoutes = require("./routes/lab.router");
+const teamRoutes = require("./routes/team.router");
+const bomRoutes = require("./routes/bom.router");
+const adminRoutes = require("./routes/admin.router");
 //
-const materialRoutes = require("./routes/materialRoutes");
-const equipmentRoutes = require("./routes/equipmentRoutes");
+const materialRoutes = require("./routes/material.router");
+const equipmentRoutes = require("./routes/equipment.router");
 
 // energy routes
-const energyRoutes = require("./routes/energyRoutes");
-const carbonRoutes = require("./routes/carbonRoutes");
+const energyRoutes = require("./routes/energy.router");
+const carbonRoutes = require("./routes/carbon.router");
 // student instrcution 
-const instructionRoutes = require("./routes/instruction.routes");
+const instructionRoutes = require("./routes/instruction.router");
 // landing page..
-const projectRoutes = require("./routes/projectRoutes");
-const eventRoutes = require("./routes/eventRoutes");
+const projectRoutes = require("./routes/project.router");
+const eventRoutes = require("./routes/event.router");
 
 // Initialize app
 const app = express();

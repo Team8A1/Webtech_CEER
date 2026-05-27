@@ -1,5 +1,5 @@
-const Project = require('../models/Project');
-const cloudinary = require('../config/cloudinary');
+const Project = require('../models/project.model');
+const cloudinary = require('../config/cloudinary.config');
 const streamifier = require('streamifier');
 
 // Helper to upload to Cloudinary from buffer

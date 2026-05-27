@@ -2,8 +2,8 @@ const pdf = require('pdf-parse');
 const csv = require('csv-parser');
 const { Readable } = require('stream');
 
-const Equipment = require('../models/Equipment');
-const cloudinary = require('../config/cloudinary');
+const Equipment = require('../models/equipment.model');
+const cloudinary = require('../config/cloudinary.config');
 const streamifier = require('streamifier');
 
 // Helper to upload to Cloudinary from buffer

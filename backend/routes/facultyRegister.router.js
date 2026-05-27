@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerFaculty } = require('../controllers/facultyRegisterController');
+const { registerFaculty } = require('../controllers/facultyRegister.controller');
 
 /**
  * @route   POST /api/faculty/register

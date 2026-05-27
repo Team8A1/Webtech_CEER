@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { getAllEvents, createEvent, updateEvent, deleteEvent, toggleEventStatus } = require('../controllers/eventController');
+const { getAllEvents, createEvent, updateEvent, deleteEvent, toggleEventStatus } = require('../controllers/event.controller');
 
 // Multer config for memory storage
 const storage = multer.memoryStorage();

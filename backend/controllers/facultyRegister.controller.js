@@ -1,4 +1,4 @@
-const Faculty = require('../models/Faculty');
+const Faculty = require('../models/faculty.model');
 
 /**
  * Register a new faculty member

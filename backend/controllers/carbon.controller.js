@@ -1,6 +1,6 @@
-const BOMRequest = require('../models/BOMRequest');
-const Material = require('../models/Material');
-const User = require('../models/User');
+const BOMRequest = require('../models/bomRequest.model');
+const Material = require('../models/material.model');
+const User = require('../models/user.model');
 
 // @desc    Get carbon footprint analysis for approved BOM items (team-based)
 // @route   GET /api/carbon/analysis

@@ -1,8 +1,8 @@
-const { verifyToken } = require('../utils/tokenUtils');
-const User = require('../models/User');
-const Faculty = require('../models/Faculty');
-const LabIncharge = require('../models/LabIncharge');
-const Admin = require('../models/Admin');
+const { verifyToken } = require('../utils/token.util');
+const User = require('../models/user.model');
+const Faculty = require('../models/faculty.model');
+const LabIncharge = require('../models/labIncharge.model');
+const Admin = require('../models/admin.model');
 
 /**
  * Middleware to protect routes - verify JWT token

@@ -1,6 +1,6 @@
 const { OAuth2Client } = require('google-auth-library');
-const LabIncharge = require('../models/LabIncharge');
-const { generateToken } = require('../utils/tokenUtils');
+const LabIncharge = require('../models/labIncharge.model');
+const { generateToken } = require('../utils/token.util');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const loginWithPassword = async (req, res) => {

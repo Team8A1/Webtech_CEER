@@ -1,10 +1,10 @@
-const Admin = require('../models/Admin');
-const { generateToken } = require('../utils/tokenUtils');
-const Faculty = require('../models/Faculty');
-const Team = require('../models/Team');
-const User = require('../models/User');
-const BOMRequest = require('../models/BOMRequest');
-const Material = require('../models/Material');
+const Admin = require('../models/admin.model');
+const { generateToken } = require('../utils/token.util');
+const Faculty = require('../models/faculty.model');
+const Team = require('../models/team.model');
+const User = require('../models/user.model');
+const BOMRequest = require('../models/bomRequest.model');
+const Material = require('../models/material.model');
 
 const getDashboardData = async (req, res) => {
     try {

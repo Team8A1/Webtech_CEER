@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { googleAuth, loginWithPassword, logout, changePassword } = require('../controllers/authController');
+const { googleAuth, loginWithPassword, logout, changePassword } = require('../controllers/auth.controller');
 
 /**
  * @route   POST /api/student/auth/login

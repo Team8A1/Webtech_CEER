@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { facultyLogin, facultyGoogleLogin, facultyLogout, changePassword } = require('../controllers/facultyAuthController');
+const { facultyLogin, facultyGoogleLogin, facultyLogout, changePassword } = require('../controllers/facultyAuth.controller');
 
 // normal login 
 router.post('/login', facultyLogin);

@@ -1,4 +1,4 @@
-const LabIncharge = require('../models/LabIncharge');
+const LabIncharge = require('../models/labIncharge.model');
 
 /**
  * Register a new lab incharge

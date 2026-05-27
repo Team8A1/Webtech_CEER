@@ -1,4 +1,4 @@
-const BOMRequest = require('../models/BOMRequest');
+const BOMRequest = require('../models/bomRequest.model');
 
 // @desc    Get all BOM requests for Lab Incharge
 // @route   GET /api/lab/bom/list

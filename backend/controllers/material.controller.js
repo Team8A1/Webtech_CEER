@@ -1,5 +1,5 @@
-const Material = require('../models/Material');
-const cloudinary = require('../config/cloudinary');
+const Material = require('../models/material.model');
+const cloudinary = require('../config/cloudinary.config');
 const streamifier = require('streamifier');
 const csv = require('csv-parser');
 const { Readable } = require('stream');

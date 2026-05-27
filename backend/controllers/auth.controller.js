@@ -1,6 +1,6 @@
 const { OAuth2Client } = require('google-auth-library');
-const User = require('../models/User');
-const { generateToken } = require('../utils/tokenUtils');
+const User = require('../models/user.model');
+const { generateToken } = require('../utils/token.util');
 
 // Initialize Google OAuth2 client
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);

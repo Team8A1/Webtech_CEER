@@ -1,4 +1,4 @@
-const Faculty = require('../models/Faculty');
+const Faculty = require('../models/faculty.model');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 

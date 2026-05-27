@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { auth, labInchargeOnly } = require('../middleware/auth');
+const { auth, labInchargeOnly } = require('../middleware/auth.middleware');
 
 router.get('/dashboard', auth, labInchargeOnly, (req, res) => {
   res.json({ message: 'Lab Dashboard', user: req.user });

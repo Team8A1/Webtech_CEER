@@ -6,8 +6,8 @@ const {
     getAvailableStudents,
     getStudentTeam,
     updateTeam
-} = require('../controllers/teamController');
-const { protect, authorize } = require('../middleware/authMiddleware');
+} = require('../controllers/team.controller');
+const { protect, authorize } = require('../middleware/authMiddleware.middleware');
 
 // Faculty routes
 router.post('/faculty/team/create', protect, authorize('faculty'), createTeam);

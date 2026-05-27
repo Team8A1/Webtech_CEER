@@ -1,6 +1,6 @@
-const Team = require('../models/Team');
-const User = require('../models/User');
-const Faculty = require('../models/Faculty');
+const Team = require('../models/team.model');
+const User = require('../models/user.model');
+const Faculty = require('../models/faculty.model');
 
 /**
  * Create a new team

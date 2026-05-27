@@ -1,8 +1,8 @@
-const BOMRequest = require('../models/BOMRequest');
-const User = require('../models/User');
-const Faculty = require('../models/Faculty');
-const Team = require('../models/Team');
-const { sendEmail } = require('../utils/emailUtil');
+const BOMRequest = require('../models/bomRequest.model');
+const User = require('../models/user.model');
+const Faculty = require('../models/faculty.model');
+const Team = require('../models/team.model');
+const { sendEmail } = require('../utils/email.util');
 
 
 const createBOMRequest = async (req, res) => {

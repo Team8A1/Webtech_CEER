@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getInstruction, updateInstruction, getLatestUpdateTime } = require('../controllers/instruction.controller');
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware.middleware');
 
 router.get('/latest/update-time', getLatestUpdateTime);
 router.get('/:title', getInstruction);
