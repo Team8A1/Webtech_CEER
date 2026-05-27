@@ -24,10 +24,9 @@ const facultyLogin = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Check if faculty is approved
-    if (!faculty.isApproved) {
-      return res.status(403).json({ message: 'Your account is pending approval' });
-    }
+    // Update last login
+    faculty.lastLogin = new Date();
+    await faculty.save();
 
     // Generate JWT token
     const token = jwt.sign(
@@ -44,6 +43,7 @@ const facultyLogin = async (req, res) => {
         email: faculty.email,
         department: faculty.department,
         role: 'faculty',
+        profilePicture: faculty.profilePicture,
         mustChangePassword: faculty.mustChangePassword
       }
     });
@@ -76,42 +76,36 @@ const facultyGoogleLogin = async (req, res) => {
     });
 
     const payload = ticket.getPayload();
-    const email = payload.email;
-    const name = payload.name;
-    const googleId = payload.sub;
+    const { sub: googleId, email, name, picture } = payload;
 
     console.log('Google auth successful for:', email);
 
-    // Find or create faculty
+    // Find faculty
     let faculty = await Faculty.findOne({ email });
 
     if (!faculty) {
-      // Create new faculty with Google auth
-      faculty = new Faculty({
-        name,
-        email,
-        googleId,
-        isApproved: false, // New faculty needs approval
-        department: 'Not Specified' // Can be updated later
-      });
-      await faculty.save();
-
-      return res.status(403).json({
-        message: 'Account created. Please wait for admin approval.',
-        needsApproval: true
+      return res.status(404).json({
+        success: false,
+        message: 'Faculty not registered. Please contact administrator to register your email.'
       });
     }
 
-    // Check if faculty is approved
-    if (!faculty.isApproved) {
-      return res.status(403).json({ message: 'Your account is pending approval' });
-    }
+    // Sync Google information and update last login
+    faculty.lastLogin = new Date();
 
-    // Update googleId if not set
     if (!faculty.googleId) {
       faculty.googleId = googleId;
-      await faculty.save();
     }
+
+    if (picture && faculty.profilePicture !== picture) {
+      faculty.profilePicture = picture;
+    }
+
+    if (name && faculty.name !== name) {
+      faculty.name = name;
+    }
+
+    await faculty.save();
 
     // Generate JWT token
     const token = jwt.sign(
@@ -128,6 +122,7 @@ const facultyGoogleLogin = async (req, res) => {
         email: faculty.email,
         department: faculty.department,
         role: 'faculty',
+        profilePicture: faculty.profilePicture,
         mustChangePassword: faculty.mustChangePassword
       }
     });

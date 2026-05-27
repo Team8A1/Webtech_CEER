@@ -41,10 +41,6 @@ const facultySchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    isApproved: {
-      type: Boolean,
-      default: true, // Changed from false to true - auto-approve all faculty
-    },
     lastLogin: {
       type: Date,
     },

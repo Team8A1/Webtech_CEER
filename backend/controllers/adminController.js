@@ -159,8 +159,7 @@ const registerBulkFaculty = async (req, res) => {
                     department: faculty.department || '',
                     role: 'faculty',
                     password: 'faculty@123', // Default password if missing
-                    mustChangePassword: true,
-                    isApproved: true
+                    mustChangePassword: true
                 });
                 await newFaculty.save();
                 results.success.push({ email: faculty.email, name: faculty.name });

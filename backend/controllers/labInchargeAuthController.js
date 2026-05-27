@@ -3,7 +3,6 @@ const LabIncharge = require('../models/LabIncharge');
 const { generateToken } = require('../utils/tokenUtils');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
 const loginWithPassword = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -28,7 +27,7 @@ const loginWithPassword = async (req, res) => {
     if (!labIncharge) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password',
+        message: 'Invalid email or User not registered',
       });
     }
 

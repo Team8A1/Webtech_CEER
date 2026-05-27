@@ -84,8 +84,6 @@ const loginWithPassword = async (req, res) => {
           name: user.name,
           role: user.role,
           profilePicture: user.profilePicture,
-          role: user.role,
-          profilePicture: user.profilePicture,
           lastLogin: new Date(),
           mustChangePassword: user.mustChangePassword
         },
@@ -178,7 +176,7 @@ const googleAuth = async (req, res) => {
       updateFields.googleId = googleId;
     }
 
-    if (!user.profilePicture && picture) {
+    if (picture && user.profilePicture !== picture) {
       updateFields.profilePicture = picture;
     }
 

@@ -7,26 +7,33 @@ const mongoose = require("mongoose");
 const connectDB = require("./config/database");
 const { apiLimiter, authLimiter } = require("./middleware/rateLimiter");
 
-// Import routes
+// auth and registration routess
+
 const studentAuthRoutes = require("./routes/studentAuthRoutes");
 const studentRegisterRoutes = require("./routes/studentRegisterRoutes");
 const facultyAuthRoutes = require("./routes/facultyAuthRoutes");
 const labInchargeAuthRoutes = require("./routes/labInchargeAuthRoutes");
 const facultyRegisterRoutes = require("./routes/facultyRegisterRoutes");
 const labInchargeRegisterRoutes = require("./routes/labInchargeRegisterRoutes");
+
+// 
 const facultyRoutes = require("./routes/facultyRoutes");
 const labRoutes = require("./routes/labRoutes");
 const teamRoutes = require("./routes/teamRoutes");
 const bomRoutes = require("./routes/bomRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+//
 const materialRoutes = require("./routes/materialRoutes");
-const eventRoutes = require("./routes/eventRoutes");
-// new added 
+const equipmentRoutes = require("./routes/equipmentRoutes");
+
+// energy routes
 const energyRoutes = require("./routes/energyRoutes");
 const carbonRoutes = require("./routes/carbonRoutes");
-const equipmentRoutes = require("./routes/equipmentRoutes");
+// student instrcution 
 const instructionRoutes = require("./routes/instruction.routes");
+// landing page..
 const projectRoutes = require("./routes/projectRoutes");
+const eventRoutes = require("./routes/eventRoutes");
 
 // Initialize app
 const app = express();
