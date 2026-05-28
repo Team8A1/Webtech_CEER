@@ -7,7 +7,6 @@ const { registerFaculty } = require('../controllers/facultyRegister.controller')
  * @desc    Register a new faculty member
  * @access  Public
  */
-console.log("Faculty Register Route Loaded");
 
 router.post('/register', registerFaculty);
 

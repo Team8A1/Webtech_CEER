@@ -8,7 +8,7 @@ const {
     updateBOMRequest,
     deleteBOMRequest
 } = require('../controllers/bom.controller');
-const { protect, authorize } = require('../middleware/authMiddleware.middleware');
+const { protect, authorize } = require('../middleware/auth.middleware');
 
 // Student Routes
 router.post('/student/request/bom', protect, authorize('student'), createBOMRequest);

@@ -11,7 +11,8 @@ const {
     getImpactStats,
     getAllStudents
 } = require('../controllers/admin.controller');
-const { protect, authorize } = require('../middleware/authMiddleware.middleware');
+const { getAllLabIncharges } = require('../controllers/labInchargeRegister.controller');
+const { protect, authorize } = require('../middleware/auth.middleware');
 
 // Auth Routes
 router.post('/login', loginAdmin);
@@ -28,5 +29,6 @@ router.post('/change-password', changePassword);
 router.get('/material-stats', getMaterialStats);
 router.get('/impact-stats', getImpactStats);
 router.get('/students', getAllStudents);
+router.get('/labs', getAllLabIncharges);
 
 module.exports = router;

@@ -16,9 +16,6 @@ const labInchargeAuthRoutes = require("./routes/labInchargeAuth.router");
 const facultyRegisterRoutes = require("./routes/facultyRegister.router");
 const labInchargeRegisterRoutes = require("./routes/labInchargeRegister.router");
 
-// 
-const facultyRoutes = require("./routes/faculty.router");
-const labRoutes = require("./routes/lab.router");
 const teamRoutes = require("./routes/team.router");
 const bomRoutes = require("./routes/bom.router");
 const adminRoutes = require("./routes/admin.router");
@@ -111,8 +108,6 @@ app.use("/api/faculty", facultyRegisterRoutes);
 app.use("/api/lab", labInchargeRegisterRoutes);
 
 // Other functional routes
-app.use("/api/faculty", facultyRoutes);
-app.use("/api/lab", labRoutes);
 app.use("/api", teamRoutes);
 app.use("/api", bomRoutes);
 app.use("/api/admin", adminRoutes);

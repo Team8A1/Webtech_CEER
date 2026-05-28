@@ -9,12 +9,7 @@ const { registerLabIncharge, getAllLabIncharges } = require('../controllers/labI
  */
 router.post('/register', registerLabIncharge);
 
-/**
- * @route   GET /api/lab/list
- * @desc    Get all lab incharges
- * @access  Admin
- */
-router.get('/list', getAllLabIncharges);
+
 
 module.exports = router;
 

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getCarbonAnalysis } = require('../controllers/carbon.controller');
-const { protect, authorize } = require('../middleware/authMiddleware.middleware');
+const { protect, authorize } = require('../middleware/auth.middleware');
 
 router.get('/analysis', protect, authorize('student'), getCarbonAnalysis);
 

@@ -37,6 +37,7 @@ const registerLabIncharge = async (req, res) => {
       name,
       password,
       labName,
+      lastLogin: Date.now(),
       isActive: true,
     });
     await labIncharge.save();
@@ -82,7 +83,7 @@ const getAllLabIncharges = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
-      error: error.message,
+      error: error.message
     });
   }
 };
