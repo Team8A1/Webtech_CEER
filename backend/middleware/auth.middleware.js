@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { verifyToken } = require('../utils/token.util');
+const { isTokenRevoked } = require('../utils/tokenDenylist.util');
 const User = require('../models/user.model');
 const Faculty = require('../models/faculty.model');
 const LabIncharge = require('../models/labIncharge.model');
@@ -8,6 +9,10 @@ const Admin = require('../models/admin.model');
 /**
  * Middleware to protect routes - verifies JWT token from Authorization Header or Cookies
  * and attaches the authenticated database user to req.user
+ *
+ * FIX (JWT revocation): checks Redis denylist for the token's jti before accepting it.
+ * FIX (rate limiting key): attaches req.rateLimitKey = userId so the user-keyed
+ * API limiter can identify callers regardless of their IP/NAT.
  */
 const protect = async (req, res, next) => {
   try {
@@ -21,9 +26,9 @@ const protect = async (req, res, next) => {
       });
     }
 
-    // 2. Verify token
+    // 2. Verify token signature + expiry
     const decoded = verifyToken(token);
-    
+
     if (!decoded) {
       return res.status(401).json({
         success: false,
@@ -31,7 +36,18 @@ const protect = async (req, res, next) => {
       });
     }
 
-    // 3. Get user from DB based on role in the token
+    // 3. FIX: Check denylist — was this token explicitly revoked (logout/deactivation)?
+    if (decoded.jti) {
+      const revoked = await isTokenRevoked(decoded.jti);
+      if (revoked) {
+        return res.status(401).json({
+          success: false,
+          message: 'Session expired. Please log in again.'
+        });
+      }
+    }
+
+    // 4. Get user from DB based on role in the token
     let user;
     if (decoded.role === 'faculty') {
       user = await Faculty.findById(decoded.id || decoded.userId).select('-password');
@@ -64,6 +80,14 @@ const protect = async (req, res, next) => {
     }
 
     req.user = user;
+
+    // FIX (college WiFi NAT): expose user ID as the rate-limit key so the
+    // user-keyed API limiter identifies callers by identity, not shared IP.
+    req.rateLimitKey = user._id.toString();
+
+    // Also store decoded for logout handler (needs jti + exp to revoke)
+    req.tokenDecoded = decoded;
+
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);

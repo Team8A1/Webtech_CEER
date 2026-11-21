@@ -4,8 +4,10 @@ const cors = require("cors");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const mongoose = require("mongoose");
+const compression = require("compression"); // SCALING FIX: gzip all responses
 const connectDB = require("./config/database.config");
 const { apiLimiter, authLimiter } = require("./middleware/rateLimiter.middleware");
+const { startEmailWorker } = require("./queues/email.worker");
 
 // auth and registration routess
 
@@ -81,6 +83,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// SCALING FIX: tell express-rate-limit how many proxy hops to trust
+// (1 for Vercel/Render which add exactly one X-Forwarded-For entry).
+// Without this, req.ip is always the proxy IP and rate limiting is broken.
+app.set('trust proxy', 1);
+
 // Rate Limiting - Apply to all API routes
 app.use("/api", apiLimiter);
 
@@ -89,6 +96,10 @@ app.use("/api", apiLimiter);
 // -------------------------
 app.use(express.json({ limit: '10kb' })); // Body limit is 10kb
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// SCALING FIX: gzip compression — reduces JSON response sizes by 60-80%
+// Must be placed AFTER body parsers and BEFORE routes.
+app.use(compression());
 
 // Data Sanitization against NoSQL Query Injection (Temporarily disabled for Express 5 compatibility)
 // app.use(mongoSanitize());
@@ -174,6 +185,8 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  // Start BullMQ email worker after server is up
+  startEmailWorker();
 });
 
 module.exports = app;

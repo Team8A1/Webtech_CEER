@@ -13,10 +13,10 @@ const createTeam = async (req, res) => {
         const guideId = req.user.id; // From auth middleware
 
         // Validate input
-        if (!problemStatement || !members || members.length === 0) {
+        if (!teamName || !problemStatement || !members || members.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Problem statement and at least one member are required',
+                message: 'Team name, problem statement, and at least one member are required',
             });
         }
 

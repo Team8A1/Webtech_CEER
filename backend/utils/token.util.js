@@ -1,7 +1,14 @@
 const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
 
 /**
- * Generate JWT token for authenticated user
+ * Generate JWT token for authenticated user.
+ *
+ * FIX (JWT revocation): every token now carries a `jti` (JWT ID) — a unique
+ * UUID. On logout the jti is written to the Redis denylist with a TTL equal to
+ * the token's remaining lifetime. The `protect` middleware checks the denylist
+ * on every request (O(1) Redis GET).
+ *
  * @param {Object} user - User object from database
  * @returns {String} Signed JWT token
  */
@@ -10,6 +17,7 @@ const generateToken = (user) => {
     id: user._id || user.id,
     email: user.email,
     role: user.role,
+    jti: uuidv4(), // unique token ID — used for denylist revocation
   };
 
   const token = jwt.sign(payload, process.env.JWT_SECRET, {
@@ -22,7 +30,7 @@ const generateToken = (user) => {
 /**
  * Verify JWT token
  * @param {String} token - JWT token to verify
- * @returns {Object} Decoded token payload
+ * @returns {Object} Decoded token payload (includes jti and exp)
  */
 const verifyToken = (token) => {
   try {

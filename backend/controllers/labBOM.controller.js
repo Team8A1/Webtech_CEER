@@ -1,21 +1,38 @@
 const BOMRequest = require('../models/bomRequest.model');
 
-// @desc    Get all BOM requests for Lab Incharge
-// @route   GET /api/lab/bom/list
+// @desc    Get all BOM requests for Lab Incharge — paginated
+// @route   GET /api/lab/bom/list?page=1&limit=20&sort=createdAt&order=desc
 // @access  Private (LabIncharge)
 const getLabBOMRequests = async (req, res) => {
     try {
-        // Lab Incharges can see all requests, or filter as needed.
-        // Requirement: "lab incharge will get request only after the faculty approves the request"
+        const { paginateQuery, buildMeta } = require('../middleware/paginate.middleware');
+        const pag = req.pagination;
 
-        const requests = await BOMRequest.find({ guideApproved: true })
-            .populate('studentId', 'name email usn division')
-            .populate('teamId', 'problemStatement')
-            .populate('guideId', 'name email')
-            .populate('labApprovedBy', 'name email')
-            .sort({ createdAt: -1 });
+        // Lab sees only guide-approved requests (business rule)
+        const filter = { guideApproved: true };
 
-        res.status(200).json({ success: true, data: requests });
+        // Optional filter by lab approval status: ?labApproved=true|false
+        if (req.query.labApproved !== undefined) {
+            filter.labApproved = req.query.labApproved === 'true';
+        }
+
+        const [total, requests] = await Promise.all([
+            BOMRequest.countDocuments(filter),
+            paginateQuery(
+                BOMRequest.find(filter)
+                    .populate('studentId', 'name email usn division')
+                    .populate('teamId', 'problemStatement')
+                    .populate('guideId', 'name email')
+                    .populate('labApprovedBy', 'name email'),
+                pag
+            ),
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: requests,
+            pagination: buildMeta(total, pag),
+        });
     } catch (error) {
         console.error('Error fetching lab BOM requests:', error);
         res.status(500).json({ success: false, message: 'Server Error' });

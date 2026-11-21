@@ -1,15 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const { facultyLogin, facultyGoogleLogin, facultyLogout, changePassword } = require('../controllers/facultyAuth.controller');
+const { protect } = require('../middleware/auth.middleware');
 
-// normal login 
+// normal login
 router.post('/login', facultyLogin);
 
-// login through auth
+// login through Google OAuth
 router.post('/google-login', facultyGoogleLogin);
 
-// logout
-router.post('/logout', facultyLogout);
+// logout — protect so req.tokenDecoded is set for JWT revocation
+router.post('/logout', protect, facultyLogout);
 
 // change password
 router.post('/change-password', changePassword);

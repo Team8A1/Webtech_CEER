@@ -1,5 +1,5 @@
 const Faculty = require('../models/faculty.model');
-const jwt = require('jsonwebtoken');
+const { generateToken } = require('../utils/token.util'); // FIX #1: use generateToken so jti is injected
 const { OAuth2Client } = require('google-auth-library');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -57,7 +57,7 @@ const facultyGoogleLogin = async (req, res) => {
   try {
     const { credential } = req.body;
 
-    console.log('Google login attempt:', { hasCredential: !!credential });
+    console.log('Google login attempt, credential present:', !!credential);
 
     if (!credential) {
       return res.status(400).json({ message: 'Google credential is required' });
@@ -147,9 +147,13 @@ const facultyGoogleLogin = async (req, res) => {
 
 const facultyLogout = async (req, res) => {
   try {
-    // In a stateless JWT system, logout is handled client-side
-    // But we can add token to a blacklist if needed in the future
-    res.json({ message: 'Logged out successfully' });
+    // FIX (JWT revocation): add the token's jti to the Redis denylist.
+    const decoded = req.tokenDecoded;
+    if (decoded?.jti && decoded?.exp) {
+      const { revokeToken } = require('../utils/tokenDenylist.util');
+      await revokeToken(decoded.jti, decoded.exp);
+    }
+    res.json({ success: true, message: 'Logged out successfully' });
   } catch (error) {
     console.error('Faculty logout error:', error);
     res.status(500).json({ message: 'Server error during logout' });

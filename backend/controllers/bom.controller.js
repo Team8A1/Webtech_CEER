@@ -2,7 +2,7 @@ const BOMRequest = require('../models/bomRequest.model');
 const User = require('../models/user.model');
 const Faculty = require('../models/faculty.model');
 const Team = require('../models/team.model');
-const { sendEmail } = require('../utils/email.util');
+const { enqueueEmail } = require('../queues/email.queue');
 
 
 const createBOMRequest = async (req, res) => {
@@ -45,78 +45,33 @@ const createBOMRequest = async (req, res) => {
         const teamId = student.teamId ? student.teamId._id : 'N/A';
         const problemStatement = student.problemStatement || 'N/A';
 
-        const subject = `New BOM Request from ${studentName} (${studentUsn})`;
-        const text = `Student ${studentName} (USN: ${studentUsn}, Team: ${teamId}) has requested a new BOM item.\n\nItem: ${partName}\nConsumable Name: ${consumableName}\nQty: ${qty}\nSpecification: ${specification}\n\nPlease login to the dashboard to approve or reject.`;
-        const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
-        <h2 style="color: #1f2937; border-bottom: 3px solid #7f1d1d; padding-bottom: 10px; margin-bottom: 20px;">
-          New BOM Request
-        </h2>
-        
-        <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-          <h3 style="margin-top: 0; color: #374151; font-size: 16px;">Student Information:</h3>
-          <p style="margin: 8px 0;"><strong>Student:</strong> ${studentName}</p>
-          <p style="margin: 8px 0;"><strong>USN:</strong> <a href="mailto:${studentUsn}" style="color: #7f1d1d; text-decoration: none;">${studentUsn}</a></p>
-          <p style="margin: 8px 0;"><strong>Team ID:</strong> ${teamId}</p>
-          <p style="margin: 8px 0;"><strong>Problem Statement:</strong> ${problemStatement}</p>
-        </div>
-        
-        <div style="background-color: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid #7f1d1d; margin-bottom: 20px;">
-          <h3 style="margin-top: 0; color: #7f1d1d; font-size: 16px;">Requested Item Details:</h3>
-          <p style="margin: 8px 0;"><strong>Item:</strong> ${partName}</p>
-          <p style="margin: 8px 0;"><strong>Consumable Name:</strong> ${consumableName}</p>
-          <p style="margin: 8px 0;"><strong>Quantity:</strong> ${qty}</p>
-          <p style="margin: 8px 0;"><strong>Specification:</strong> ${specification}</p>
-        </div>
-        
-        <p style="color: #4b5563; margin-bottom: 20px;">Please login to your faculty dashboard to review this request.</p>
-        
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="https://webtech-ceer.vercel.app/login/faculty" 
-             style="background-color: #7f1d1d; 
-                    color: white; 
-                    padding: 12px 30px; 
-                    text-decoration: none; 
-                    border-radius: 6px; 
-                    display: inline-block; 
-                    font-weight: bold;
-                    font-size: 16px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            Review Request on Faculty Dashboard
-          </a>
-        </div>
-        
-        <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
-        <p style="color: #6b7280; font-size: 12px; text-align: center;">This is an automated notification from CEER Portal.</p>
-      </div>
-    `;
-
+        // ── Queue emails asynchronously via BullMQ ────────────────────────────
+        // The HTTP response is returned immediately (line below); emails are
+        // delivered by the worker without blocking the student's request.
         if (notifyGuide !== false) {
             if (guideEmail) {
-                await sendEmail(guideEmail, subject, text, html);
-            } else {
-                console.log(`Guide for ${studentName} has no email.`);
+                enqueueEmail('bom_submitted', {
+                    guideEmail,
+                    studentName,
+                    studentUsn,
+                    teamId: teamId?.toString() || 'N/A',
+                    problemStatement,
+                    partName,
+                    consumableName,
+                    qty,
+                    specification,
+                }).catch(err => console.error('[BOM] enqueueEmail bom_submitted error:', err.message));
             }
 
-            // Also send a copy to the student for their records (the "Sent box" requirement)
             if (student.email) {
-                const studentSubject = `Copy: BOM Request Submitted - ${partName}`;
-                const studentHtml = `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-                        <h2 style="color: #7f1d1d;">BOM Request Submitted</h2>
-                        <p>Dear ${studentName},</p>
-                        <p>This is a copy of your BOM request submitted on ${new Date().toLocaleDateString()}.</p>
-                        <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                            <p><strong>Item:</strong> ${partName}</p>
-                            <p><strong>Quantity:</strong> ${qty}</p>
-                            <p><strong>Guide:</strong> ${student.guideId ? student.guideId.name : 'N/A'}</p>
-                        </div>
-                        <p>You will be notified once your guide reviews the request.</p>
-                        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-                        <p style="font-size: 12px; color: #6b7280;">CEER Portal Automated Notification</p>
-                    </div>
-                `;
-                await sendEmail(student.email, studentSubject, text, studentHtml);
+                enqueueEmail('bom_copy', {
+                    to:          student.email,
+                    studentName,
+                    guideName:   student.guideId?.name || 'N/A',
+                    partName,
+                    qty,
+                    submittedAt: new Date().toLocaleDateString(),
+                }).catch(err => console.error('[BOM] enqueueEmail bom_copy error:', err.message));
             }
         }
 
@@ -182,18 +137,34 @@ const getStudentBOMRequests = async (req, res) => {
     }
 };
 
-// @desc    Get all BOM requests for a faculty (guide)
-// @route   GET /api/faculty/bom/list
+// @desc    Get all BOM requests for a faculty (guide) — paginated
+// @route   GET /api/faculty/bom/list?page=1&limit=20&sort=createdAt&order=desc
 // @access  Private (Faculty)
 const getFacultyBOMRequests = async (req, res) => {
     try {
-        // Find requests where this faculty is the guide
-        const requests = await BOMRequest.find({ guideId: req.user._id })
-            .populate('studentId', 'name email')
-            .populate('teamId', 'problemStatement')
-            .sort({ createdAt: -1 });
+        const { paginateQuery, buildMeta } = require('../middleware/paginate.middleware');
+        const pag = req.pagination; // set by paginate middleware on the route
 
-        res.status(200).json({ success: true, data: requests });
+        const filter = { guideId: req.user._id };
+
+        // Optional status filter: ?status=pending|approved|rejected
+        if (req.query.status) filter.status = req.query.status;
+
+        const [total, requests] = await Promise.all([
+            BOMRequest.countDocuments(filter),
+            paginateQuery(
+                BOMRequest.find(filter)
+                    .populate('studentId', 'name email')
+                    .populate('teamId', 'problemStatement'),
+                pag
+            ),
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: requests,
+            pagination: buildMeta(total, pag),
+        });
     } catch (error) {
         console.error('Error fetching faculty BOM requests:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
@@ -415,11 +386,21 @@ const updateBOMRequestStatus = async (req, res) => {
                         </div>
                     `;
 
-                    await sendEmail(student.email, subject, text, html);
+                    // Queue status email — fire-and-forget, never blocks the response
+                    enqueueEmail('bom_status', {
+                        to:          student.email,
+                        studentName: student.name,
+                        facultyName,
+                        status,
+                        partName:    bomRequest.partName || bomRequest.consumableName,
+                        qty:         bomRequest.qty,
+                        specification: bomRequest.specification,
+                        reason:      reason || null,
+                    }).catch(err => console.error('[BOM] enqueueEmail bom_status error:', err.message));
                 }
             } catch (emailError) {
-                console.error('Error sending email to student:', emailError);
-                // Don't fail the request if email fails
+                console.error('Error queueing email to student:', emailError);
+                // Don't fail the request if queueing fails
             }
         }
 

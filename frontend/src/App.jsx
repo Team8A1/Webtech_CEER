@@ -1,5 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
+import PublicRoute from './components/PublicRoute'
 import RoleSelection from './pages/RoleSelection'
 import StudentLogin from './pages/StudentLogin'
 import AdminLogin from './pages/AdminLogin'
@@ -25,6 +26,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import StudentInstructions from './pages/StudentInstructions'
 import AdminInstructions from './pages/AdminInstructions'
 import AdminProjects from './pages/AdminProjects'
+import NotFound from './pages/NotFound'
 
 
 function App() {
@@ -32,12 +34,15 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<RoleSelection />} />
+
+        {/* FIX #12: PublicRoute redirects already-logged-in users away from auth pages */}
+        <Route path="/login" element={<PublicRoute><RoleSelection /></PublicRoute>} />
         {/* <Route path="/explorer-portal" element={<ExplorerPortal />} /> */}
-        <Route path="/login/student" element={<StudentLogin />} />
-        <Route path="/login/admin" element={<AdminLogin />} />
-        <Route path="/login/faculty" element={<FacultyLogin />} />
-        <Route path="/login/lab" element={<LabLogin />} />
+        <Route path="/login/student" element={<PublicRoute><StudentLogin /></PublicRoute>} />
+        <Route path="/login/admin" element={<PublicRoute><AdminLogin /></PublicRoute>} />
+        <Route path="/login/faculty" element={<PublicRoute><FacultyLogin /></PublicRoute>} />
+        <Route path="/login/lab" element={<PublicRoute><LabLogin /></PublicRoute>} />
+
         <Route path="/faculty/approve" element={
           <ProtectedRoute allowedRoles={['faculty']}>
             <FacultyApprove />
@@ -93,11 +98,9 @@ function App() {
             <StudentInstructions />
           </ProtectedRoute>
         } />
-        <Route path="/faculty" element={
-          <ProtectedRoute allowedRoles={['faculty']}>
-            <FacultyLanding />
-          </ProtectedRoute>
-        } />
+
+        {/* FIX #10: /faculty is now a redirect — no duplicate component mount */}
+        <Route path="/faculty" element={<Navigate to="/faculty/dashboard" replace />} />
         <Route path="/faculty/dashboard" element={
           <ProtectedRoute allowedRoles={['faculty']}>
             <FacultyLanding />
@@ -118,6 +121,9 @@ function App() {
             <FacultyMyTeams />
           </ProtectedRoute>
         } />
+
+        {/* FIX #11: Catch-all 404 route */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   )

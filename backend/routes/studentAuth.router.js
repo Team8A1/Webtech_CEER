@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { googleAuth, loginWithPassword, logout, changePassword } = require('../controllers/auth.controller');
+const { protect } = require('../middleware/auth.middleware');
 
 /**
  * @route   POST /api/student/auth/login
@@ -18,10 +19,10 @@ router.post('/google', googleAuth);
 
 /**
  * @route   POST /api/student/auth/logout
- * @desc    Logout student
- * @access  Public
+ * @desc    Logout student — revokes JWT via Redis denylist
+ * @access  Private (needs token to revoke it)
  */
-router.post('/logout', logout);
+router.post('/logout', protect, logout);
 
 /**
  * @route   POST /api/student/auth/change-password

@@ -10,6 +10,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
  * @route POST /api/student/auth/login
  * @access Public
  */
+
 const loginWithPassword = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -104,6 +105,7 @@ const loginWithPassword = async (req, res) => {
  * @route POST /api/student/auth/google
  * @access Public
  */
+
 const googleAuth = async (req, res) => {
   try {
     const { idToken } = req.body;
@@ -224,6 +226,15 @@ const googleAuth = async (req, res) => {
  */
 const logout = async (req, res) => {
   try {
+    // FIX (JWT revocation): add the token's jti to the Redis denylist.
+    // The token is now cryptographically invalid even before its natural expiry.
+    // req.tokenDecoded is set by the protect middleware (jti + exp).
+    const decoded = req.tokenDecoded;
+    if (decoded?.jti && decoded?.exp) {
+      const { revokeToken } = require('../utils/tokenDenylist.util');
+      await revokeToken(decoded.jti, decoded.exp);
+    }
+
     return res.status(200).json({
       success: true,
       message: 'Logout successful',

@@ -3,11 +3,8 @@ import axios from 'axios';
 const LOCAL_URL = 'http://localhost:8000';
 const PROD_URL = 'https://webtech-ceer.onrender.com';
 
-export const BASE_URL = PROD_URL;
-
+export const BASE_URL = LOCAL_URL;
 const API_BASE_URL = import.meta.env.VITE_API_URL || `${BASE_URL}/api`;
-
-
 
 const api = axios.create({
   baseURL: API_BASE_URL,

@@ -46,7 +46,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['student', 'faculty', 'admin', 'lab'],
+      // FIX #7: enum guard prevents invalid roles from silently corrupting ProtectedRoute checks
+      enum: ['student', 'faculty', 'labIncharge', 'admin'],
       default: 'student',
     },
     isActive: {
@@ -77,16 +78,22 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Hash password before saving
-userSchema.pre('save', async function () {
-  if (!this.isModified('password') || !this.password) {
-    return;
+// FIX #8: Enforce required student fields (usn & division) at the model level
+// (batch intentionally excluded per product decision)
+userSchema.pre('save', async function (next) {
+  if (this.role === 'student') {
+    if (!this.usn) return next(new Error('USN is required for student accounts'));
+    if (!this.division) return next(new Error('Division is required for student accounts'));
   }
+
+  // FIX #9: Hash password — use next() so Mongoose pre-save errors propagate correctly
+  if (!this.isModified('password') || !this.password) return next();
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+    next();
   } catch (error) {
-    throw error;
+    next(error);
   }
 });
 

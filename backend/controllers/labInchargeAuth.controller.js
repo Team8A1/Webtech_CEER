@@ -188,6 +188,12 @@ const googleAuth = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
+    // FIX (JWT revocation): add the token's jti to the Redis denylist.
+    const decoded = req.tokenDecoded;
+    if (decoded?.jti && decoded?.exp) {
+      const { revokeToken } = require('../utils/tokenDenylist.util');
+      await revokeToken(decoded.jti, decoded.exp);
+    }
     return res.status(200).json({
       success: true,
       message: 'Logout successful',

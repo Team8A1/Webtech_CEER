@@ -19,8 +19,8 @@ router.post('/login', loginAdmin);
 router.post('/create', createAdmin); // Public for initial setup
 
 // Protected Routes - Admin Only
-router.use(protect);
-router.use(authorize('admin'));
+router.use(protect); // authentication 
+router.use(authorize('admin'));     // authorization 
 
 router.get('/dashboard', getDashboardData);
 router.post('/register/students', registerBulkStudents);

@@ -5,7 +5,8 @@ import { BASE_URL } from '../utils/api';
 
 function FacultyTeamCreate() {
   const navigate = useNavigate()
-  const [projectTitle, setProjectTitle] = useState('')
+  const [teamName, setTeamName] = useState('')
+  const [problemStatement, setProblemStatement] = useState('')
   const [availableStudents, setAvailableStudents] = useState([])
   const [selectedStudents, setSelectedStudents] = useState([])
   const [loading, setLoading] = useState(true)
@@ -88,8 +89,8 @@ function FacultyTeamCreate() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!projectTitle || selectedStudents.length === 0) {
-      return alert('Please provide project title and at least one member.')
+    if (!teamName || !problemStatement || selectedStudents.length === 0) {
+      return alert('Please provide team name, problem statement, and at least one member.')
     }
 
     setSubmitting(true)
@@ -100,8 +101,8 @@ function FacultyTeamCreate() {
       const response = await axios.post(
         `${BASE_URL}/api/faculty/team/create`,
         {
-          teamName: projectTitle, // Using project title as team name for now
-          problemStatement: projectTitle,
+          teamName,
+          problemStatement,
           members: selectedStudents.map(s => s._id)
         },
         {
@@ -165,15 +166,28 @@ function FacultyTeamCreate() {
               Project Information
             </h3>
 
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wide">Problem Statement / Project Title</label>
-              <input
-                value={projectTitle}
-                onChange={e => setProjectTitle(e.target.value)}
-                placeholder="Enter problem statement"
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[rgb(139,21,56)] focus:border-transparent transition-all duration-200"
-                required
-              />
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wide">Team Name</label>
+                <input
+                  value={teamName}
+                  onChange={e => setTeamName(e.target.value)}
+                  placeholder="Enter team name (e.g., Team Alpha)"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[rgb(139,21,56)] focus:border-transparent transition-all duration-200"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wide">Problem Statement / Project Title</label>
+                <input
+                  value={problemStatement}
+                  onChange={e => setProblemStatement(e.target.value)}
+                  placeholder="Enter problem statement / project title"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[rgb(139,21,56)] focus:border-transparent transition-all duration-200"
+                  required
+                />
+              </div>
             </div>
           </div>
 

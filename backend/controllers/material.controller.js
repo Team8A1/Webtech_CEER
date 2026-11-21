@@ -44,8 +44,24 @@ const addMaterial = async (req, res) => {
 
 const getMaterials = async (req, res) => {
     try {
-        const materials = await Material.find({}).sort({ createdAt: -1 });
-        res.status(200).json({ success: true, data: materials });
+        const { paginateQuery, buildMeta } = require('../middleware/paginate.middleware');
+        const pag = req.pagination;
+
+        // Optional text search: ?search=aluminum
+        const filter = req.query.search
+            ? { name: { $regex: req.query.search, $options: 'i' } }
+            : {};
+
+        const [total, materials] = await Promise.all([
+            Material.countDocuments(filter),
+            paginateQuery(Material.find(filter), pag),
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: materials,
+            pagination: buildMeta(total, pag),
+        });
     } catch (error) {
         console.error('Error fetching materials:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
