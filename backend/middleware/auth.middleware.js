@@ -79,6 +79,15 @@ const protect = async (req, res, next) => {
       });
     }
 
+    const tokenPasswordVersion = decoded.passwordVersion ?? 0;
+    const accountPasswordVersion = user.passwordVersion || 0;
+    if (tokenPasswordVersion !== accountPasswordVersion) {
+      return res.status(401).json({
+        success: false,
+        message: 'Session expired. Please log in again.'
+      });
+    }
+
     req.user = user;
 
     // FIX (college WiFi NAT): expose user ID as the rate-limit key so the

@@ -210,13 +210,14 @@ const logout = async (req, res) => {
 
 const changePassword = async (req, res) => {
   try {
-    const { email, oldPassword, newPassword } = req.body;
+    const { oldPassword, newPassword } = req.body;
 
-    if (!email || !oldPassword || !newPassword) {
-      return res.status(400).json({ success: false, message: 'All fields are required' });
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Current password and new password are required' });
     }
 
-    const labIncharge = await LabIncharge.findOne({ email }).select('+password');
+    // FIX: use req.user._id from token — not req.body.email (security hole)
+    const labIncharge = await LabIncharge.findById(req.user._id).select('+password');
     if (!labIncharge) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -226,11 +227,18 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Incorrect current password' });
     }
 
+    // FIX: revoke current token so old session is dead immediately
+    const decoded = req.tokenDecoded;
+    if (decoded?.jti && decoded?.exp) {
+      const { revokeToken } = require('../utils/tokenDenylist.util');
+      await revokeToken(decoded.jti, decoded.exp);
+    }
+
     labIncharge.password = newPassword;
     labIncharge.mustChangePassword = false;
     await labIncharge.save();
 
-    res.status(200).json({ success: true, message: 'Password updated successfully' });
+    res.status(200).json({ success: true, message: 'Password updated successfully. Please log in again.' });
   } catch (error) {
     console.error('Change Password Error:', error);
     res.status(500).json({ success: false, message: 'Server error' });

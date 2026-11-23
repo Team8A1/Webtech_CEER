@@ -150,8 +150,6 @@ const googleAuth = async (req, res) => {
 
     // Check 2: Verify user exists in MongoDB database
     let user = await User.findOne({ email: email.toLowerCase() });
-    console.log("user:", user);
-
 
     if (!user) {
       return res.status(404).json({
@@ -252,44 +250,44 @@ const logout = async (req, res) => {
 /**
  * Change student password
  * @route POST /api/student/auth/change-password
- * @access Private (Protected by middleware in routes if applied, or check req.user here)
+ * @access Private (requires protect middleware)
  */
 const changePassword = async (req, res) => {
   try {
-    const { email, oldPassword, newPassword } = req.body;
+    const { oldPassword, newPassword } = req.body;
 
-    if (!email || !oldPassword || !newPassword) {
+    if (!oldPassword || !newPassword) {
       return res.status(400).json({
         success: false,
-        message: 'Email, current password, and new password are required'
+        message: 'Current password and new password are required'
       });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    // FIX: use req.user._id from token — not req.body.email (security hole)
+    const user = await User.findById(req.user._id).select('+password');
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Verify old password
     const isMatch = await user.comparePassword(oldPassword);
     if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: 'Incorrect current password'
-      });
+      return res.status(401).json({ success: false, message: 'Incorrect current password' });
     }
 
-    // Update password
+    // FIX: revoke current token so the old session is dead immediately
+    const decoded = req.tokenDecoded;
+    if (decoded?.jti && decoded?.exp) {
+      const { revokeToken } = require('../utils/tokenDenylist.util');
+      await revokeToken(decoded.jti, decoded.exp);
+    }
+
     user.password = newPassword;
     user.mustChangePassword = false;
     await user.save();
 
     return res.status(200).json({
       success: true,
-      message: 'Password updated successfully'
+      message: 'Password updated successfully. Please log in again.'
     });
 
   } catch (error) {
@@ -297,7 +295,7 @@ const changePassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Server error',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

@@ -12,7 +12,7 @@ router.post('/google-login', facultyGoogleLogin);
 // logout — protect so req.tokenDecoded is set for JWT revocation
 router.post('/logout', protect, facultyLogout);
 
-// change password
-router.post('/change-password', changePassword);
+// protect: authenticates token & sets req.user / req.tokenDecoded for revocation
+router.post('/change-password', protect, changePassword);
 
 module.exports = router;

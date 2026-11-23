@@ -28,12 +28,8 @@ const facultyLogin = async (req, res) => {
     faculty.lastLogin = new Date();
     await faculty.save();
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: faculty._id, email: faculty.email, role: 'faculty' },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    // Generate JWT token (generateToken injects jti for revocation support)
+    const token = generateToken(faculty);
 
     res.json({
       token,
@@ -48,7 +44,7 @@ const facultyLogin = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Faculty login error:', error);
+    console.error('Faculty login error:', error.message);
     res.status(500).json({ message: 'Server error during login' });
   }
 };
@@ -56,8 +52,6 @@ const facultyLogin = async (req, res) => {
 const facultyGoogleLogin = async (req, res) => {
   try {
     const { credential } = req.body;
-
-    console.log('Google login attempt, credential present:', !!credential);
 
     if (!credential) {
       return res.status(400).json({ message: 'Google credential is required' });
@@ -77,8 +71,6 @@ const facultyGoogleLogin = async (req, res) => {
 
     const payload = ticket.getPayload();
     const { sub: googleId, email, name, picture } = payload;
-
-    console.log('Google auth successful for:', email);
 
     // Find faculty
     let faculty = await Faculty.findOne({ email });
@@ -107,12 +99,8 @@ const facultyGoogleLogin = async (req, res) => {
 
     await faculty.save();
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: faculty._id, email: faculty.email, role: 'faculty' },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    // Generate JWT token (generateToken injects jti for revocation support)
+    const token = generateToken(faculty);
 
     res.json({
       token,
@@ -127,7 +115,7 @@ const facultyGoogleLogin = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Faculty Google login error:', error);
+    console.error('Faculty Google login error:', error.message);
 
     // Provide more specific error messages
     if (error.message && error.message.includes('Invalid token')) {
@@ -162,40 +150,37 @@ const facultyLogout = async (req, res) => {
 
 const changePassword = async (req, res) => {
   try {
-    const { email, oldPassword, newPassword } = req.body;
+    const { oldPassword, newPassword } = req.body;
 
-    if (!email || !oldPassword || !newPassword) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email, current password, and new password are required'
-      });
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Current password and new password are required' });
     }
 
-    const faculty = await Faculty.findOne({ email }).select('+password');
+    // FIX: use req.user._id from token — not req.body.email (security hole)
+    const faculty = await Faculty.findById(req.user._id).select('+password');
     if (!faculty) {
-      return res.status(404).json({
-        success: false,
-        message: 'Faculty not found'
-      });
+      return res.status(404).json({ success: false, message: 'Faculty not found' });
     }
 
-    // Verify old password
     const isMatch = await faculty.comparePassword(oldPassword);
     if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: 'Incorrect current password'
-      });
+      return res.status(401).json({ success: false, message: 'Incorrect current password' });
     }
 
-    // Update password
+    // FIX: revoke current token so old session is dead immediately
+    const decoded = req.tokenDecoded;
+    if (decoded?.jti && decoded?.exp) {
+      const { revokeToken } = require('../utils/tokenDenylist.util');
+      await revokeToken(decoded.jti, decoded.exp);
+    }
+
     faculty.password = newPassword;
     faculty.mustChangePassword = false;
     await faculty.save();
 
     return res.status(200).json({
       success: true,
-      message: 'Password updated successfully'
+      message: 'Password updated successfully. Please log in again.'
     });
 
   } catch (error) {
@@ -203,7 +188,7 @@ const changePassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Server error',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

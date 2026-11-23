@@ -58,6 +58,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    passwordVersion: {
+      type: Number,
+      default: 0,
+    },
     lastLogin: {
       type: Date,
     },
@@ -89,6 +93,7 @@ userSchema.pre('save', async function (next) {
   // FIX #9: Hash password — use next() so Mongoose pre-save errors propagate correctly
   if (!this.isModified('password') || !this.password) return next();
   try {
+    this.passwordVersion = (this.passwordVersion || 0) + 1;
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt'); // FIX: use bcrypt (native C++) not bcryptjs
 
 const adminSchema = new mongoose.Schema({
     email: {
@@ -17,16 +17,22 @@ const adminSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        select: false  // FIX: never return password in queries by default
     },
     role: {
         type: String,
+        enum: ['admin'],   // FIX: enforce valid values
         default: 'admin',
         immutable: true
     },
     isActive: {
         type: Boolean,
         default: true
+    },
+    passwordVersion: {
+        type: Number,
+        default: 0
     },
     createdAt: {
         type: Date,
@@ -35,13 +41,15 @@ const adminSchema = new mongoose.Schema({
 });
 
 // Hash password before saving
-adminSchema.pre('save', async function () {
-    if (!this.isModified('password')) return;
+adminSchema.pre('save', async function (next) {  // FIX: accept next() parameter
+    if (!this.isModified('password')) return next();
     try {
+        this.passwordVersion = (this.passwordVersion || 0) + 1;
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
+        next();
     } catch (error) {
-        throw error;
+        next(error);
     }
 });
 

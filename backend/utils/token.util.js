@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 /**
  * Generate JWT token for authenticated user.
@@ -17,7 +17,8 @@ const generateToken = (user) => {
     id: user._id || user.id,
     email: user.email,
     role: user.role,
-    jti: uuidv4(), // unique token ID — used for denylist revocation
+    passwordVersion: user.passwordVersion || 0,
+    jti: crypto.randomUUID(), // unique token ID — used for denylist revocation
   };
 
   const token = jwt.sign(payload, process.env.JWT_SECRET, {

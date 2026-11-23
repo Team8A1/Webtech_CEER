@@ -1,0 +1,6 @@
+test-workspace/
+node_modules/
+.env
+*.log
+rest-api-interview-guide
+coverage

@@ -46,11 +46,16 @@ const facultySchema = new mongoose.Schema(
     },
     role: {
       type: String,
+      enum: ['faculty'],  // FIX: enforce valid value
       default: 'faculty',
     },
     mustChangePassword: {
       type: Boolean,
       default: false,
+    },
+    passwordVersion: {
+      type: Number,
+      default: 0,
     },
   },
   {
@@ -58,16 +63,15 @@ const facultySchema = new mongoose.Schema(
   }
 );
 
-facultySchema.pre('save', async function () {
-  if (!this.isModified('password') || !this.password) {
-    return;
-  }
-
+facultySchema.pre('save', async function (next) {  // FIX: accept next() parameter
+  if (!this.isModified('password') || !this.password) return next();
   try {
+    this.passwordVersion = (this.passwordVersion || 0) + 1;
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+    next();
   } catch (error) {
-    throw error; // Mongoose will handle this properly
+    next(error);
   }
 });
 

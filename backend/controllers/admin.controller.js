@@ -8,31 +8,31 @@ const Material = require('../models/material.model');
 
 const getDashboardData = async (req, res) => {
     try {
-        // 1. Get all faculties
+        // FIX: single query for all teams then group in JS — eliminates N+1
         const faculties = await Faculty.find({}).select('-password');
+        const facultyIds = faculties.map(f => f._id);
 
-        // 2. For each faculty, get their teams
-        const dashboardData = await Promise.all(faculties.map(async (faculty) => {
-            const teams = await Team.find({ guide: faculty._id })
-                .populate('members', 'name usn email') // Populate student details
-                .lean(); // Convert to plain JS object to allow modification
+        const allTeams = await Team.find({ guide: { $in: facultyIds } })
+            .populate('members', 'name usn email')
+            .lean();
 
-            return {
-                faculty: faculty,
-                teams: teams
-            };
+        // Build guide → teams map
+        const teamsBy = {};
+        allTeams.forEach(t => {
+            const gid = t.guide.toString();
+            if (!teamsBy[gid]) teamsBy[gid] = [];
+            teamsBy[gid].push(t);
+        });
+
+        const dashboardData = faculties.map(faculty => ({
+            faculty,
+            teams: teamsBy[faculty._id.toString()] || []
         }));
 
-        res.status(200).json({
-            success: true,
-            data: dashboardData
-        });
+        res.status(200).json({ success: true, data: dashboardData });
     } catch (error) {
         console.error('Error fetching admin dashboard data:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server Error'
-        });
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
 
@@ -44,6 +44,14 @@ const registerBulkStudents = async (req, res) => {
         }
 
         const results = { success: [], failed: [] };
+        const requestedEmails = [...new Set(
+            students
+                .map(student => typeof student.email === 'string' ? student.email.toLowerCase() : '')
+                .filter(Boolean)
+        )];
+        const existingStudents = await User.find({ email: { $in: requestedEmails } }).select('email');
+        const existingEmails = new Set(existingStudents.map(user => user.email.toLowerCase()));
+        const queuedEmails = new Set();
 
         for (let i = 0; i < students.length; i++) {
             const student = students[i];
@@ -70,8 +78,8 @@ const registerBulkStudents = async (req, res) => {
                     continue;
                 }
 
-                const exists = await User.findOne({ email: student.email });
-                if (exists) {
+                const email = student.email.toLowerCase();
+                if (existingEmails.has(email) || queuedEmails.has(email)) {
                     results.failed.push({
                         rowIndex,
                         data: student,
@@ -79,10 +87,11 @@ const registerBulkStudents = async (req, res) => {
                     });
                     continue;
                 }
+                queuedEmails.add(email);
 
                 const newStudent = new User({
                     name: student.name,
-                    email: student.email,
+                    email,
                     usn: student.usn,
                     division: student.division ? student.division.toUpperCase() : undefined,
                     batch: student.batch,
@@ -117,6 +126,14 @@ const registerBulkFaculty = async (req, res) => {
         }
 
         const results = { success: [], failed: [] };
+        const requestedEmails = [...new Set(
+            faculties
+                .map(faculty => typeof faculty.email === 'string' ? faculty.email.toLowerCase() : '')
+                .filter(Boolean)
+        )];
+        const existingFaculties = await Faculty.find({ email: { $in: requestedEmails } }).select('email');
+        const existingEmails = new Set(existingFaculties.map(faculty => faculty.email.toLowerCase()));
+        const queuedEmails = new Set();
 
         for (let i = 0; i < faculties.length; i++) {
             const faculty = faculties[i];
@@ -143,8 +160,8 @@ const registerBulkFaculty = async (req, res) => {
                     continue;
                 }
 
-                const exists = await Faculty.findOne({ email: faculty.email });
-                if (exists) {
+                const email = faculty.email.toLowerCase();
+                if (existingEmails.has(email) || queuedEmails.has(email)) {
                     results.failed.push({
                         rowIndex,
                         data: faculty,
@@ -152,10 +169,11 @@ const registerBulkFaculty = async (req, res) => {
                     });
                     continue;
                 }
+                queuedEmails.add(email);
 
                 const newFaculty = new Faculty({
                     name: faculty.name,
-                    email: faculty.email,
+                    email,
                     department: faculty.department || '',
                     role: 'faculty',
                     password: 'faculty@123', // Default password if missing
@@ -221,7 +239,7 @@ const loginAdmin = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Please provide email and password' });
         }
 
-        const admin = await Admin.findOne({ email });
+        const admin = await Admin.findOne({ email }).select('+password');  // FIX: password has select:false
         if (!admin) {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
@@ -255,8 +273,8 @@ const changePassword = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Please provide current and new password' });
         }
 
-        // req.user is set by auth middleware
-        const admin = await Admin.findById(req.user._id);
+        // FIX: use req.user._id from token + select password explicitly
+        const admin = await Admin.findById(req.user._id).select('+password');
 
         if (!admin) {
             return res.status(404).json({ success: false, message: 'Admin not found' });

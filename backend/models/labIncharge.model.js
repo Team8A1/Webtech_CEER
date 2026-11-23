@@ -42,11 +42,16 @@ const labInchargeSchema = new mongoose.Schema(
     },
     role: {
       type: String,
+      enum: ['labIncharge'],  // FIX: enforce valid value
       default: 'labIncharge',
     },
     mustChangePassword: {
       type: Boolean,
       default: true,
+    },
+    passwordVersion: {
+      type: Number,
+      default: 0,
     },
   },
   {
@@ -54,13 +59,16 @@ const labInchargeSchema = new mongoose.Schema(
   }
 );
 
-labInchargeSchema.pre('save', async function () {
-  if (!this.isModified('password') || !this.password) {
-    return;
+labInchargeSchema.pre('save', async function (next) {  // FIX: accept next() parameter
+  if (!this.isModified('password') || !this.password) return next();
+  try {
+    this.passwordVersion = (this.passwordVersion || 0) + 1;
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
   }
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
 });
 
 

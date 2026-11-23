@@ -16,13 +16,13 @@ const { protect, authorize } = require('../middleware/auth.middleware');
 
 // Auth Routes
 router.post('/login', loginAdmin);
-router.post('/create', createAdmin); // Public for initial setup
 
 // Protected Routes - Admin Only
 router.use(protect); // authentication 
 router.use(authorize('admin'));     // authorization 
 
 router.get('/dashboard', getDashboardData);
+router.post('/create', createAdmin);
 router.post('/register/students', registerBulkStudents);
 router.post('/register/faculty', registerBulkFaculty);
 router.post('/change-password', changePassword);

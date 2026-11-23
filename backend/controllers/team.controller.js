@@ -39,27 +39,56 @@ const createTeam = async (req, res) => {
             });
         }
 
-        // Create team
+        // Create the team, then reserve each student atomically.
         const team = new Team({
             teamName,
             problemStatement,
             members,
             guide: guideId,
         });
+        try {
+            await team.save();
+        } catch (error) {
+            throw error;
+        }
 
-        await team.save();
-
-        // Update students
-        await User.updateMany(
-            { _id: { $in: members } },
-            {
-                $set: {
-                    teamId: team._id,
-                    problemStatement: problemStatement,
-                    guideId: guideId,
+        const reservations = [];
+        for (const memberId of members) {
+            const reserved = await User.updateOne(
+                {
+                    _id: memberId,
+                    role: 'student',
+                    teamId: { $in: [null, undefined] },
                 },
+                {
+                    $set: {
+                        teamId: team._id,
+                        problemStatement,
+                        guideId,
+                    },
+                }
+            );
+
+            if (!reserved || reserved.modifiedCount !== 1) {
+                await User.updateMany(
+                    { _id: { $in: reservations } },
+                    {
+                        $unset: {
+                            teamId: '',
+                            problemStatement: '',
+                            guideId: '',
+                        },
+                    }
+                );
+                await Team.deleteOne({ _id: team._id });
+                return res.status(409).json({
+                    success: false,
+                    message: 'One or more students were assigned to another team during this request',
+                });
             }
-        );
+
+            reservations.push(memberId);
+        }
 
         return res.status(201).json({
             success: true,
@@ -106,9 +135,11 @@ const getFacultyTeams = async (req, res) => {
  */
 const getAvailableStudents = async (req, res) => {
     try {
+        // FIX: $exists:false misses docs where teamId is null/undefined explicitly
+        // Use $in:[null] which matches both missing field and explicit null
         const students = await User.find({
             role: 'student',
-            teamId: { $exists: false }
+            teamId: { $in: [null, undefined] }
         }).select('name email division').sort({ division: 1, name: 1 });
 
         return res.status(200).json({
@@ -132,7 +163,14 @@ const getAvailableStudents = async (req, res) => {
 const getStudentTeam = async (req, res) => {
     try {
         const studentId = req.user.id;
-        const student = await User.findById(studentId).populate('teamId');
+        // FIX: single DB query — deep-populate teamId so we don't need a second Team.findById()
+        const student = await User.findById(studentId).populate({
+            path: 'teamId',
+            populate: [
+                { path: 'members', select: 'name email' },
+                { path: 'guide', select: 'name email department' }
+            ]
+        });
 
         if (!student.teamId) {
             return res.status(200).json({
@@ -142,13 +180,9 @@ const getStudentTeam = async (req, res) => {
             });
         }
 
-        const team = await Team.findById(student.teamId)
-            .populate('members', 'name email')
-            .populate('guide', 'name email department');
-
         return res.status(200).json({
             success: true,
-            team,
+            team: student.teamId,  // already fully populated
         });
     } catch (error) {
         console.error('Get Student Team Error:', error);

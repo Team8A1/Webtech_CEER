@@ -1,114 +1,101 @@
 const BOMRequest = require('../models/bomRequest.model');
 const Material = require('../models/material.model');
-const User = require('../models/user.model');
 
 // @desc    Get embodied energy analysis for approved BOM items (team-based)
 // @route   GET /api/energy/analysis
 // @access  Private (Student)
 const getEnergyAnalysis = async (req, res) => {
     try {
+        // FIX: use req.user.teamId directly — no extra User.findById() round-trip
         const studentId = req.user._id;
-        const student = await User.findById(studentId);
+        const teamId    = req.user.teamId;
 
         // Build query - if student has a team, get all team BOMs
-        let query = {
+        const query = {
             guideApproved: true,
-            labApproved: true
+            labApproved: true,
+            ...(teamId ? { teamId } : { studentId })
         };
 
-        if (student && student.teamId) {
-            query.teamId = student.teamId;
-        } else {
-            query.studentId = studentId;
-        }
-
         const bomRequests = await BOMRequest.find(query);
+
+        // FIX: batch-fetch all materials upfront — no N+1 per BOM iteration
+        const uniqueNames = [...new Set(bomRequests.map(b => b.consumableName))];
+        const materials   = uniqueNames.length
+            ? await Material.find({ name: { $in: uniqueNames.map(n => new RegExp(`^${n}$`, 'i')) } })
+            : [];
+
+        // Build a case-insensitive lookup map: name.toLowerCase() -> material doc
+        const materialMap = {};
+        materials.forEach(m => { materialMap[m.name.toLowerCase()] = m; });
 
         const analysisData = [];
         let totalSystemEnergy = 0;
 
-        // We need to match names to materials. 
-        // This is tricky because BOMRequest stores 'consumableName' as a string.
-        // We will try to find a Material with that name (case insensitive).
-
         for (const bom of bomRequests) {
-            const material = await Material.findOne({
-                name: { $regex: new RegExp(`^${bom.consumableName}$`, 'i') }
-            });
+            // O(1) lookup instead of a DB query per bom
+            const material = materialMap[bom.consumableName?.toLowerCase()];
 
-            let volume = 0; // m3
-            let weight = 0; // kg
-            let energy = 0; // MJ
+            let volume     = 0; // m³
+            let weight     = 0; // kg
+            let energy     = 0; // MJ
             let unitEnergy = 0; // MJ/kg
-            let density = 0;
-            let dims = { L: bom.length, W: bom.width, T: 0 }; // T/D/Weight from Fixed
-            let formType = 'unknown';
+            let density    = 0;
+            let dims       = { L: bom.length, W: bom.width, T: 0 };
+            let formType   = 'unknown';
 
             if (material) {
-                density = material.density;
+                density    = material.density;
                 unitEnergy = material.embodiedEnergy;
-                console.log(`Analyzing: ${bom.consumableName}, Form: ${material.formType}, FixedDim: ${material.fixedDimension}`);
-                formType = material.formType;
+                formType   = material.formType;
 
-                // --- Calculation Logic ---
-
-                // 1. Manual Weight Override (Unit items or special cases)
+                // 1. Manual Weight Override
                 if (bom.weight > 0) {
-                    weight = bom.weight * bom.qty; // Total weight
-                    // Volume not easily calculable if only weight is given, keep 0 or approx?
+                    weight = bom.weight * bom.qty;
                 }
-                // 2. Sheet Calculation
+                // 2. Sheet: Vol = L × W × Thickness(mm→m)
                 else if (material.formType === 'sheet') {
-                    // Vol = L * W * Thickness
-                    // Length/Width in meters. FixedDimension (Thickness) in mm -> convert to m
                     const thicknessM = material.fixedDimension / 1000;
-                    dims.T = material.fixedDimension; // Store in mm for display
-                    volume = bom.length * bom.width * thicknessM * bom.qty;
-                    weight = volume * density;
+                    dims.T  = material.fixedDimension;
+                    volume  = bom.length * bom.width * thicknessM * bom.qty;
+                    weight  = volume * density;
                 }
-                // 3. Rod Calculation
+                // 3. Rod: Vol = π × r² × L
                 else if (material.formType === 'rod') {
-                    // Vol = PI * r^2 * L
-                    // Radius = (Diameter/2) (mm) -> convert to m
                     const radiusM = (material.fixedDimension / 2) / 1000;
-                    dims.T = material.fixedDimension; // Diameter in mm
-                    volume = Math.PI * Math.pow(radiusM, 2) * bom.length * bom.qty;
-                    weight = volume * density;
+                    dims.T  = material.fixedDimension;
+                    volume  = Math.PI * Math.pow(radiusM, 2) * bom.length * bom.qty;
+                    weight  = volume * density;
                 }
-                // 4. Unit Calculation (Fixed Weight from Material)
+                // 4. Unit: fixedDimension holds weight-per-unit (kg)
                 else if (material.formType === 'unit') {
-                    // fixedDimension holds 'Weight per Unit' in kg for unit items
-                    const weightPerUnit = material.fixedDimension || 0;
-                    weight = weightPerUnit * bom.qty;
+                    weight = (material.fixedDimension || 0) * bom.qty;
                 }
             } else {
-                // Material not found in DB - Fallback to manual weight if provided
+                // Material not in DB — fallback to manual weight
                 if (bom.weight > 0) {
                     weight = bom.weight * bom.qty;
                 }
             }
 
-            // Calculate Energy
-            energy = weight * unitEnergy;
+            energy             = weight * unitEnergy;
             totalSystemEnergy += energy;
 
-            // Save calculated weight back to BOM if needed? (optional, skipping for now to keep read-only optimization)
-
             analysisData.push({
-                _id: bom._id,
-                partName: bom.partName,
+                _id:        bom._id,
+                partName:   bom.partName,
                 materialName: bom.consumableName,
-                formType: formType,
+                formType,
                 dimensions: {
-                    length: bom.length,
-                    width: bom.width,
-                    thickness: dims.T // or Diameter
+                    length:    bom.length,
+                    width:     bom.width,
+                    thickness: dims.T   // or diameter for rod
                 },
-                qty: bom.qty,
-                volume: parseFloat(volume.toFixed(8)),
-                weight: parseFloat(weight.toFixed(4)),
-                density: density,
-                unitEnergy: unitEnergy,
+                qty:        bom.qty,
+                volume:     parseFloat(volume.toFixed(8)),
+                weight:     parseFloat(weight.toFixed(4)),
+                density,
+                unitEnergy,
                 totalEnergy: parseFloat(energy.toFixed(4))
             });
         }
@@ -121,7 +108,11 @@ const getEnergyAnalysis = async (req, res) => {
 
     } catch (error) {
         console.error('Error calculating energy:', error);
-        res.status(500).json({ success: false, message: 'Server Error' });
+        res.status(500).json({
+            success: false,
+            message: 'Server Error',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 };
 

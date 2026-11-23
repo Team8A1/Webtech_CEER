@@ -29,6 +29,7 @@ router.post('/logout', protect, logout);
  * @desc    Change student password
  * @access  Private
  */
-router.post('/change-password', changePassword);
+// protect: authenticates token & sets req.user / req.tokenDecoded for revocation
+router.post('/change-password', protect, changePassword);
 
 module.exports = router;
